@@ -10,16 +10,7 @@
 #   - No mutation of caller data
 # =============================================================================
 
-utils::globalVariables(c(
-  "xaxis_var",
-  "var_mean",
-  "left",
-  "right",
-  ".expo",
-  ".pred",
-  ".obs",
-  ".bin"
-))
+utils::globalVariables(c("left", "right", ".expo", ".pred", ".obs", ".bin"))
 
 
 # =============================================================================
@@ -77,28 +68,25 @@ pred_vs_obs.default <- function(
   ]
 
   # Predictions per unit exposure — this is the x-axis variable
-  dt[, xaxis_var := .pred / .expo]
+  # Extract as plain vector before passing to bin_pred (avoids data.table scope issues)
+  rate <- dt$.pred / dt$.expo
+  binned <- bin_pred(rate, bins, type_agg)
+  dt[, .bin := binned$idx]
+  bin_labels <- make_interval_labels(binned$breaks)
 
-  # Bin xaxis_var using the same approach as one_way()
-  dt[, .bin := bin_pred(xaxis_var, bins, type_agg)]
-
-  # Average predicted rate per bin (for the predicted line)
-  dt[, var_mean := sum(.pred) / sum(.expo), by = .bin]
-
-  # Aggregate observed and predicted per bin
+  # Aggregate by integer bin — order is numerically correct
   agg <- dt[,
     list(
       obs_mean = sum(.obs) / sum(.expo),
       pred_mean = sum(.pred) / sum(.expo),
-      var_mean = var_mean[[1L]],
       exposure = sum(.expo)
     ),
     by = .bin
   ]
 
-  # Order bins correctly
-  agg <- agg[order(var_mean)]
-  agg[, .bin := factor(.bin, levels = unique(.bin))]
+  # Sort by bin integer then convert to readable labels
+  agg <- agg[order(.bin)]
+  agg[, .bin := factor(bin_labels[.bin], levels = bin_labels)]
 
   switch(ret, plot = plot_pred_vs_obs(agg, obs, title), data = agg)
 }
@@ -206,32 +194,46 @@ pred_vs_obs.ModelBlueprint <- function(
 #' @noRd
 bin_pred <- function(x, bins, type_agg) {
   if (type_agg == "equal_exposure") {
-    # Equal-exposure: quantile-based breaks on sorted x
     probs <- seq(0, 1, length.out = bins + 1L)
     breaks <- unique(quantile(x, probs = probs, na.rm = TRUE))
-    labels <- make_interval_labels(breaks)
-    cut(x, breaks = breaks, labels = labels, include.lowest = TRUE)
   } else {
-    # Equal-range: evenly-spaced breaks
-    breaks <- seq(
+    breaks <- unique(seq(
       min(x, na.rm = TRUE),
       max(x, na.rm = TRUE),
       length.out = bins + 1L
-    )
-    breaks <- unique(breaks)
-    labels <- make_interval_labels(breaks)
-    cut(x, breaks = breaks, labels = labels, include.lowest = TRUE)
+    ))
   }
+
+  if (length(breaks) < 2L) {
+    eps <- max(abs(breaks[1L]) * 1e-6, 1e-10)
+    breaks <- c(breaks[1L] - eps, breaks[1L] + eps)
+  }
+
+  # Integer indices: 1 = lowest bin. Callers sort on this integer,
+  # then apply labels — avoiding all lexical ordering problems.
+  list(
+    idx = as.integer(cut(
+      x,
+      breaks = breaks,
+      labels = FALSE,
+      include.lowest = TRUE
+    )),
+    breaks = breaks
+  )
 }
 
-#' Format numeric break points as readable interval labels
+#' Format break points as readable interval labels
 #' @keywords internal
 #' @noRd
 make_interval_labels <- function(breaks) {
   n <- length(breaks) - 1L
   left <- breaks[seq_len(n)]
   right <- breaks[seq_len(n) + 1L]
-  sprintf("(%s, %s]", signif(left, 4L), signif(right, 4L))
+  gap <- min(diff(breaks))
+  # Enough sig figs to distinguish adjacent breaks — no upper cap.
+  # ceiling(-log10(gap)) + 2 gives 2 extra digits beyond the gap's leading digit.
+  sig <- max(3L, ceiling(-log10(gap)) + 2L)
+  sprintf("(%s, %s]", signif(left, sig), signif(right, sig))
 }
 
 
@@ -243,14 +245,20 @@ make_interval_labels <- function(breaks) {
 #' @keywords internal
 #' @noRd
 plot_pred_vs_obs <- function(agg, obs, title) {
-  x_labels <- as.character(agg$.bin)
+  # Use integer positions so the line trace is guaranteed to connect
+  # bins left-to-right. Categorical x-axes in plotly map string labels
+  # to positions using internal alphabetical ordering for line/scatter
+  # traces, regardless of categoryarray — causing the line to double back
+  # when a label like "(3.22e-16, 0.1]" sorts after "(0.x, ...)".
+  x_pos <- seq_len(nrow(agg))
+  x_text <- as.character(agg$.bin)
 
   p <- plotly::plot_ly()
 
   # Exposure bars — secondary y-axis
   p <- plotly::add_bars(
     p,
-    x = x_labels,
+    x = x_pos,
     y = agg$exposure,
     name = "Exposure",
     marker = list(color = "#ffff00"),
@@ -260,7 +268,7 @@ plot_pred_vs_obs <- function(agg, obs, title) {
   # Observed points — primary y-axis
   p <- plotly::add_markers(
     p,
-    x = x_labels,
+    x = x_pos,
     y = agg$obs_mean,
     name = "Observed",
     marker = list(size = 7, color = "rgb(0,0,128)", symbol = "circle"),
@@ -270,7 +278,7 @@ plot_pred_vs_obs <- function(agg, obs, title) {
   # Predicted line — primary y-axis
   p <- plotly::add_lines(
     p,
-    x = x_labels,
+    x = x_pos,
     y = agg$pred_mean,
     name = "Predicted",
     line = list(color = "rgb(0,0,0)", width = 2, dash = "dash"),
@@ -280,7 +288,13 @@ plot_pred_vs_obs <- function(agg, obs, title) {
   plotly::layout(
     p,
     title = title,
-    xaxis = list(title = "Predicted (binned)", tickangle = -45),
+    xaxis = list(
+      title = "Predicted (binned)",
+      tickangle = -45,
+      tickmode = "array",
+      tickvals = x_pos,
+      ticktext = x_text
+    ),
     yaxis = list(
       title = "Observed / Predicted rate",
       overlaying = "y2",

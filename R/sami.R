@@ -108,8 +108,11 @@ sami.default <- function(
     for (challenger in pred[pred != base]) {
       ratio_name <- paste0(challenger, " / ", base)
 
-      # Ratio of challenger to base — formatted to 7 sig figs for stable binning
-      dt[, (ratio_name) := sig_dig(dt[[challenger]] / dt[[base]], 7L)]
+      # Ratio of challenger to base — rounded to 7 sig figs to suppress
+      # floating-point noise. signif() keeps the column numeric so apply_binning
+      # treats it as continuous; sig_dig() would return character and cause
+      # apply_binning to skip binning entirely.
+      dt[, (ratio_name) := signif(dt[[challenger]] / dt[[base]], 7L)]
 
       if (ret == "plot") {
         p <- one_way(

@@ -77,7 +77,7 @@ gain(mb)
 pred_vs_obs(mb)
 
 # Grouped residuals with loess trend
-residuals_grouped(mb)
+residuals_grouped(mb, exposure_per_bin = 5)
 ```
 
 ## Pipe-friendly data manipulation
@@ -133,7 +133,7 @@ mb_rf  <- mb_rf_regression()     # requires randomForest
 mb_xgb <- mb_xgb_classification() # requires xgboost
 
 # All work with the same diagnostic functions
-one_way(mb_rf, var = "wt")
+one_way(mb_rf, var = "wt", predictions = TRUE)
 pdp(mb_xgb, var = "hp")
 gain(mb_glm)
 ```

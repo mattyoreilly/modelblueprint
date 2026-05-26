@@ -97,7 +97,7 @@ one_way(mb, var = "wt", bins = 50L)
   Better for visualising the shape of the relationship at the tails.
 
 ```{r type-agg, eval = FALSE}
-one_way(mb, var = "wt", type_agg = "equal_range")
+one_way(mb, var = "wt", type_agg = "equal_range", bins = 5)
 ```
 
 ## Split variable
@@ -107,7 +107,7 @@ group. Useful for comparing behaviour across segments such as policy type,
 region, or claim flag.
 
 ```{r split, eval = FALSE}
-one_way(mb, var = "wt", split = "am")   # split by transmission type
+one_way(mb, var = "mpg", split = "am", bins = 5)   # split by transmission type
 ```
 
 ## Choosing the dataset

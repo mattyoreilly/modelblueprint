@@ -254,11 +254,10 @@ mb_xgb_regression <- function() {
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
   ModelBlueprint(
     model = xgboost::xgboost(
-      data = as.matrix(d$train[, features]),
-      label = d$train$mpg,
+      x = as.matrix(d$train[, features]),
+      y = d$train$mpg,
       nrounds = 50L,
-      objective = "reg:squarederror",
-      verbose = 0L
+      params = list(objective = "reg:squarederror")
     ),
     feat_eng_fun = function(df) as.matrix(df[, features]),
     train = d$train,
@@ -278,11 +277,10 @@ mb_xgb_classification <- function() {
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
   ModelBlueprint(
     model = xgboost::xgboost(
-      data = as.matrix(d$train[, features]),
-      label = d$train$vs,
+      x = as.matrix(d$train[, features]),
+      y = factor(d$train$vs),
       nrounds = 50L,
-      objective = "binary:logistic",
-      verbose = 0L
+      params = list(objective = "binary:logistic")
     ),
     feat_eng_fun = function(df) as.matrix(df[, features]),
     train = d$train,

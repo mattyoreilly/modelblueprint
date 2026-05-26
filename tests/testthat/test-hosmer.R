@@ -124,7 +124,7 @@ describe("pred_vs_obs.default — return type", {
 describe("pred_vs_obs.default — returned data structure", {
   df <- make_df()
 
-  it("has expected columns: .bin, obs_mean, pred_mean, var_mean, exposure", {
+  it("has expected columns: .bin, obs_mean, pred_mean, exposure", {
     result <- pred_vs_obs(
       df,
       pred = "pred",
@@ -133,8 +133,7 @@ describe("pred_vs_obs.default — returned data structure", {
       ret = "data"
     )
     expect_true(all(
-      c(".bin", "obs_mean", "pred_mean", "var_mean", "exposure") %in%
-        names(result)
+      c(".bin", "obs_mean", "pred_mean", "exposure") %in% names(result)
     ))
   })
 
@@ -453,22 +452,24 @@ describe("pred_vs_obs.ModelBlueprint — passthrough arguments", {
 # =============================================================================
 
 describe("bin_pred", {
-  it("returns a factor", {
+  it("returns a list with integer idx and numeric breaks", {
     x <- runif(100L)
     result <- ModelBlueprint:::bin_pred(x, 10L, "equal_exposure")
-    expect_true(is.factor(result))
+    expect_type(result, "list")
+    expect_true(is.integer(result$idx))
+    expect_true(is.numeric(result$breaks))
   })
 
-  it("equal_exposure — number of levels <= bins", {
+  it("equal_exposure — max bin index <= bins", {
     x <- runif(200L)
     result <- ModelBlueprint:::bin_pred(x, 10L, "equal_exposure")
-    expect_lte(nlevels(result), 10L)
+    expect_lte(max(result$idx, na.rm = TRUE), 10L)
   })
 
-  it("equal_range — number of levels <= bins", {
+  it("equal_range — max bin index <= bins", {
     x <- runif(200L)
     result <- ModelBlueprint:::bin_pred(x, 10L, "equal_range")
-    expect_lte(nlevels(result), 10L)
+    expect_lte(max(result$idx, na.rm = TRUE), 10L)
   })
 
   it("equal_exposure — bins have more balanced counts than equal_range", {
@@ -477,16 +478,16 @@ describe("bin_pred", {
     b_ee <- ModelBlueprint:::bin_pred(x, 5L, "equal_exposure")
     b_er <- ModelBlueprint:::bin_pred(x, 5L, "equal_range")
     cv <- function(b) {
-      counts <- as.numeric(table(b))
+      counts <- as.numeric(table(b$idx))
       stats::sd(counts) / mean(counts)
     }
     expect_lt(cv(b_ee), cv(b_er))
   })
 
-  it("no NAs in output for clean input", {
+  it("no NAs in idx for clean input", {
     x <- seq(0.01, 1, length.out = 100L)
     result <- ModelBlueprint:::bin_pred(x, 5L, "equal_exposure")
-    expect_false(any(is.na(result)))
+    expect_false(any(is.na(result$idx)))
   })
 })
 

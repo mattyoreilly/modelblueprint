@@ -64,7 +64,13 @@ gain.default <- function(
   ret <- match.arg(ret)
 
   # Defensive copy — never mutate caller data
-  dt <- data.table::as.data.table(data)
+  # data.table::copy() ensures a deep copy so := never modifies the original
+  dt <- data.table::copy(data.table::as.data.table(data))
+
+  # Fall back to unit weights if exposure column doesn't exist
+  if (!exposure %in% names(dt)) {
+    dt[[exposure]] <- 1L
+  }
 
   # Perfect model baseline — add before column selection so it's available
   dt[, perfect_model := .SD[[1L]], .SDcols = obs]
