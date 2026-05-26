@@ -4,16 +4,16 @@
 \alias{saveMB}
 \title{Save a ModelBlueprint to disk}
 \usage{
-saveMB(object, ...)
+saveMB(object, path = getwd(), filename = NULL, ...)
 }
 \arguments{
 \item{object}{A \code{ModelBlueprint} object.}
 
-\item{...}{Currently unused. Reserved for future subclass methods.}
-
 \item{path}{Directory to write the archive to. Default: working directory.}
 
 \item{filename}{Optional filename. When \code{NULL}, \code{model_display_name} is used.}
+
+\item{...}{Currently unused. Reserved for future subclass methods.}
 }
 \value{
 Invisibly returns the full normalised path to the saved archive.

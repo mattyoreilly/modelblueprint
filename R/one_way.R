@@ -50,9 +50,6 @@ utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
 #' one_way(mtcars, var = "cyl", obs = c("mpg", "hp"), split = "am")
 #' }
 #'
-#' @import data.table plotly RColorBrewer
-#' @importFrom grDevices col2rgb
-#' @importFrom stats var sd
 #' @param data A `data.frame` or `data.table`.
 #' @param ... Arguments passed to methods.
 #' @export

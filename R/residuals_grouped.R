@@ -3,10 +3,10 @@
 # Grouped residuals vs predicted plot with loess trend line.
 #
 # Design:
-#   - S3 generic — works on data.frames directly or ModelBlueprint objects
+#   - S3 generic -- works on data.frames directly or ModelBlueprint objects
 #   - exposure_per_bin controls grouping granularity, not number of bins
 #   - Both raw and Pearson residuals supported
-#   - Loess CI computed via stats::loess() — no external dependencies
+#   - Loess CI computed via stats::loess() -- no external dependencies
 #   - No mutation of caller data
 # =============================================================================
 
@@ -18,12 +18,18 @@ utils::globalVariables(c(
   "loe_upp",
   ".obs",
   ".pred",
-  ".expo"
+  ".expo",
+  "rate",
+  "bin",
+  "obs_mean",
+  "obs_sum",
+  "pred_mean",
+  "pred_sum"
 ))
 
 
 # =============================================================================
-# residuals_grouped() — S3 generic
+# residuals_grouped() -- S3 generic
 # =============================================================================
 
 #' Grouped Residuals vs Predicted Plot
@@ -47,7 +53,7 @@ residuals_grouped <- function(data, ...) UseMethod("residuals_grouped")
 #' @param exposure        `[character(1)]` Name of the exposure column.
 #'                        Default `"exposure"`.
 #' @param exposure_per_bin `[numeric(1)]` Target exposure per bin. Controls
-#'                        granularity — smaller values give more bins.
+#'                        granularity -- smaller values give more bins.
 #'                        Default `10`.
 #' @param residual_type   `[character(1)]` `"raw"` (`obs - pred`) or
 #'                        `"pearson"` (`(obs - pred) / sqrt(pred)`).
@@ -83,7 +89,7 @@ residuals_grouped.default <- function(
   residual_type <- match.arg(residual_type)
   ret <- match.arg(ret)
 
-  # Defensive copy — never mutate caller data
+  # Defensive copy -- never mutate caller data
   dt <- data.table::as.data.table(data)
   dt <- dt[,
     list(.obs = .SD[[1L]], .pred = .SD[[2L]], .expo = .SD[[3L]]),
@@ -103,7 +109,7 @@ residuals_grouped.default <- function(
   ))
 
   # Guard: if all rates are identical unique() collapses breaks to one value
-  # — add a tiny epsilon spread so cut() receives at least 2 break points
+  # -- add a tiny epsilon spread so cut() receives at least 2 break points
   if (length(breaks) < 2L) {
     eps <- max(abs(breaks[1L]) * 1e-6, 1e-10)
     breaks <- c(breaks[1L] - eps, breaks[1L] + eps)
@@ -153,7 +159,7 @@ residuals_grouped.default <- function(
 
   if (nrow(agg) < 3L) {
     warning(
-      "residuals_grouped(): fewer than 3 bins — cannot fit loess. ",
+      "residuals_grouped(): fewer than 3 bins -- cannot fit loess. ",
       "Increase data size or reduce `exposure_per_bin`.",
       call. = FALSE
     )
@@ -223,7 +229,7 @@ residuals_grouped.ModelBlueprint <- function(
     )
   }
 
-  # Resolve exposure — fall back to unit weights
+  # Resolve exposure -- fall back to unit weights
   exposure <- resolve_exposure(data, df)
   df <- as.data.frame(df)
   if (exposure == "vec_of_ones") {
@@ -269,7 +275,7 @@ residuals_grouped.ModelBlueprint <- function(
 #' @keywords internal
 #' @noRd
 plot_residuals_grouped <- function(agg, title, exposure_per_bin) {
-  # Fit loess with 95% CI — suppress near-singularity warnings that fire
+  # Fit loess with 95% CI -- suppress near-singularity warnings that fire
   # on small datasets; the plot is still useful even with imprecise CIs
   lo <- suppressWarnings(stats::loess(agg$res ~ agg$midpoint))
   pred <- suppressWarnings(stats::predict(lo, se = TRUE))

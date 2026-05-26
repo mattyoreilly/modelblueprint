@@ -3,8 +3,6 @@
 # S7 class for managing the full lifecycle of a machine learning model.
 # =============================================================================
 
-#' @import S7
-#' @importFrom dplyr filter mutate left_join
 NULL
 
 # Union type: NULL | data.frame (covers tibble) — defined before new_class()
@@ -143,11 +141,8 @@ predict.ModelBlueprint <- function(object, newdata, ...) {
 # print method
 # =============================================================================
 
-#' Print a ModelBlueprint object
-#' @param x A ModelBlueprint.
-#' @param ... Unused.
-#' @name print.ModelBlueprint
 #' @keywords internal
+#' @noRd
 method(print, ModelBlueprint) <- function(x, ...) {
   rule <- function(ch = "-", n = 60L) paste(rep(ch, n), collapse = "")
   cat(rule("="), "\n")
@@ -265,7 +260,11 @@ left_join.ModelBlueprint <- function(
 #' @return Invisibly returns the full normalised path to the saved archive.
 #' @seealso [loadMB()]
 #' @export
-saveMB <- new_generic("saveMB", "object")
+saveMB <- new_generic(
+  "saveMB",
+  "object",
+  function(object, path = getwd(), filename = NULL, ...) S7_dispatch()
+)
 
 method(saveMB, ModelBlueprint) <- function(
   object,
@@ -581,7 +580,7 @@ check_package <- function(pkg, context) {
 #' slots. Optionally overlays the model's in-sample predictions to produce
 #' a lift chart (pass `predictions = TRUE`).
 #'
-#' @param object      A `ModelBlueprint`.
+#' @param data        A `ModelBlueprint`.
 #' @param var         `[character(1)]` Feature to plot on the x-axis.
 #' @param set         `[character(1)]` Which dataset to use: `"train"`,
 #'                    `"test"`, or `"holdout"`. Default `"train"`.
@@ -597,7 +596,7 @@ check_package <- function(pkg, context) {
 #' @method one_way ModelBlueprint
 #' @export
 one_way.ModelBlueprint <- function(
-  object,
+  data,
   var,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
@@ -611,7 +610,7 @@ one_way.ModelBlueprint <- function(
   type_agg <- match.arg(type_agg)
   ret <- match.arg(ret)
 
-  df <- prop(object, set)
+  df <- prop(data, set)
   if (is.null(df)) {
     stop(
       sprintf(
@@ -622,8 +621,8 @@ one_way.ModelBlueprint <- function(
     )
   }
 
-  obs <- resolve_obs(object, df, set, predictions)
-  exposure <- resolve_exposure(object, df)
+  obs <- resolve_obs(data, df, set, predictions)
+  exposure <- resolve_exposure(data, df)
 
   one_way(
     data = df,
@@ -648,7 +647,7 @@ one_way.ModelBlueprint <- function(
 #' Calls [pdp()] using the ModelBlueprint's model, target, exposure, and
 #' data slots.
 #'
-#' @param object      A `ModelBlueprint`.
+#' @param data        A `ModelBlueprint`.
 #' @param var         `[character(1)]` Feature to compute the PDP for.
 #' @param set         `[character(1)]` Dataset to use: `"train"`, `"test"`,
 #'                    or `"holdout"`. Default `"train"`.
@@ -661,7 +660,7 @@ one_way.ModelBlueprint <- function(
 #' @method pdp ModelBlueprint
 #' @export
 pdp.ModelBlueprint <- function(
-  object,
+  data,
   var,
   set = c("train", "test", "holdout"),
   bins = 10L,
@@ -674,7 +673,7 @@ pdp.ModelBlueprint <- function(
   type_agg <- match.arg(type_agg)
   ret <- match.arg(ret)
 
-  df <- prop(object, set)
+  df <- prop(data, set)
   if (is.null(df)) {
     stop(
       sprintf(
@@ -685,16 +684,16 @@ pdp.ModelBlueprint <- function(
     )
   }
 
-  if (is.na(object@y_name)) {
+  if (is.na(data@y_name)) {
     stop(
       "ModelBlueprint `@y_name` is not set. Specify the target variable name.",
       call. = FALSE
     )
   }
 
-  exposure <- resolve_exposure(object, df)
-  model_name <- if (!is.na(object@model_display_name)) {
-    object@model_display_name
+  exposure <- resolve_exposure(data, df)
+  model_name <- if (!is.na(data@model_display_name)) {
+    data@model_display_name
   } else {
     "model"
   }
@@ -702,8 +701,8 @@ pdp.ModelBlueprint <- function(
   pdp(
     data = df,
     var = var,
-    obs = object@y_name,
-    model = object@model,
+    obs = data@y_name,
+    model = data@model,
     exposure = exposure,
     bins = bins,
     sample_size = sample_size,

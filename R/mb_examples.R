@@ -6,6 +6,11 @@
 # under the "Example ModelBlueprints" family in the package documentation.
 # =============================================================================
 
+# mtcars is a lazy-loaded dataset from the datasets package; it is always
+# available in R but cannot be imported via @importFrom. Suppress the
+# R CMD check NOTE with globalVariables().
+utils::globalVariables("mtcars")
+
 # Shared 75/25 train/test split — internal, not exported
 .mb_split <- function() {
   set.seed(42L)

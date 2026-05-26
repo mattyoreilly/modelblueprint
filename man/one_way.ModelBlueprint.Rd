@@ -5,7 +5,7 @@
 \title{One-way analysis for a ModelBlueprint}
 \usage{
 \method{one_way}{ModelBlueprint}(
-  object,
+  data,
   var,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
@@ -17,7 +17,7 @@
 )
 }
 \arguments{
-\item{object}{A \code{ModelBlueprint}.}
+\item{data}{A \code{ModelBlueprint}.}
 
 \item{var}{\verb{[character(1)]} Feature to plot on the x-axis.}
 

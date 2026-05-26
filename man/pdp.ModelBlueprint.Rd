@@ -5,7 +5,7 @@
 \title{Partial dependence plot for a ModelBlueprint}
 \usage{
 \method{pdp}{ModelBlueprint}(
-  object,
+  data,
   var,
   set = c("train", "test", "holdout"),
   bins = 10L,
@@ -16,7 +16,7 @@
 )
 }
 \arguments{
-\item{object}{A \code{ModelBlueprint}.}
+\item{data}{A \code{ModelBlueprint}.}
 
 \item{var}{\verb{[character(1)]} Feature to compute the PDP for.}
 

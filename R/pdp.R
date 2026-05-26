@@ -89,8 +89,6 @@ utils::globalVariables(c(
 #' }
 #'
 #' @seealso [one_way()] for observed-only one-way analysis.
-#' @import data.table plotly RColorBrewer
-#' @importFrom stats predict sd median var
 #' @param data A `data.frame` or `data.table`.
 #' @param ... Arguments passed to methods.
 #' @export
