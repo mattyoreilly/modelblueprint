@@ -1,10 +1,10 @@
 Package: modelblueprint
 Title: Model Diagnostics and Explainability for Pricing Workflows
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: c(
     person("Matt", role = c("aut", "cre"), email = "fermoymatt@gmail.com"),
     person("Hubert", "Ratajczyk", role = "aut", email = "jane@example.com")
-)
+    )
 Description: Provides fast, production-ready one-way analysis plots and
     partial dependence plots (PDPs) designed for pricing
     workflows. One-way plots show exposure-weighted means of one or more
