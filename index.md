@@ -57,7 +57,7 @@ mb2 <- loadMB("models/logistic_vs.tar.gz")
 - **Model-agnostic** — works with any R model implementing
   [`predict()`](https://rdrr.io/r/stats/predict.html), including H2O
 - **Pipe-friendly** — [`filter()`](https://rdrr.io/r/stats/filter.html),
-  `mutate()`, and `left_join()` methods return new blueprints
+  `mutate()`, and `left_join()` methods return new modelblueprints
 - **Diagnostic plots** — one-way, PDP, gains, calibration, and residual
   plots built in
 - **Persistence** — save and restore full model pipelines including H2O
