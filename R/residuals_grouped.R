@@ -237,6 +237,13 @@ residuals_grouped.modelblueprint <- function(
     exposure <- ".exposure_ones"
   }
 
+  # Align obs scale with predictions — if feat_eng_fun transforms the response,
+  # update obs in df so it matches the prediction scale.
+  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(df)))
+  if (data@y_name %in% names(df_eng)) {
+    df[[data@y_name]] <- df_eng[[data@y_name]]
+  }
+
   # Attach predictions
   pred_col <- if (!is.na(data@model_display_name)) {
     data@model_display_name

@@ -31,7 +31,7 @@ utils::globalVariables(c(
 ))
 
 # -----------------------------------------------------------------------------
-# Public API
+# PDP
 # -----------------------------------------------------------------------------
 
 #' Partial dependence plot for any predict()-compatible model
@@ -124,7 +124,7 @@ pdp.default <- function(
 
   # -- Apply pipeline for in-sample predictions --------------------------------
   df_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(dt))))
-  preds  <- model_predict(model, df_eng)
+  preds <- model_predict(model, df_eng)
   dt[, .pred := post_process_fun(preds, as.data.frame(dt))]
 
   # -- Resolve exposure ---------------------------------------------------------
@@ -178,8 +178,14 @@ pdp.default <- function(
 
   # -- Compute PDP ---------------------------------------------------------------
   pdp_agg <- compute_pdp(
-    rep_set, var, bin_info, expo_col,
-    model, pre_process_fun, feat_eng_fun, post_process_fun
+    rep_set,
+    var,
+    bin_info,
+    expo_col,
+    model,
+    pre_process_fun,
+    feat_eng_fun,
+    post_process_fun
   )
 
   # -- Merge one-way + PDP -------------------------------------------------------
@@ -216,6 +222,12 @@ pdp.default <- function(
 pdp_validate <- function(data, var, obs, exposure, bins, sample_size) {
   if (!is.data.frame(data) && !data.table::is.data.table(data)) {
     stop("`data` must be a data frame or data.table.", call. = FALSE)
+  }
+  if (length(var) == 1L && is.na(var)) {
+    stop(
+      "`var` is NA. Pass a column name, or call pdp() on a modelblueprint with `@x_original_inputs` set.",
+      call. = FALSE
+    )
   }
   assert_col_exists(data, var, "`var`")
   assert_col_exists(data, obs, "`obs`")
@@ -487,8 +499,8 @@ compute_pdp <- function(
     }
 
     nd_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(nd))))
-    preds  <- model_predict(model, nd_eng)
-    preds  <- post_process_fun(preds, as.data.frame(nd))
+    preds <- model_predict(model, nd_eng)
+    preds <- post_process_fun(preds, as.data.frame(nd))
     results[[i]] <- data.table::data.table(
       .bin = bin_label,
       pdp_mean = mean(preds, na.rm = TRUE)

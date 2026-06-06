@@ -6,7 +6,7 @@
 \usage{
 \method{one_way}{modelblueprint}(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
   split = NA_character_,

@@ -597,7 +597,7 @@ check_package <- function(pkg, context) {
 #' @export
 one_way.modelblueprint <- function(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
   split = NA_character_,
@@ -624,17 +624,44 @@ one_way.modelblueprint <- function(
   obs <- resolve_obs(data, df, set, predictions)
   exposure <- resolve_exposure(data, df)
 
-  one_way(
-    data = df,
-    var = var,
-    obs = obs,
-    exposure = exposure,
-    split = split,
-    bins = bins,
-    type_agg = type_agg,
-    ret = ret,
-    ...
-  )
+  # Resolve variables: NA means all columns except target and exposure
+  vars <- if (length(var) == 1L && is.na(var)) {
+    exclude <- c(
+      data@y_name,
+      if (exposure %in% names(df)) exposure else NULL
+    )
+    setdiff(names(df), exclude)
+  } else {
+    var
+  }
+
+  dots <- list(...)
+  dots[["var"]] <- NULL
+
+  run_one_way <- function(v) {
+    do.call(
+      one_way,
+      c(
+        list(
+          data     = df,
+          var      = v,
+          obs      = obs,
+          exposure = exposure,
+          split    = split,
+          bins     = bins,
+          type_agg = type_agg,
+          ret      = ret
+        ),
+        dots
+      )
+    )
+  }
+
+  if (length(vars) == 1L) {
+    run_one_way(vars)
+  } else {
+    stats::setNames(lapply(vars, run_one_way), vars)
+  }
 }
 
 
@@ -661,7 +688,7 @@ one_way.modelblueprint <- function(
 #' @export
 pdp.modelblueprint <- function(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   bins = 10L,
   sample_size = 10000L,
@@ -691,12 +718,12 @@ pdp.modelblueprint <- function(
     )
   }
 
-  exposure   <- resolve_exposure(data, df)
+  exposure <- resolve_exposure(data, df)
   model_name <- data@model_display_name %||% "model"
 
   # Resolve variables: NA means "all x_original_inputs"
   vars <- if (length(var) == 1L && is.na(var)) {
-    x <- na.omit(data@x_original_inputs)
+    x <- data@x_original_inputs
     if (length(x) == 0L) {
       stop(
         "var = NA requires `@x_original_inputs` to be set on the modelblueprint.",
@@ -708,22 +735,31 @@ pdp.modelblueprint <- function(
     var
   }
 
+  # Drop `var` from ... so it cannot conflict with the explicit var = v below.
+  dots <- list(...)
+  dots[["var"]] <- NULL
+
   run_pdp <- function(v) {
-    pdp(
-      data          = df,
-      var           = v,
-      obs           = data@y_name,
-      model         = data@model,
-      exposure      = exposure,
-      bins          = bins,
-      sample_size   = sample_size,
-      type_agg      = type_agg,
-      model_name    = model_name,
-      ret           = ret,
-      pre_process_fun  = data@pre_process_fun,
-      feat_eng_fun     = data@feat_eng_fun,
-      post_process_fun = data@post_process_fun,
-      ...
+    do.call(
+      pdp,
+      c(
+        list(
+          data = df,
+          var = v,
+          obs = data@y_name,
+          model = data@model,
+          exposure = exposure,
+          bins = bins,
+          sample_size = sample_size,
+          type_agg = type_agg,
+          model_name = model_name,
+          ret = ret,
+          pre_process_fun = data@pre_process_fun,
+          feat_eng_fun = data@feat_eng_fun,
+          post_process_fun = data@post_process_fun
+        ),
+        dots
+      )
     )
   }
 

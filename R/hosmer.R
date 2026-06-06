@@ -157,7 +157,15 @@ pred_vs_obs.modelblueprint <- function(
     exposure <- ".exposure_ones"
   }
 
-  # Attach predictions
+  # Apply pipeline to get engineered data for predictions and obs alignment.
+  # Same logic as pdp.default: if feat_eng_fun transforms the response, obs and
+  # predictions must be on the same scale.
+  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(df)))
+  if (data@y_name %in% names(df_eng)) {
+    df[[data@y_name]] <- df_eng[[data@y_name]]
+  }
+
+  # Attach predictions via the full pipeline
   pred_col <- if (!is.na(data@model_display_name)) {
     data@model_display_name
   } else {

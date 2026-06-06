@@ -6,7 +6,7 @@
 \usage{
 \method{pdp}{modelblueprint}(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   bins = 10L,
   sample_size = 10000L,
