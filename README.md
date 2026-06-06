@@ -10,7 +10,7 @@
 
 ```r
 # Install from GitHub
-pak::pak("matt/modelblueprint")
+pak::pak("mattyoreilly/modelblueprint")
 ```
 
 ## Overview
