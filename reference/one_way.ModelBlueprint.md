@@ -12,7 +12,7 @@ overlays the model's in-sample predictions to produce a lift chart (pass
 # S3 method for class 'modelblueprint'
 one_way(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
   split = NA_character_,

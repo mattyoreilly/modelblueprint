@@ -10,7 +10,7 @@ using the modelblueprint's model, target, exposure, and data slots.
 # S3 method for class 'modelblueprint'
 pdp(
   data,
-  var,
+  var = NA,
   set = c("train", "test", "holdout"),
   bins = 10L,
   sample_size = 10000L,
