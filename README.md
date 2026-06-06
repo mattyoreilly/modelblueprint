@@ -22,7 +22,7 @@ mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",
-  expo_name          = "exposure",
+  expo_name = "exposure",
   model_display_name = "logistic_vs"
 )
 
@@ -61,7 +61,7 @@ mb2 <- loadMB("models/logistic_vs.tar.gz")
 
 | Model | Package | Regression | Classification |
 |---|---|---|---|
-| Linear model | base R | ✓ | ✓ (LPM) |
+| Linear model | base R | ✓ | ✓  |
 | GLM (Gaussian, Binomial, Poisson) | base R | ✓ | ✓ |
 | Decision tree | rpart | ✓ | ✓ |
 | Random forest | randomForest | ✓ | ✓ |
