@@ -175,11 +175,10 @@ head(preds)
 
 ## One-way analysis
 
-[`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
-shows the exposure-weighted mean of the target across bins of a feature,
-giving a quick view of the marginal relationship. Pass
-`predictions = TRUE` to overlay the model’s in-sample predictions as a
-lift chart.
+[`one_way()`](../reference/one_way.md) shows the exposure-weighted mean
+of the target across bins of a feature, giving a quick view of the
+marginal relationship. Pass `predictions = TRUE` to overlay the model’s
+in-sample predictions as a lift chart.
 
 ``` r
 
@@ -193,10 +192,9 @@ one_way(mb, var = "wt", predictions = TRUE)   # lift chart
 
 ## Partial dependence plot
 
-[`pdp()`](https://matt-or.github.io/modelblueprint/reference/pdp.md)
-reveals the marginal effect of a feature on model output, controlling
-for all other features by averaging predictions across the training
-data.
+[`pdp()`](../reference/pdp.md) reveals the marginal effect of a feature
+on model output, controlling for all other features by averaging
+predictions across the training data.
 
 ``` r
 
@@ -262,16 +260,14 @@ head(predict(mb_fe, mtcars))
 
 ## Saving and loading
 
-[`saveMB()`](https://matt-or.github.io/modelblueprint/reference/saveMB.md)
-serialises the complete blueprint — model, data, and pipeline functions
-— to a `.tar.gz` archive.
-[`loadMB()`](https://matt-or.github.io/modelblueprint/reference/loadMB.md)
-restores it exactly.
+[`saveMB()`](../reference/saveMB.md) serialises the complete blueprint —
+model, data, and pipeline functions — to a `.tar.gz` archive.
+[`loadMB()`](../reference/loadMB.md) restores it exactly.
 
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> modelblueprint saved: /tmp/RtmpZMvqcZ/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/RtmpOIgo48/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical

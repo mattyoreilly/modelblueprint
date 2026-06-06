@@ -1,10 +1,8 @@
 # One-way analysis for a modelblueprint
 
-Calls
-[`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
-using the modelblueprint's target, exposure, and data slots. Optionally
-overlays the model's in-sample predictions to produce a lift chart (pass
-`predictions = TRUE`).
+Calls [`one_way()`](one_way.md) using the modelblueprint's target,
+exposure, and data slots. Optionally overlays the model's in-sample
+predictions to produce a lift chart (pass `predictions = TRUE`).
 
 ## Usage
 
@@ -61,8 +59,7 @@ one_way(
 
 - ...:
 
-  Further arguments passed to
-  [`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md).
+  Further arguments passed to [`one_way()`](one_way.md).
 
 ## Value
 

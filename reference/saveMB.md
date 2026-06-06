@@ -34,4 +34,4 @@ Invisibly returns the full normalised path to the saved archive.
 
 ## See also
 
-[`loadMB()`](https://matt-or.github.io/modelblueprint/reference/loadMB.md)
+[`loadMB()`](loadMB.md)

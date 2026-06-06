@@ -100,12 +100,11 @@ Alongside the PDP line the chart also shows:
 - Global average observed and predicted reference lines
 
 - Yellow exposure bars (left axis) - identical style to
-  [`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
+  [`one_way()`](one_way.md)
 
 ## See also
 
-[`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
-for observed-only one-way analysis.
+[`one_way()`](one_way.md) for observed-only one-way analysis.
 
 ## Examples
 

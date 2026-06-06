@@ -24,9 +24,8 @@ mb <- mb_glm_binomial()
 one_way(mb, var = "wt")
 ```
 
-You can also call
-[`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
-directly on a data frame:
+You can also call [`one_way()`](../reference/one_way.md) directly on a
+data frame:
 
 ``` r
 

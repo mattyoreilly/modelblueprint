@@ -1,8 +1,7 @@
 # Partial dependence plot for a modelblueprint
 
-Calls
-[`pdp()`](https://matt-or.github.io/modelblueprint/reference/pdp.md)
-using the modelblueprint's model, target, exposure, and data slots.
+Calls [`pdp()`](pdp.md) using the modelblueprint's model, target,
+exposure, and data slots.
 
 ## Usage
 
@@ -53,8 +52,7 @@ pdp(
 
 - ...:
 
-  Further arguments passed to
-  [`pdp()`](https://matt-or.github.io/modelblueprint/reference/pdp.md).
+  Further arguments passed to [`pdp()`](pdp.md).
 
 ## Value
 
