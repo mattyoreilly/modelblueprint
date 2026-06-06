@@ -16,7 +16,7 @@ The chart has a dual-axis layout:
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
 mb <- mb_glm_binomial()
 
@@ -104,7 +104,7 @@ one_way(mb, var = "mpg", split = "am", bins = 5)   # split by transmission type
 
 ## Choosing the dataset
 
-When calling from a `ModelBlueprint`, use `set` to choose which internal
+When calling from a `modelblueprint`, use `set` to choose which internal
 dataset to plot. Comparing the same one-way on train vs test is a quick
 check for overfitting.
 

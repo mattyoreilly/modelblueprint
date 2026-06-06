@@ -1,15 +1,15 @@
-# Getting started with ModelBlueprint
+# Getting started with modelblueprint
 
-## What is a ModelBlueprint?
+## What is a modelblueprint?
 
-A `ModelBlueprint` is an S7 object that wraps a fitted model alongside
+A `modelblueprint` is an S7 object that wraps a fitted model alongside
 its training data, pipeline functions, and deployment metadata. The goal
 is a single object that carries everything needed to reproduce
 predictions, run diagnostics, and save/restore the model.
 
 ``` r
 
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model              = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train              = mtcars,
   y_name             = "vs",
@@ -18,7 +18,7 @@ mb <- ModelBlueprint(
 )
 
 print(mb)
-#> <ModelBlueprint::ModelBlueprint>
+#> <modelblueprint::modelblueprint>
 #>  @ model             :List of 30
 #>  .. $ coefficients     : Named num [1:3] 7.4104 1.0033 -0.0853
 #>  ..  ..- attr(*, "names")= chr [1:3] "(Intercept)" "wt" "hp"
@@ -229,7 +229,7 @@ residuals_grouped(mb, exposure_per_bin = 5)
 
 [`filter()`](https://rdrr.io/r/stats/filter.html), `mutate()`, and
 `left_join()` operate on the blueprint’s internal datasets and return a
-new `ModelBlueprint` — the original is never mutated.
+new `modelblueprint` — the original is never mutated.
 
 ``` r
 
@@ -249,7 +249,7 @@ time.
 
 ``` r
 
-mb_fe <- ModelBlueprint(
+mb_fe <- modelblueprint(
   model        = lm(mpg ~ wt + wt2, data = transform(mtcars, wt2 = wt^2)),
   feat_eng_fun = function(df) transform(df, wt2 = wt^2),
   train        = mtcars,
@@ -271,7 +271,7 @@ restores it exactly.
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> ModelBlueprint saved: /tmp/RtmpAkzszH/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/Rtmp8GFvCS/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical

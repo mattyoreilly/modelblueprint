@@ -1,11 +1,11 @@
-# Filter rows in a ModelBlueprint's datasets
+# Filter rows in a modelblueprint's datasets
 
-Filter rows in a ModelBlueprint's datasets
+Filter rows in a modelblueprint's datasets
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 filter(.data, ..., sets = c("train", "test", "holdout"))
 ```
 
@@ -13,7 +13,7 @@ filter(.data, ..., sets = c("train", "test", "holdout"))
 
 - .data:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - ...:
 
@@ -26,4 +26,4 @@ filter(.data, ..., sets = c("train", "test", "holdout"))
 
 ## Value
 
-A new `ModelBlueprint`.
+A new `modelblueprint`.

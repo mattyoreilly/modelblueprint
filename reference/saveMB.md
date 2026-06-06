@@ -1,6 +1,6 @@
-# Save a ModelBlueprint to disk
+# Save a modelblueprint to disk
 
-Serialises a `ModelBlueprint` to a compressed `.tar.gz` archive
+Serialises a `modelblueprint` to a compressed `.tar.gz` archive
 containing all components needed to fully reconstruct it: model, data
 splits, pipeline functions, and metadata.
 
@@ -14,7 +14,7 @@ saveMB(object, path = getwd(), filename = NULL, ...)
 
 - object:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - path:
 

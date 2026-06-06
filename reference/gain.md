@@ -9,7 +9,7 @@ the legend.
 ``` r
 gain(data, ...)
 
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 gain(
   data,
   set = c("train", "test", "holdout"),
@@ -23,7 +23,7 @@ gain(
 
 - data:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - ...:
 
@@ -49,7 +49,7 @@ A plotly object, list of data.tables, or list of Gini values.
 
 ``` r
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

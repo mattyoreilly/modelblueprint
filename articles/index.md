@@ -3,7 +3,7 @@
 ### All vignettes
 
 - [Getting started with
-  ModelBlueprint](https://matt-or.github.io/modelblueprint/articles/getting-started.md):
+  modelblueprint](https://matt-or.github.io/modelblueprint/articles/getting-started.md):
 - [Model
   diagnostics](https://matt-or.github.io/modelblueprint/articles/model-diagnostics.md):
 - [One-way analysis

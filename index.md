@@ -1,6 +1,6 @@
-# ModelBlueprint
+# modelblueprint
 
-**ModelBlueprint** is a model-agnostic container for managing machine
+**modelblueprint** is a model-agnostic container for managing machine
 learning model lifecycles in R. Wrap any
 [`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model —
 `lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline
@@ -12,16 +12,16 @@ call.
 ``` r
 
 # Install from GitHub
-pak::pak("matt/ModelBlueprint")
+pak::pak("matt/modelblueprint")
 ```
 
 ## Overview
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

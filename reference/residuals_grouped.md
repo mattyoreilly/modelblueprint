@@ -22,7 +22,7 @@ residuals_grouped(
   ...
 )
 
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 residuals_grouped(
   data,
   set = c("train", "test", "holdout"),
@@ -38,7 +38,7 @@ residuals_grouped(
 
 - data:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - ...:
 
@@ -96,7 +96,7 @@ df <- data.frame(
 residuals_grouped(df, pred = "pred", obs = "obs", exposure = "exposure")
 } # }
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

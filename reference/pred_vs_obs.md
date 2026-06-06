@@ -23,7 +23,7 @@ pred_vs_obs(
   ...
 )
 
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 pred_vs_obs(
   data,
   set = c("train", "test", "holdout"),
@@ -39,7 +39,7 @@ pred_vs_obs(
 
 - data:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - ...:
 
@@ -88,7 +88,7 @@ A plotly object or data.table depending on `ret`.
 
 ``` r
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

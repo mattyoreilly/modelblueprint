@@ -2,9 +2,9 @@
 
 ## Overview
 
-ModelBlueprint provides four diagnostic charts for evaluating model
+modelblueprint provides four diagnostic charts for evaluating model
 performance. Each works on a plain data frame or dispatches
-automatically from a `ModelBlueprint` object.
+automatically from a `modelblueprint` object.
 
 | Function | Purpose |
 |----|----|

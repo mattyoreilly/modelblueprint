@@ -24,7 +24,7 @@ The chart has the same dual-axis layout as one-way plots:
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
 mb <- mb_glm_binomial()
 

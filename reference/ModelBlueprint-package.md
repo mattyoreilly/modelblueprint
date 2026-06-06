@@ -1,4 +1,4 @@
-# ModelBlueprint: One-Way and Partial Dependence Plots for Models
+# modelblueprint: One-Way and Partial Dependence Plots for Models
 
 Provides fast, production-ready one-way analysis plots and partial
 dependence plots (PDPs) designed for insurance and credit pricing

@@ -1,15 +1,15 @@
-# One-way analysis for a ModelBlueprint
+# One-way analysis for a modelblueprint
 
 Calls
 [`one_way()`](https://matt-or.github.io/modelblueprint/reference/one_way.md)
-using the ModelBlueprint's target, exposure, and data slots. Optionally
+using the modelblueprint's target, exposure, and data slots. Optionally
 overlays the model's in-sample predictions to produce a lift chart (pass
 `predictions = TRUE`).
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 one_way(
   data,
   var,
@@ -27,7 +27,7 @@ one_way(
 
 - data:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - var:
 
