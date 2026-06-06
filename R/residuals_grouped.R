@@ -3,7 +3,7 @@
 # Grouped residuals vs predicted plot with loess trend line.
 #
 # Design:
-#   - S3 generic -- works on data.frames directly or ModelBlueprint objects
+#   - S3 generic -- works on data.frames directly or modelblueprint objects
 #   - exposure_per_bin controls grouping granularity, not number of bins
 #   - Both raw and Pearson residuals supported
 #   - Loess CI computed via stats::loess() -- no external dependencies
@@ -38,7 +38,7 @@ utils::globalVariables(c(
 #' loess trend line with a 95% confidence interval. Useful for diagnosing
 #' systematic model bias across the prediction range.
 #'
-#' @param data A `data.frame`, `data.table`, or `ModelBlueprint`.
+#' @param data A `data.frame`, `data.table`, or `modelblueprint`.
 #' @param ...  Arguments passed to methods.
 #' @export
 residuals_grouped <- function(data, ...) UseMethod("residuals_grouped")
@@ -171,9 +171,9 @@ residuals_grouped.default <- function(
 
 
 #' @rdname residuals_grouped
-#' @method residuals_grouped ModelBlueprint
+#' @method residuals_grouped modelblueprint
 #'
-#' @param data             A `ModelBlueprint` object.
+#' @param data             A `modelblueprint` object.
 #' @param set              `[character(1)]` Dataset to use: `"train"`,
 #'                         `"test"`, or `"holdout"`. Default `"train"`.
 #' @param exposure_per_bin `[numeric(1)]` Target exposure per bin.
@@ -189,7 +189,7 @@ residuals_grouped.default <- function(
 #'
 #' @examples
 #' \dontrun{
-#' mb <- ModelBlueprint(
+#' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
 #'   y_name = "vs",
@@ -198,7 +198,7 @@ residuals_grouped.default <- function(
 #' residuals_grouped(mb)
 #' }
 #' @export
-residuals_grouped.ModelBlueprint <- function(
+residuals_grouped.modelblueprint <- function(
   data,
   set = c("train", "test", "holdout"),
   exposure_per_bin = 2500,
@@ -215,7 +215,7 @@ residuals_grouped.ModelBlueprint <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL. Supply data when constructing the object.",
+        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
         set
       ),
       call. = FALSE
@@ -224,7 +224,7 @@ residuals_grouped.ModelBlueprint <- function(
 
   if (is.na(data@y_name)) {
     stop(
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       call. = FALSE
     )
   }
@@ -243,7 +243,7 @@ residuals_grouped.ModelBlueprint <- function(
   } else {
     "pred"
   }
-  df[[pred_col]] <- predict.ModelBlueprint(data, df)
+  df[[pred_col]] <- predict.modelblueprint(data, df)
 
   # Guard: ensure at least 3 bins are possible
   total_expo <- sum(df[[exposure]], na.rm = TRUE)
@@ -265,7 +265,7 @@ residuals_grouped.ModelBlueprint <- function(
 }
 
 # Register package-qualified S7 class name for UseMethod dispatch
-`residuals_grouped.ModelBlueprint::ModelBlueprint` <- residuals_grouped.ModelBlueprint
+`residuals_grouped.modelblueprint::modelblueprint` <- residuals_grouped.modelblueprint
 
 
 # =============================================================================

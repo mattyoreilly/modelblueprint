@@ -3,7 +3,7 @@
 \name{pred_vs_obs}
 \alias{pred_vs_obs}
 \alias{pred_vs_obs.default}
-\alias{pred_vs_obs.ModelBlueprint}
+\alias{pred_vs_obs.modelblueprint}
 \title{Predicted vs Observed Calibration Plot}
 \usage{
 pred_vs_obs(data, ...)
@@ -20,7 +20,7 @@ pred_vs_obs(data, ...)
   ...
 )
 
-\method{pred_vs_obs}{ModelBlueprint}(
+\method{pred_vs_obs}{modelblueprint}(
   data,
   set = c("train", "test", "holdout"),
   bins = 10L,
@@ -31,7 +31,7 @@ pred_vs_obs(data, ...)
 )
 }
 \arguments{
-\item{data}{A \code{ModelBlueprint} object.}
+\item{data}{A \code{modelblueprint} object.}
 
 \item{...}{Passed to \code{\link[=pred_vs_obs.default]{pred_vs_obs.default()}}.}
 
@@ -66,7 +66,7 @@ yellow exposure bar on the secondary axis shows the distribution of data.
 }
 \examples{
 \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

@@ -3,7 +3,7 @@
 \name{residuals_grouped}
 \alias{residuals_grouped}
 \alias{residuals_grouped.default}
-\alias{residuals_grouped.ModelBlueprint}
+\alias{residuals_grouped.modelblueprint}
 \title{Grouped Residuals vs Predicted Plot}
 \usage{
 residuals_grouped(data, ...)
@@ -20,7 +20,7 @@ residuals_grouped(data, ...)
   ...
 )
 
-\method{residuals_grouped}{ModelBlueprint}(
+\method{residuals_grouped}{modelblueprint}(
   data,
   set = c("train", "test", "holdout"),
   exposure_per_bin = 2500,
@@ -31,7 +31,7 @@ residuals_grouped(data, ...)
 )
 }
 \arguments{
-\item{data}{A \code{ModelBlueprint} object.}
+\item{data}{A \code{modelblueprint} object.}
 
 \item{...}{Passed to \code{\link[=residuals_grouped.default]{residuals_grouped.default()}}.}
 
@@ -76,7 +76,7 @@ df <- data.frame(
 residuals_grouped(df, pred = "pred", obs = "obs", exposure = "exposure")
 }
 \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

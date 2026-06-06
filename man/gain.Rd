@@ -2,12 +2,12 @@
 % Please edit documentation in R/gain.R
 \name{gain}
 \alias{gain}
-\alias{gain.ModelBlueprint}
+\alias{gain.modelblueprint}
 \title{Cumulative Gains Chart}
 \usage{
 gain(data, ...)
 
-\method{gain}{ModelBlueprint}(
+\method{gain}{modelblueprint}(
   data,
   set = c("train", "test", "holdout"),
   title = NULL,
@@ -16,7 +16,7 @@ gain(data, ...)
 )
 }
 \arguments{
-\item{data}{A \code{ModelBlueprint} object.}
+\item{data}{A \code{modelblueprint} object.}
 
 \item{...}{Passed to the default method.}
 
@@ -36,7 +36,7 @@ the legend.
 }
 \examples{
 \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

@@ -9,7 +9,7 @@
 # Design:
 #   - sami() is an S3 generic
 #   - sami.default() works on any data.frame / data.table
-#   - sami.ModelBlueprint() takes a list of ModelBlueprint objects,
+#   - sami.modelblueprint() takes a list of modelblueprint objects,
 #     generates predictions, and delegates to sami.default()
 #   - No mutation of caller data
 #   - `ret` not `return` (return is a base R keyword)
@@ -28,7 +28,7 @@ utils::globalVariables(c("ratio_col"))
 #' another and plots the observed mean alongside both model means per bin.
 #' Useful for diagnosing where two models systematically disagree.
 #'
-#' @param data A `data.frame`, `data.table`, or a list of `ModelBlueprint`
+#' @param data A `data.frame`, `data.table`, or a list of `modelblueprint`
 #'             objects.
 #' @param ...  Arguments passed to methods.
 #' @export
@@ -135,7 +135,7 @@ sami.default <- function(
 #' @rdname sami
 #' @method sami list
 #'
-#' @param data         A list of `ModelBlueprint` objects. Must have length
+#' @param data         A list of `modelblueprint` objects. Must have length
 #'                     2 or more. All blueprints must share the same `y_name`,
 #'                     `expo_name`, and training data structure.
 #' @param set          `[character(1)]` Which dataset to use from the first
@@ -154,9 +154,9 @@ sami.default <- function(
 #'
 #' @examples
 #' \dontrun{
-#' mb1 <- ModelBlueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
+#' mb1 <- modelblueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
 #'                        y_name = "mpg", model_display_name = "lm_wt")
-#' mb2 <- ModelBlueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,
+#' mb2 <- modelblueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,
 #'                        y_name = "mpg", model_display_name = "lm_hp")
 #' sami(list(mb1, mb2), set = "train", bins = 10)
 #' }
@@ -177,16 +177,16 @@ sami.list <- function(
 
   if (length(data) < 2L) {
     stop(
-      "`data` must be a list of at least two ModelBlueprint objects.",
+      "`data` must be a list of at least two modelblueprint objects.",
       call. = FALSE
     )
   }
 
-  # Validate all elements are ModelBlueprint
-  is_mb <- vapply(data, function(x) S7_inherits(x, ModelBlueprint), logical(1L))
+  # Validate all elements are modelblueprint
+  is_mb <- vapply(data, function(x) S7_inherits(x, modelblueprint), logical(1L))
   if (!all(is_mb)) {
     stop(
-      "All elements of `data` must be `ModelBlueprint` objects.",
+      "All elements of `data` must be `modelblueprint` objects.",
       call. = FALSE
     )
   }
@@ -196,7 +196,7 @@ sami.list <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL in the first blueprint.",
+        "modelblueprint `@%s` is NULL in the first blueprint.",
         set
       ),
       call. = FALSE
@@ -216,7 +216,7 @@ sami.list <- function(
         nm <- mb@model_display_name
         if (is.na(nm) || !nzchar(nm)) {
           stop(
-            "All ModelBlueprint objects must have `model_display_name` set, ",
+            "All modelblueprint objects must have `model_display_name` set, ",
             "or supply `pred_names` explicitly.",
             call. = FALSE
           )
@@ -231,7 +231,7 @@ sami.list <- function(
   for (i in seq_along(data)) {
     col <- pred_names[i]
     if (!col %in% names(df)) {
-      df[[col]] <- predict.ModelBlueprint(data[[i]], df)
+      df[[col]] <- predict.modelblueprint(data[[i]], df)
     }
   }
 

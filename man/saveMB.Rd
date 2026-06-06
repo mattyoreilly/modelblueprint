@@ -2,12 +2,12 @@
 % Please edit documentation in R/modelblueprint.R
 \name{saveMB}
 \alias{saveMB}
-\title{Save a ModelBlueprint to disk}
+\title{Save a modelblueprint to disk}
 \usage{
 saveMB(object, path = getwd(), filename = NULL, ...)
 }
 \arguments{
-\item{object}{A \code{ModelBlueprint} object.}
+\item{object}{A \code{modelblueprint} object.}
 
 \item{path}{Directory to write the archive to. Default: working directory.}
 
@@ -19,7 +19,7 @@ saveMB(object, path = getwd(), filename = NULL, ...)
 Invisibly returns the full normalised path to the saved archive.
 }
 \description{
-Serialises a \code{ModelBlueprint} to a compressed \code{.tar.gz} archive containing
+Serialises a \code{modelblueprint} to a compressed \code{.tar.gz} archive containing
 all components needed to fully reconstruct it: model, data splits, pipeline
 functions, and metadata.
 }

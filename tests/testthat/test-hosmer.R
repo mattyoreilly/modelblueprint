@@ -1,6 +1,6 @@
 # =============================================================================
 # test-pred-vs-obs.R
-# Tests for pred_vs_obs(), pred_vs_obs.default(), pred_vs_obs.ModelBlueprint()
+# Tests for pred_vs_obs(), pred_vs_obs.default(), pred_vs_obs.modelblueprint()
 #
 # Conventions:
 #   - One describe() block per behaviour group
@@ -10,7 +10,7 @@
 # =============================================================================
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
 
 # =============================================================================
@@ -38,7 +38,7 @@ make_df_with_expo <- function(n = 200L, seed = 42L) {
 }
 
 make_mb <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(vs ~ wt + hp, data = mtcars, family = binomial),
     train = mtcars,
     test = mtcars[1:16, ],
@@ -327,10 +327,10 @@ describe("pred_vs_obs.default — immutability", {
 
 
 # =============================================================================
-# pred_vs_obs.ModelBlueprint — return type
+# pred_vs_obs.modelblueprint — return type
 # =============================================================================
 
-describe("pred_vs_obs.ModelBlueprint — return type", {
+describe("pred_vs_obs.modelblueprint — return type", {
   mb <- make_mb()
 
   it("returns a plotly object by default", {
@@ -345,10 +345,10 @@ describe("pred_vs_obs.ModelBlueprint — return type", {
 
 
 # =============================================================================
-# pred_vs_obs.ModelBlueprint — slot usage
+# pred_vs_obs.modelblueprint — slot usage
 # =============================================================================
 
-describe("pred_vs_obs.ModelBlueprint — slot usage", {
+describe("pred_vs_obs.modelblueprint — slot usage", {
   it("uses y_name from blueprint", {
     mb <- make_mb()
     expect_no_error(pred_vs_obs(mb))
@@ -370,7 +370,7 @@ describe("pred_vs_obs.ModelBlueprint — slot usage", {
     df <- mtcars
     set.seed(1L)
     df$expo <- runif(nrow(df), 0.5, 2)
-    mb_expo <- ModelBlueprint(
+    mb_expo <- modelblueprint(
       model = stats::glm(vs ~ wt + hp, data = df, family = binomial),
       train = df,
       y_name = "vs",
@@ -384,10 +384,10 @@ describe("pred_vs_obs.ModelBlueprint — slot usage", {
 
 
 # =============================================================================
-# pred_vs_obs.ModelBlueprint — set argument
+# pred_vs_obs.modelblueprint — set argument
 # =============================================================================
 
-describe("pred_vs_obs.ModelBlueprint — set argument", {
+describe("pred_vs_obs.modelblueprint — set argument", {
   mb <- make_mb()
 
   it("uses train by default", {
@@ -399,25 +399,25 @@ describe("pred_vs_obs.ModelBlueprint — set argument", {
   })
 
   it("errors informatively when chosen set is NULL", {
-    mb_no_data <- ModelBlueprint(
+    mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
       pred_vs_obs(mb_no_data),
-      "ModelBlueprint `@train` is NULL.",
+      "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
   })
 
   it("errors when y_name is not set", {
-    mb_no_y <- ModelBlueprint(
+    mb_no_y <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars
     )
     expect_error(
       pred_vs_obs(mb_no_y),
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       fixed = TRUE
     )
   })
@@ -425,10 +425,10 @@ describe("pred_vs_obs.ModelBlueprint — set argument", {
 
 
 # =============================================================================
-# pred_vs_obs.ModelBlueprint — passthrough arguments
+# pred_vs_obs.modelblueprint — passthrough arguments
 # =============================================================================
 
-describe("pred_vs_obs.ModelBlueprint — passthrough arguments", {
+describe("pred_vs_obs.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("bins argument is respected", {
@@ -454,7 +454,7 @@ describe("pred_vs_obs.ModelBlueprint — passthrough arguments", {
 describe("bin_pred", {
   it("returns a list with integer idx and numeric breaks", {
     x <- runif(100L)
-    result <- ModelBlueprint:::bin_pred(x, 10L, "equal_exposure")
+    result <- modelblueprint:::bin_pred(x, 10L, "equal_exposure")
     expect_type(result, "list")
     expect_true(is.integer(result$idx))
     expect_true(is.numeric(result$breaks))
@@ -462,21 +462,21 @@ describe("bin_pred", {
 
   it("equal_exposure — max bin index <= bins", {
     x <- runif(200L)
-    result <- ModelBlueprint:::bin_pred(x, 10L, "equal_exposure")
+    result <- modelblueprint:::bin_pred(x, 10L, "equal_exposure")
     expect_lte(max(result$idx, na.rm = TRUE), 10L)
   })
 
   it("equal_range — max bin index <= bins", {
     x <- runif(200L)
-    result <- ModelBlueprint:::bin_pred(x, 10L, "equal_range")
+    result <- modelblueprint:::bin_pred(x, 10L, "equal_range")
     expect_lte(max(result$idx, na.rm = TRUE), 10L)
   })
 
   it("equal_exposure — bins have more balanced counts than equal_range", {
     set.seed(1L)
     x <- c(runif(180L, 0, 0.1), runif(20L, 0.9, 1)) # skewed distribution
-    b_ee <- ModelBlueprint:::bin_pred(x, 5L, "equal_exposure")
-    b_er <- ModelBlueprint:::bin_pred(x, 5L, "equal_range")
+    b_ee <- modelblueprint:::bin_pred(x, 5L, "equal_exposure")
+    b_er <- modelblueprint:::bin_pred(x, 5L, "equal_range")
     cv <- function(b) {
       counts <- as.numeric(table(b$idx))
       stats::sd(counts) / mean(counts)
@@ -486,7 +486,7 @@ describe("bin_pred", {
 
   it("no NAs in idx for clean input", {
     x <- seq(0.01, 1, length.out = 100L)
-    result <- ModelBlueprint:::bin_pred(x, 5L, "equal_exposure")
+    result <- modelblueprint:::bin_pred(x, 5L, "equal_exposure")
     expect_false(any(is.na(result$idx)))
   })
 })
@@ -499,19 +499,19 @@ describe("bin_pred", {
 describe("make_interval_labels", {
   it("returns n labels for n+1 breaks", {
     breaks <- c(0, 0.25, 0.5, 0.75, 1)
-    labels <- ModelBlueprint:::make_interval_labels(breaks)
+    labels <- modelblueprint:::make_interval_labels(breaks)
     expect_length(labels, 4L)
   })
 
   it("labels are character strings", {
     breaks <- c(0, 0.5, 1)
-    labels <- ModelBlueprint:::make_interval_labels(breaks)
+    labels <- modelblueprint:::make_interval_labels(breaks)
     expect_type(labels, "character")
   })
 
   it("labels contain parentheses and brackets", {
     breaks <- c(0, 0.5, 1)
-    labels <- ModelBlueprint:::make_interval_labels(breaks)
+    labels <- modelblueprint:::make_interval_labels(breaks)
     expect_true(all(grepl("^\\(.*\\]$", labels)))
   })
 })

@@ -1,10 +1,10 @@
 # =============================================================================
 # test-modelblueprint.R
-# Tests for ModelBlueprint: saveMB/loadMB, predict, one_way, pdp methods.
+# Tests for modelblueprint: saveMB/loadMB, predict, one_way, pdp methods.
 # =============================================================================
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
 
 # =============================================================================
@@ -13,7 +13,7 @@ library(ModelBlueprint)
 
 # Used by save/load and predict tests — trained on iris, predicts on iris
 make_lm_mb <- function(train = iris) {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(Sepal.Length ~ Sepal.Width, data = train),
     train = train,
     test = train,
@@ -31,7 +31,7 @@ make_lm_mb <- function(train = iris) {
 
 # Used by one_way/pdp tests — trained on mtcars, predicts on mtcars
 make_mb <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt + hp + cyl, data = mtcars),
     train = mtcars,
     test = mtcars[1:16, ],
@@ -47,7 +47,7 @@ make_mb_expo <- function() {
   df <- mtcars
   set.seed(1L)
   df$expo <- runif(nrow(df), 0.5, 2)
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt + hp, data = df),
     train = df,
     y_name = "mpg",
@@ -57,14 +57,14 @@ make_mb_expo <- function() {
 }
 
 make_mb_no_data <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt, data = mtcars),
     y_name = "mpg"
   )
 }
 
 make_mb_no_y <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt, data = mtcars),
     train = mtcars
     # y_name left as NA_character_ default
@@ -74,7 +74,7 @@ make_mb_no_y <- function() {
 make_glm_mb <- function() {
   df <- mtcars
   df$vs <- as.integer(df$vs)
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(vs ~ wt + hp, data = df, family = binomial),
     train = df,
     y_name = "vs",
@@ -84,7 +84,7 @@ make_glm_mb <- function() {
 
 make_fe_mb <- function() {
   df_fe <- transform(mtcars, wt2 = wt^2)
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt + wt2, data = df_fe),
     feat_eng_fun = function(df) transform(df, wt2 = wt^2),
     y_name = "mpg",
@@ -93,7 +93,7 @@ make_fe_mb <- function() {
 }
 
 make_post_mb <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt, data = mtcars),
     post_process_fun = function(preds, df_raw) preds * 2,
     y_name = "mpg"
@@ -131,13 +131,13 @@ describe("saveMB / loadMB — native R model (lm)", {
     expect_no_error(loadMB(file.path(tmp, "test_mb.tar.gz")))
   })
 
-  it("loaded object is a ModelBlueprint", {
+  it("loaded object is a modelblueprint", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     saveMB(mb, path = tmp, filename = "test_mb")
     loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
-    expect_true(S7_inherits(loaded, ModelBlueprint))
+    expect_true(S7_inherits(loaded, modelblueprint))
   })
 
   it("loaded object predicts without error", {
@@ -248,7 +248,7 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
       seed = 42L
     )
 
-    mb <- ModelBlueprint(
+    mb <- modelblueprint(
       model = h2o_glm,
       train = iris,
       test = iris,
@@ -274,7 +274,7 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
         loaded <- loadMB(file.path(tmp, "test_h2o_mb.tar.gz"))
       ))
     )
-    expect_true(S7_inherits(loaded, ModelBlueprint))
+    expect_true(S7_inherits(loaded, modelblueprint))
     expect_no_error(predict(loaded, iris))
     expect_identical(loaded@y_name, mb@y_name)
     expect_identical(loaded@x_names, mb@x_names)
@@ -292,10 +292,10 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — input validation
+# predict.modelblueprint — input validation
 # =============================================================================
 
-describe("predict.ModelBlueprint — input validation", {
+describe("predict.modelblueprint — input validation", {
   mb <- make_lm_mb()
 
   it("errors when newdata is missing", {
@@ -322,7 +322,7 @@ describe("predict.ModelBlueprint — input validation", {
 
   it("errors when model is NULL — caught at construction", {
     expect_error(
-      ModelBlueprint(model = NULL),
+      modelblueprint(model = NULL),
       "must supply a fitted model object",
       fixed = TRUE
     )
@@ -331,10 +331,10 @@ describe("predict.ModelBlueprint — input validation", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — return type and shape
+# predict.modelblueprint — return type and shape
 # =============================================================================
 
-describe("predict.ModelBlueprint — return type and shape", {
+describe("predict.modelblueprint — return type and shape", {
   mb <- make_lm_mb()
 
   it("returns a numeric vector", {
@@ -362,10 +362,10 @@ describe("predict.ModelBlueprint — return type and shape", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — model compatibility
+# predict.modelblueprint — model compatibility
 # =============================================================================
 
-describe("predict.ModelBlueprint — model compatibility", {
+describe("predict.modelblueprint — model compatibility", {
   it("works with lm", {
     mb <- make_lm_mb()
     preds <- predict(mb, iris)
@@ -389,7 +389,7 @@ describe("predict.ModelBlueprint — model compatibility", {
   })
 
   it("works with glm (gaussian)", {
-    mb <- ModelBlueprint(
+    mb <- modelblueprint(
       model = stats::glm(mpg ~ wt, data = mtcars, family = gaussian),
       y_name = "mpg"
     )
@@ -405,7 +405,7 @@ describe("predict.ModelBlueprint — model compatibility", {
       "mat_model",
       function(object, newdata, ...) matrix(rep(1.5, nrow(newdata)), ncol = 1L)
     )
-    mb <- ModelBlueprint(model = fake_model)
+    mb <- modelblueprint(model = fake_model)
     preds <- predict(mb, mtcars)
     expect_true(is.numeric(preds))
     expect_length(preds, nrow(mtcars))
@@ -413,7 +413,7 @@ describe("predict.ModelBlueprint — model compatibility", {
 
   it("errors informatively when predict() fails for an unsupported model", {
     broken_model <- structure(list(), class = "broken_model")
-    mb <- ModelBlueprint(model = broken_model)
+    mb <- modelblueprint(model = broken_model)
     expect_error(
       predict(mb, mtcars),
       "predict() failed for model class 'broken_model'",
@@ -424,10 +424,10 @@ describe("predict.ModelBlueprint — model compatibility", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — pipeline functions
+# predict.modelblueprint — pipeline functions
 # =============================================================================
 
-describe("predict.ModelBlueprint — pipeline functions", {
+describe("predict.modelblueprint — pipeline functions", {
   it("applies feat_eng_fun before predicting", {
     mb <- make_fe_mb()
     expect_no_error(predict(mb, mtcars))
@@ -445,7 +445,7 @@ describe("predict.ModelBlueprint — pipeline functions", {
     # Define call_order in the local test environment — not shared across tests
     local({
       call_order <- character(0)
-      mb <- ModelBlueprint(
+      mb <- modelblueprint(
         model = stats::lm(mpg ~ wt, data = mtcars),
         pre_process_fun = function(df) {
           call_order <<- c(call_order, "pre")
@@ -464,7 +464,7 @@ describe("predict.ModelBlueprint — pipeline functions", {
 
   it("applies post_process_fun to raw predictions", {
     mb <- make_post_mb()
-    raw_mb <- ModelBlueprint(
+    raw_mb <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
@@ -476,10 +476,10 @@ describe("predict.ModelBlueprint — pipeline functions", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — immutability
+# predict.modelblueprint — immutability
 # =============================================================================
 
-describe("predict.ModelBlueprint — immutability", {
+describe("predict.modelblueprint — immutability", {
   it("does not modify caller's data.frame", {
     mb <- make_fe_mb()
     df <- mtcars
@@ -499,10 +499,10 @@ describe("predict.ModelBlueprint — immutability", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — edge cases
+# predict.modelblueprint — edge cases
 # =============================================================================
 
-describe("predict.ModelBlueprint — edge cases", {
+describe("predict.modelblueprint — edge cases", {
   it("handles a single-row newdata", {
     mb <- make_lm_mb()
     preds <- predict(mb, iris[1L, ])
@@ -519,7 +519,7 @@ describe("predict.ModelBlueprint — edge cases", {
 
   it("identity pipeline produces same result as raw predict()", {
     m <- stats::lm(Sepal.Length ~ Sepal.Width, data = iris)
-    mb <- ModelBlueprint(model = m, y_name = "Sepal.Length")
+    mb <- modelblueprint(model = m, y_name = "Sepal.Length")
     direct <- as.numeric(stats::predict(m, iris))
     via_mb <- predict(mb, iris)
     expect_equal(via_mb, direct, tolerance = 1e-6)
@@ -528,10 +528,10 @@ describe("predict.ModelBlueprint — edge cases", {
 
 
 # =============================================================================
-# predict.ModelBlueprint — H2O
+# predict.modelblueprint — H2O
 # =============================================================================
 
-describe("predict.ModelBlueprint — H2O model", {
+describe("predict.modelblueprint — H2O model", {
   it("H2O glm (gaussian) predictions are numeric and finite", {
     skip_on_cran()
     skip_if_not_installed("h2o")
@@ -546,7 +546,7 @@ describe("predict.ModelBlueprint — H2O model", {
       family = "gaussian",
       seed = 42L
     )
-    mb <- ModelBlueprint(model = h2o_m, y_name = "mpg")
+    mb <- modelblueprint(model = h2o_m, y_name = "mpg")
     preds <- predict(mb, mtcars)
 
     expect_true(is.numeric(preds))
@@ -575,7 +575,7 @@ describe("predict.ModelBlueprint — H2O model", {
       family = "binomial",
       seed = 42L
     )
-    mb <- ModelBlueprint(model = h2o_m, y_name = "vs")
+    mb <- modelblueprint(model = h2o_m, y_name = "vs")
     preds <- predict(mb, mtcars)
 
     expect_true(is.numeric(preds))
@@ -590,10 +590,10 @@ describe("predict.ModelBlueprint — H2O model", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — return type
+# one_way.modelblueprint — return type
 # =============================================================================
 
-describe("one_way.ModelBlueprint — return type", {
+describe("one_way.modelblueprint — return type", {
   mb <- make_mb()
 
   it("returns a plotly object by default", {
@@ -613,10 +613,10 @@ describe("one_way.ModelBlueprint — return type", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — slot usage
+# one_way.modelblueprint — slot usage
 # =============================================================================
 
-describe("one_way.ModelBlueprint — slot usage", {
+describe("one_way.modelblueprint — slot usage", {
   mb <- make_mb()
 
   it("uses y_name from blueprint as obs", {
@@ -638,10 +638,10 @@ describe("one_way.ModelBlueprint — slot usage", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — set argument
+# one_way.modelblueprint — set argument
 # =============================================================================
 
-describe("one_way.ModelBlueprint — set argument", {
+describe("one_way.modelblueprint — set argument", {
   mb <- make_mb()
 
   it("uses train by default", {
@@ -664,7 +664,7 @@ describe("one_way.ModelBlueprint — set argument", {
     mb_no_data <- make_mb_no_data()
     expect_error(
       one_way(mb_no_data, var = "wt"),
-      "ModelBlueprint `@train` is NULL.",
+      "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
   })
@@ -672,10 +672,10 @@ describe("one_way.ModelBlueprint — set argument", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — predictions flag
+# one_way.modelblueprint — predictions flag
 # =============================================================================
 
-describe("one_way.ModelBlueprint — predictions flag", {
+describe("one_way.modelblueprint — predictions flag", {
   mb <- make_mb()
 
   it("predictions = FALSE returns target column only", {
@@ -702,10 +702,10 @@ describe("one_way.ModelBlueprint — predictions flag", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — passthrough arguments
+# one_way.modelblueprint — passthrough arguments
 # =============================================================================
 
-describe("one_way.ModelBlueprint — passthrough arguments", {
+describe("one_way.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("bins argument is respected", {
@@ -733,15 +733,15 @@ describe("one_way.ModelBlueprint — passthrough arguments", {
 
 
 # =============================================================================
-# one_way.ModelBlueprint — validation
+# one_way.modelblueprint — validation
 # =============================================================================
 
-describe("one_way.ModelBlueprint — validation", {
+describe("one_way.modelblueprint — validation", {
   it("errors when y_name is not set", {
     mb_no_y <- make_mb_no_y()
     expect_error(
       one_way(mb_no_y, var = "wt"),
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       fixed = TRUE
     )
   })
@@ -749,7 +749,7 @@ describe("one_way.ModelBlueprint — validation", {
   it("handles categorical var", {
     df <- mtcars
     df$gear_f <- as.character(df$gear)
-    mb2 <- ModelBlueprint(
+    mb2 <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = df),
       train = df,
       y_name = "mpg"
@@ -760,10 +760,10 @@ describe("one_way.ModelBlueprint — validation", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — return type
+# pdp.modelblueprint — return type
 # =============================================================================
 
-describe("pdp.ModelBlueprint — return type", {
+describe("pdp.modelblueprint — return type", {
   mb <- make_mb()
 
   it("returns a plotly object by default", {
@@ -790,10 +790,10 @@ describe("pdp.ModelBlueprint — return type", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — slot usage
+# pdp.modelblueprint — slot usage
 # =============================================================================
 
-describe("pdp.ModelBlueprint — slot usage", {
+describe("pdp.modelblueprint — slot usage", {
   mb <- make_mb()
 
   it("uses y_name from blueprint as obs", {
@@ -824,10 +824,10 @@ describe("pdp.ModelBlueprint — slot usage", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — set argument
+# pdp.modelblueprint — set argument
 # =============================================================================
 
-describe("pdp.ModelBlueprint — set argument", {
+describe("pdp.modelblueprint — set argument", {
   mb <- make_mb()
 
   it("uses train by default", {
@@ -850,7 +850,7 @@ describe("pdp.ModelBlueprint — set argument", {
     mb_no_data <- make_mb_no_data()
     expect_error(
       pdp(mb_no_data, var = "wt"),
-      "ModelBlueprint `@train` is NULL.",
+      "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
   })
@@ -858,10 +858,10 @@ describe("pdp.ModelBlueprint — set argument", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — passthrough arguments
+# pdp.modelblueprint — passthrough arguments
 # =============================================================================
 
-describe("pdp.ModelBlueprint — passthrough arguments", {
+describe("pdp.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("bins argument reduces number of rows in returned data", {
@@ -889,15 +889,15 @@ describe("pdp.ModelBlueprint — passthrough arguments", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — validation
+# pdp.modelblueprint — validation
 # =============================================================================
 
-describe("pdp.ModelBlueprint — validation", {
+describe("pdp.modelblueprint — validation", {
   it("errors when y_name is not set", {
     mb_no_y <- make_mb_no_y()
     expect_error(
       pdp(mb_no_y, var = "wt"),
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       fixed = TRUE
     )
   })
@@ -905,10 +905,10 @@ describe("pdp.ModelBlueprint — validation", {
 
 
 # =============================================================================
-# pdp.ModelBlueprint — statistical properties
+# pdp.modelblueprint — statistical properties
 # =============================================================================
 
-describe("pdp.ModelBlueprint — statistical properties", {
+describe("pdp.modelblueprint — statistical properties", {
   mb <- make_mb()
 
   it("pdp_mean varies across bins for an informative feature", {
@@ -917,7 +917,7 @@ describe("pdp.ModelBlueprint — statistical properties", {
   })
 
   it("pdp_mean is roughly flat for a feature not in the model", {
-    mb_simple <- ModelBlueprint(
+    mb_simple <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars,
       y_name = "mpg"
@@ -936,26 +936,26 @@ describe("resolve_exposure", {
   it("returns expo_name when column exists in data", {
     df <- mtcars
     df$expo <- 1
-    mb <- ModelBlueprint(
+    mb <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = df),
       train = df,
       y_name = "mpg",
       expo_name = "expo"
     )
-    expect_equal(ModelBlueprint:::resolve_exposure(mb, df), "expo")
+    expect_equal(modelblueprint:::resolve_exposure(mb, df), "expo")
   })
 
   it("returns 'vec_of_ones' when column does not exist in data", {
     mb <- make_mb()
-    expect_equal(ModelBlueprint:::resolve_exposure(mb, mtcars), "vec_of_ones")
+    expect_equal(modelblueprint:::resolve_exposure(mb, mtcars), "vec_of_ones")
   })
 
   it("returns 'vec_of_ones' when expo_name default is not in data", {
-    mb <- ModelBlueprint(
+    mb <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars,
       y_name = "mpg"
     )
-    expect_equal(ModelBlueprint:::resolve_exposure(mb, mtcars), "vec_of_ones")
+    expect_equal(modelblueprint:::resolve_exposure(mb, mtcars), "vec_of_ones")
   })
 })

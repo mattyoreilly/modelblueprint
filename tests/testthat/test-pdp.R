@@ -47,7 +47,7 @@ make_glm <- function() {
 is_plotly <- function(x) inherits(x, "plotly")
 
 # =============================================================================
-# ModelBlueprint::pdp() — return type
+# modelblueprint::pdp() — return type
 # =============================================================================
 
 describe("pdp — return type", {
@@ -55,7 +55,7 @@ describe("pdp — return type", {
   m <- make_lm()
 
   it("returns a plotly object by default", {
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -64,7 +64,7 @@ describe("pdp — return type", {
   })
 
   it("returns a data.table when ret = 'data'", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -76,7 +76,7 @@ describe("pdp — return type", {
 
   it("rejects invalid ret value", {
     expect_error(
-      ModelBlueprint::pdp(
+      modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -90,7 +90,7 @@ describe("pdp — return type", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — returned data structure
+# modelblueprint::pdp() — returned data structure
 # =============================================================================
 
 describe("pdp — returned data columns", {
@@ -98,7 +98,7 @@ describe("pdp — returned data columns", {
   m <- make_lm()
 
   it("returned data contains the var column named after the input var", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -109,7 +109,7 @@ describe("pdp — returned data columns", {
   })
 
   it("returned data contains obs_mean, pred_mean, pdp_mean, exposure", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -122,7 +122,7 @@ describe("pdp — returned data columns", {
   })
 
   it("returned data contains global_obs and global_pred reference columns", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -133,7 +133,7 @@ describe("pdp — returned data columns", {
   })
 
   it("exposure sums to total rows when no exposure column supplied", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -146,7 +146,7 @@ describe("pdp — returned data columns", {
   it("exposure sums to total exposure when exposure column supplied", {
     df2 <- make_df()
     df2$expo <- 2
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df2,
       var = "x_num",
       obs = "target",
@@ -158,7 +158,7 @@ describe("pdp — returned data columns", {
   })
 
   it("obs_mean values are within [min(target), max(target)]", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -170,7 +170,7 @@ describe("pdp — returned data columns", {
   })
 
   it("global_obs is constant across all rows", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -181,7 +181,7 @@ describe("pdp — returned data columns", {
   })
 
   it("global_pred is constant across all rows", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -193,7 +193,7 @@ describe("pdp — returned data columns", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — var types
+# modelblueprint::pdp() — var types
 # =============================================================================
 
 describe("pdp — var types", {
@@ -201,7 +201,7 @@ describe("pdp — var types", {
   m <- make_lm()
 
   it("handles a continuous numeric var", {
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -210,7 +210,7 @@ describe("pdp — var types", {
   })
 
   it("handles a low-cardinality integer var", {
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_int",
       obs = "target",
@@ -220,7 +220,7 @@ describe("pdp — var types", {
 
   it("handles a character (categorical) var", {
     m2 <- lm(target ~ x_cat, data = make_df())
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_cat",
       obs = "target",
@@ -232,7 +232,7 @@ describe("pdp — var types", {
     df2 <- make_df()
     df2$x_fac <- factor(df2$x_cat)
     m2 <- lm(target ~ x_fac, data = df2)
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df2,
       var = "x_fac",
       obs = "target",
@@ -248,7 +248,7 @@ describe("pdp — var types", {
     )
     m_wide <- lm(obs ~ 1, data = df_wide)
     expect_warning(
-      result <- ModelBlueprint::pdp(
+      result <- modelblueprint::pdp(
         df_wide,
         var = "x",
         obs = "obs",
@@ -262,7 +262,7 @@ describe("pdp — var types", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — bins argument
+# modelblueprint::pdp() — bins argument
 # =============================================================================
 
 describe("pdp — bins argument", {
@@ -270,7 +270,7 @@ describe("pdp — bins argument", {
   m <- make_lm()
 
   it("fewer bins produces fewer rows in returned data", {
-    d5 <- ModelBlueprint::pdp(
+    d5 <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -278,7 +278,7 @@ describe("pdp — bins argument", {
       bins = 5L,
       ret = "data"
     )
-    d10 <- ModelBlueprint::pdp(
+    d10 <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -290,7 +290,7 @@ describe("pdp — bins argument", {
   })
 
   it("bins = 2 is the minimum and does not error", {
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -301,7 +301,7 @@ describe("pdp — bins argument", {
 
   it("bins has no effect on a categorical var", {
     m2 <- lm(target ~ x_cat, data = make_df())
-    d5 <- ModelBlueprint::pdp(
+    d5 <- modelblueprint::pdp(
       df,
       var = "x_cat",
       obs = "target",
@@ -309,7 +309,7 @@ describe("pdp — bins argument", {
       bins = 5L,
       ret = "data"
     )
-    d20 <- ModelBlueprint::pdp(
+    d20 <- modelblueprint::pdp(
       df,
       var = "x_cat",
       obs = "target",
@@ -322,7 +322,7 @@ describe("pdp — bins argument", {
 
   it("rejects bins < 2", {
     expect_error(
-      ModelBlueprint::pdp(
+      modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -336,7 +336,7 @@ describe("pdp — bins argument", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — type_agg argument
+# modelblueprint::pdp() — type_agg argument
 # =============================================================================
 
 describe("pdp — type_agg argument", {
@@ -345,7 +345,7 @@ describe("pdp — type_agg argument", {
 
   it("equal_exposure returns a plotly object", {
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -357,7 +357,7 @@ describe("pdp — type_agg argument", {
 
   it("equal_range returns a plotly object", {
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -369,7 +369,7 @@ describe("pdp — type_agg argument", {
 
   it("rejects invalid type_agg", {
     expect_error(
-      ModelBlueprint::pdp(
+      modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -383,7 +383,7 @@ describe("pdp — type_agg argument", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — sample_size argument
+# modelblueprint::pdp() — sample_size argument
 # =============================================================================
 
 describe("pdp — sample_size argument", {
@@ -392,7 +392,7 @@ describe("pdp — sample_size argument", {
 
   it("sample_size smaller than nrow still returns a plot", {
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -404,7 +404,7 @@ describe("pdp — sample_size argument", {
 
   it("sample_size larger than nrow uses the full dataset without error", {
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -416,7 +416,7 @@ describe("pdp — sample_size argument", {
 
   it("rejects sample_size < 1", {
     expect_error(
-      ModelBlueprint::pdp(
+      modelblueprint::pdp(
         df,
         var = "x_num",
         obs = "target",
@@ -430,7 +430,7 @@ describe("pdp — sample_size argument", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — model_name argument
+# modelblueprint::pdp() — model_name argument
 # =============================================================================
 
 describe("pdp — model_name argument", {
@@ -438,7 +438,7 @@ describe("pdp — model_name argument", {
   m <- make_lm()
 
   it("model_name appears in returned data column names", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -453,7 +453,7 @@ describe("pdp — model_name argument", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — exposure argument
+# modelblueprint::pdp() — exposure argument
 # =============================================================================
 
 describe("pdp — exposure argument", {
@@ -463,7 +463,7 @@ describe("pdp — exposure argument", {
   it("uses exposure column when present", {
     df2 <- make_df()
     df2$expo <- runif(nrow(df2), 0.5, 2)
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df2,
       var = "x_num",
       obs = "target",
@@ -477,7 +477,7 @@ describe("pdp — exposure argument", {
 
   it("falls back to unit weights when exposure column absent", {
     df2 <- make_df()[, setdiff(names(make_df()), "expo")]
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df2,
       var = "x_num",
       obs = "target",
@@ -490,7 +490,7 @@ describe("pdp — exposure argument", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — does not mutate caller's data
+# modelblueprint::pdp() — does not mutate caller's data
 # =============================================================================
 
 describe("pdp — immutability", {
@@ -498,7 +498,7 @@ describe("pdp — immutability", {
     df <- make_df()
     cols_before <- names(df)
     m <- make_lm()
-    ModelBlueprint::pdp(df, var = "x_num", obs = "target", model = m)
+    modelblueprint::pdp(df, var = "x_num", obs = "target", model = m)
     expect_equal(names(df), cols_before)
   })
 
@@ -506,13 +506,13 @@ describe("pdp — immutability", {
     dt <- data.table::as.data.table(make_df())
     cols_before <- names(dt)
     m <- make_lm()
-    ModelBlueprint::pdp(dt, var = "x_num", obs = "target", model = m)
+    modelblueprint::pdp(dt, var = "x_num", obs = "target", model = m)
     expect_equal(names(dt), cols_before)
   })
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — NA handling
+# modelblueprint::pdp() — NA handling
 # =============================================================================
 
 describe("pdp — NA handling", {
@@ -521,7 +521,7 @@ describe("pdp — NA handling", {
   it("handles NAs in var without error", {
     df <- make_df()
     df$x_num[c(1L, 5L, 10L)] <- NA
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -532,7 +532,7 @@ describe("pdp — NA handling", {
   it("NA values in var produce a trailing 'NA' bin in returned data", {
     df <- make_df()
     df$x_num[1:5] <- NA
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -546,7 +546,7 @@ describe("pdp — NA handling", {
   it("handles NAs in obs without error", {
     df <- make_df()
     df$target[1:3] <- NA
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -556,7 +556,7 @@ describe("pdp — NA handling", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — model compatibility
+# modelblueprint::pdp() — model compatibility
 # =============================================================================
 
 describe("pdp — model compatibility", {
@@ -564,7 +564,7 @@ describe("pdp — model compatibility", {
 
   it("works with lm", {
     m <- lm(target ~ x_num + x_int, data = df)
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -574,7 +574,7 @@ describe("pdp — model compatibility", {
 
   it("works with glm (gaussian)", {
     m <- glm(target ~ x_num + x_int, data = df, family = gaussian)
-    expect_true(is_plotly(ModelBlueprint::pdp(
+    expect_true(is_plotly(modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -590,7 +590,7 @@ describe("pdp — model compatibility", {
       glm(binary ~ x_num + x_int, data = df2, family = binomial)
     )
     expect_true(is_plotly(
-      ModelBlueprint::pdp(df2, var = "x_num", obs = "binary", model = m)
+      modelblueprint::pdp(df2, var = "x_num", obs = "binary", model = m)
     ))
   })
 
@@ -603,7 +603,7 @@ describe("pdp — model compatibility", {
     # Register S3 method in the test environment
     registerS3method("predict", "fake_matrix_model", predict.fake_matrix_model)
     expect_true(is_plotly(
-      ModelBlueprint::pdp(df, var = "x_num", obs = "target", model = fake_model)
+      modelblueprint::pdp(df, var = "x_num", obs = "target", model = fake_model)
     ))
   })
 
@@ -614,14 +614,14 @@ describe("pdp — model compatibility", {
     }
     registerS3method("predict", "fake_df_model", predict.fake_df_model)
     expect_true(is_plotly(
-      ModelBlueprint::pdp(df, var = "x_num", obs = "target", model = fake_model)
+      modelblueprint::pdp(df, var = "x_num", obs = "target", model = fake_model)
     ))
   })
 
   it("gives an informative error when predict() fails", {
     bad_model <- structure(list(), class = "broken_model")
     expect_error(
-      ModelBlueprint::pdp(df, var = "x_num", obs = "target", model = bad_model),
+      modelblueprint::pdp(df, var = "x_num", obs = "target", model = bad_model),
       "predict() failed for model class 'broken_model'",
       fixed = TRUE
     )
@@ -629,7 +629,7 @@ describe("pdp — model compatibility", {
 })
 
 # =============================================================================
-# ModelBlueprint::pdp() — PDP statistical property
+# modelblueprint::pdp() — PDP statistical property
 # =============================================================================
 
 describe("pdp — PDP statistical properties", {
@@ -638,7 +638,7 @@ describe("pdp — PDP statistical properties", {
     # same range as the observed target
     df <- make_df(200L)
     m <- lm(target ~ x_num + x_int, data = df)
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_num",
       obs = "target",
@@ -656,7 +656,7 @@ describe("pdp — PDP statistical properties", {
   it("pdp_mean varies across bins for an informative feature", {
     # wt has a strong effect on mpg in mtcars — PDP should show variation
     m <- lm(mpg ~ wt + hp + cyl, data = mtcars)
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       mtcars,
       var = "wt",
       obs = "mpg",
@@ -675,7 +675,7 @@ describe("pdp — PDP statistical properties", {
     df <- make_df(200L)
     m <- lm(target ~ x_num, data = df) # x_cat excluded
     m2 <- lm(target ~ x_cat, data = df) # needed for x_cat predict
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df,
       var = "x_cat",
       obs = "target",
@@ -695,7 +695,7 @@ describe("pdp_validate", {
   df <- make_df()
 
   it("accepts a data.frame", {
-    expect_no_error(ModelBlueprint:::pdp_validate(
+    expect_no_error(modelblueprint:::pdp_validate(
       df,
       "x_num",
       "target",
@@ -707,7 +707,7 @@ describe("pdp_validate", {
 
   it("accepts a data.table", {
     expect_no_error(
-      ModelBlueprint:::pdp_validate(
+      modelblueprint:::pdp_validate(
         data.table::as.data.table(df),
         "x_num",
         "target",
@@ -720,7 +720,7 @@ describe("pdp_validate", {
 
   it("rejects non-data-frame input", {
     expect_error(
-      ModelBlueprint:::pdp_validate(
+      modelblueprint:::pdp_validate(
         list(x = 1),
         "x",
         "target",
@@ -735,7 +735,7 @@ describe("pdp_validate", {
 
   it("rejects missing var column", {
     expect_error(
-      ModelBlueprint:::pdp_validate(
+      modelblueprint:::pdp_validate(
         df,
         "not_a_col",
         "target",
@@ -750,7 +750,7 @@ describe("pdp_validate", {
 
   it("rejects missing obs column", {
     expect_error(
-      ModelBlueprint:::pdp_validate(
+      modelblueprint:::pdp_validate(
         df,
         "x_num",
         "not_a_col",
@@ -765,7 +765,7 @@ describe("pdp_validate", {
 
   it("rejects bins < 2", {
     expect_error(
-      ModelBlueprint:::pdp_validate(df, "x_num", "target", "expo", 1L, 1000L),
+      modelblueprint:::pdp_validate(df, "x_num", "target", "expo", 1L, 1000L),
       "`bins` must be a single integer >= 2.",
       fixed = TRUE
     )
@@ -773,7 +773,7 @@ describe("pdp_validate", {
 
   it("rejects sample_size < 1", {
     expect_error(
-      ModelBlueprint:::pdp_validate(df, "x_num", "target", "expo", 10L, 0L),
+      modelblueprint:::pdp_validate(df, "x_num", "target", "expo", 10L, 0L),
       "`sample_size` must be a positive integer.",
       fixed = TRUE
     )
@@ -789,14 +789,14 @@ describe("model_predict", {
 
   it("returns a numeric vector for lm", {
     m <- lm(target ~ x_num, data = df)
-    out <- ModelBlueprint:::model_predict(m, df)
+    out <- modelblueprint:::model_predict(m, df)
     expect_true(is.numeric(out))
     expect_length(out, nrow(df))
   })
 
   it("returns a numeric vector for glm", {
     m <- glm(target ~ x_num, data = df, family = gaussian)
-    out <- ModelBlueprint:::model_predict(m, df)
+    out <- modelblueprint:::model_predict(m, df)
     expect_true(is.numeric(out))
     expect_length(out, nrow(df))
   })
@@ -807,7 +807,7 @@ describe("model_predict", {
       matrix(seq_len(nrow(newdata)), ncol = 1L)
     }
     registerS3method("predict", "mat_model", predict.mat_model)
-    out <- ModelBlueprint:::model_predict(fake_model, df)
+    out <- modelblueprint:::model_predict(fake_model, df)
     expect_true(is.numeric(out))
     expect_length(out, nrow(df))
   })
@@ -818,7 +818,7 @@ describe("model_predict", {
       data.frame(pred = seq_len(nrow(newdata)) * 1.5)
     }
     registerS3method("predict", "df_model", predict.df_model)
-    out <- ModelBlueprint:::model_predict(fake_model, df)
+    out <- modelblueprint:::model_predict(fake_model, df)
     expect_true(is.numeric(out))
     expect_length(out, nrow(df))
   })
@@ -826,7 +826,7 @@ describe("model_predict", {
   it("gives an informative error for an unsupported model class", {
     bad <- structure(list(), class = "totally_broken")
     expect_error(
-      ModelBlueprint:::model_predict(bad, df),
+      modelblueprint:::model_predict(bad, df),
       "predict() failed for model class 'totally_broken'",
       fixed = TRUE
     )
@@ -840,7 +840,7 @@ describe("model_predict", {
 describe("compute_bins", {
   it("returns is_numeric = FALSE for character input", {
     x <- c("A", "B", "A", "C")
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 3L,
       type_agg = "equal_exposure"
@@ -850,7 +850,7 @@ describe("compute_bins", {
 
   it("returns is_numeric = FALSE for low-cardinality numeric", {
     x <- rep(1:3, 10L)
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -860,7 +860,7 @@ describe("compute_bins", {
 
   it("returns is_numeric = TRUE for high-cardinality numeric", {
     x <- seq(1, 100, length.out = 200L)
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -870,7 +870,7 @@ describe("compute_bins", {
 
   it("labels length matches input length", {
     x <- seq(1, 100, length.out = 200L)
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -881,7 +881,7 @@ describe("compute_bins", {
   it("no label is a real NA — NAs become the string 'NA'", {
     x <- seq(1, 100, length.out = 50L)
     x[1:5] <- NA
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 5L,
       type_agg = "equal_exposure"
@@ -892,7 +892,7 @@ describe("compute_bins", {
 
   it("midpoints are numeric and finite for numeric bins", {
     x <- seq(1, 100, length.out = 200L)
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -902,7 +902,7 @@ describe("compute_bins", {
 
   it("midpoints is NULL for categorical input", {
     x <- c("A", "B", "C")
-    out <- ModelBlueprint:::compute_bins(
+    out <- modelblueprint:::compute_bins(
       x,
       bins = 3L,
       type_agg = "equal_exposure"
@@ -912,7 +912,7 @@ describe("compute_bins", {
 
   it("equal_range produces interval labels", {
     x <- seq(0, 100, length.out = 300L)
-    out <- ModelBlueprint:::compute_bins(x, bins = 5L, type_agg = "equal_range")
+    out <- modelblueprint:::compute_bins(x, bins = 5L, type_agg = "equal_range")
     expect_true(any(grepl("\\[|\\(", out$labels[out$labels != "NA"])))
   })
 })
@@ -924,7 +924,7 @@ describe("compute_bins", {
 describe("compute_pdp", {
   df <- data.table::as.data.table(make_df())
   m <- lm(target ~ x_num + x_int, data = df)
-  bin_info <- ModelBlueprint:::compute_bins(
+  bin_info <- modelblueprint:::compute_bins(
     df$x_num,
     bins = 5L,
     type_agg = "equal_exposure"
@@ -934,23 +934,23 @@ describe("compute_pdp", {
   df[, .expo := 1L]
 
   it("returns a data.table", {
-    out <- ModelBlueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
     expect_true(data.table::is.data.table(out))
   })
 
   it("has columns .bin and pdp_mean", {
-    out <- ModelBlueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
     expect_true(all(c(".bin", "pdp_mean") %in% names(out)))
   })
 
   it("has one row per bin", {
-    out <- ModelBlueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
     n_bins <- length(unique(bin_info$labels[bin_info$labels != "NA"]))
     expect_equal(nrow(out), n_bins)
   })
 
   it("pdp_mean values are numeric and finite", {
-    out <- ModelBlueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
     expect_true(all(is.finite(out$pdp_mean)))
   })
 })
@@ -963,7 +963,7 @@ describe("aggregate_pdp_oneway", {
   it("returns obs_mean, pred_mean, exposure per bin", {
     df <- data.table::as.data.table(make_df())
     m <- lm(target ~ x_num, data = df)
-    bin_info <- ModelBlueprint:::compute_bins(
+    bin_info <- modelblueprint:::compute_bins(
       df$x_num,
       bins = 5L,
       type_agg = "equal_exposure"
@@ -972,7 +972,7 @@ describe("aggregate_pdp_oneway", {
     df[, .pred := predict(m, newdata = df)]
     df[, .expo := 1L]
 
-    agg <- ModelBlueprint:::aggregate_pdp_oneway(df, "target", ".expo")
+    agg <- modelblueprint:::aggregate_pdp_oneway(df, "target", ".expo")
     expect_true(data.table::is.data.table(agg))
     expect_true(all(
       c(".bin", "obs_mean", "pred_mean", "exposure") %in% names(agg)
@@ -982,7 +982,7 @@ describe("aggregate_pdp_oneway", {
   it("exposure sums to total weight", {
     df <- data.table::as.data.table(make_df())
     m <- lm(target ~ x_num, data = df)
-    bin_info <- ModelBlueprint:::compute_bins(
+    bin_info <- modelblueprint:::compute_bins(
       df$x_num,
       bins = 5L,
       type_agg = "equal_exposure"
@@ -991,7 +991,7 @@ describe("aggregate_pdp_oneway", {
     df[, .pred := predict(m, newdata = df)]
     df[, .expo := 1L]
 
-    agg <- ModelBlueprint:::aggregate_pdp_oneway(df, "target", ".expo")
+    agg <- modelblueprint:::aggregate_pdp_oneway(df, "target", ".expo")
     expect_equal(sum(agg$exposure), nrow(df))
   })
 })
@@ -1009,7 +1009,7 @@ describe("pdp — scale", {
     )
     m <- lm(obs ~ x, data = df_big)
     t <- system.time(
-      ModelBlueprint::pdp(
+      modelblueprint::pdp(
         df_big,
         var = "x",
         obs = "obs",
@@ -1027,7 +1027,7 @@ describe("pdp — scale", {
 # =============================================================================
 # These tests are skipped automatically when H2O is unavailable (no Java,
 # shinyapps.io, CI without Java etc.). They run a minimal h2o.glm() for both
-# regression and binomial families and verify ModelBlueprint::pdp() produces valid output.
+# regression and binomial families and verify modelblueprint::pdp() produces valid output.
 # h2o.init() is called once per describe() block and shut down in teardown.
 
 describe("pdp — H2O model compatibility", {
@@ -1080,7 +1080,7 @@ describe("pdp — H2O model compatibility", {
 
   it("h2o.glm (gaussian) — returns a plotly object", {
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df_r,
         var = "x1",
         obs = "target",
@@ -1090,7 +1090,7 @@ describe("pdp — H2O model compatibility", {
   })
 
   it("h2o.glm (gaussian) — ret = 'data' returns a data.table", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_r,
       var = "x1",
       obs = "target",
@@ -1101,7 +1101,7 @@ describe("pdp — H2O model compatibility", {
   })
 
   it("h2o.glm (gaussian) — returned data has expected columns", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_r,
       var = "x1",
       obs = "target",
@@ -1123,7 +1123,7 @@ describe("pdp — H2O model compatibility", {
   })
 
   it("h2o.glm (gaussian) — pdp_mean has no NAs", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_r,
       var = "x1",
       obs = "target",
@@ -1135,7 +1135,7 @@ describe("pdp — H2O model compatibility", {
   })
 
   it("h2o.glm (gaussian) — pdp_mean varies for an informative feature", {
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_r,
       var = "x1",
       obs = "target",
@@ -1148,7 +1148,7 @@ describe("pdp — H2O model compatibility", {
 
   it("h2o.glm (gaussian) — does not mutate caller's data.frame", {
     cols_before <- names(df_r)
-    ModelBlueprint::pdp(df_r, var = "x1", obs = "target", model = m_reg)
+    modelblueprint::pdp(df_r, var = "x1", obs = "target", model = m_reg)
     expect_equal(names(df_r), cols_before)
   })
 
@@ -1166,7 +1166,7 @@ describe("pdp — H2O model compatibility", {
     df_b2 <- df_b
     df_b2$binary <- as.integer(df_b2$binary) - 1L # 0/1 numeric for obs
     expect_true(
-      is_plotly(ModelBlueprint::pdp(
+      is_plotly(modelblueprint::pdp(
         df_b2,
         var = "x1",
         obs = "binary",
@@ -1178,7 +1178,7 @@ describe("pdp — H2O model compatibility", {
   it("h2o.glm (binomial) — pred_mean is in [0, 1] (probability output)", {
     df_b2 <- df_b
     df_b2$binary <- as.integer(df_b2$binary) - 1L
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_b2,
       var = "x1",
       obs = "binary",
@@ -1186,7 +1186,7 @@ describe("pdp — H2O model compatibility", {
       bins = 5L,
       ret = "data"
     )
-    # h2o.predict() for binomial: ModelBlueprint:::model_predict() returns p1 (positive class
+    # h2o.predict() for binomial: modelblueprint:::model_predict() returns p1 (positive class
     # probability), not the class label in the first "predict" column
     expect_true(all(d$pred_mean >= 0 & d$pred_mean <= 1, na.rm = TRUE))
     expect_true(all(d$pdp_mean >= 0 & d$pdp_mean <= 1, na.rm = TRUE))
@@ -1195,7 +1195,7 @@ describe("pdp — H2O model compatibility", {
   it("h2o.glm (binomial) — pdp_mean has no NAs", {
     df_b2 <- df_b
     df_b2$binary <- as.integer(df_b2$binary) - 1L
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_b2,
       var = "x1",
       obs = "binary",
@@ -1209,7 +1209,7 @@ describe("pdp — H2O model compatibility", {
   it("h2o.glm (binomial) — ret = 'data' has expected columns", {
     df_b2 <- df_b
     df_b2$binary <- as.integer(df_b2$binary) - 1L
-    d <- ModelBlueprint::pdp(
+    d <- modelblueprint::pdp(
       df_b2,
       var = "x1",
       obs = "binary",

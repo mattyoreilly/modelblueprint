@@ -15,7 +15,7 @@
 \alias{mb_xgb_classification}
 \alias{mb_h2o_regression}
 \alias{mb_h2o_classification}
-\title{Example ModelBlueprint objects}
+\title{Example modelblueprint objects}
 \usage{
 mb_lm_regression()
 
@@ -44,11 +44,11 @@ mb_h2o_regression()
 mb_h2o_classification()
 }
 \value{
-A \code{ModelBlueprint} object.
+A \code{modelblueprint} object.
 }
 \description{
 A family of constructor functions that return ready-to-use
-\code{ModelBlueprint} objects for common R model types. All examples use the
+\code{modelblueprint} objects for common R model types. All examples use the
 built-in \code{mtcars} dataset with a reproducible 75/25 train/test split.
 }
 \details{
@@ -74,4 +74,4 @@ mb_cls <- mb_glm_binomial()
 predict(mb_cls, mtcars)   # returns probabilities in 0 to 1
 
 }
-\concept{Example ModelBlueprints}
+\concept{Example modelblueprints}

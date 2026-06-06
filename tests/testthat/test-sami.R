@@ -10,7 +10,7 @@
 # =============================================================================
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
 
 # =============================================================================
@@ -29,13 +29,13 @@ make_df <- function(n = 300L, seed = 42L) {
 }
 
 make_mb_list <- function() {
-  mb1 <- ModelBlueprint(
+  mb1 <- modelblueprint(
     model = stats::lm(mpg ~ wt, data = mtcars),
     train = mtcars,
     y_name = "mpg",
     model_display_name = "lm_wt"
   )
-  mb2 <- ModelBlueprint(
+  mb2 <- modelblueprint(
     model = stats::lm(mpg ~ hp, data = mtcars),
     train = mtcars,
     y_name = "mpg",
@@ -337,27 +337,27 @@ describe("sami.list — input validation", {
     mb_list <- make_mb_list()
     expect_error(
       sami(mb_list[1L]),
-      "`data` must be a list of at least two ModelBlueprint objects.",
+      "`data` must be a list of at least two modelblueprint objects.",
       fixed = TRUE
     )
   })
 
-  it("errors when list contains non-ModelBlueprint elements", {
+  it("errors when list contains non-modelblueprint elements", {
     expect_error(
       sami(list(make_mb_list()[[1L]], "not_a_blueprint")),
-      "All elements of `data` must be `ModelBlueprint` objects.",
+      "All elements of `data` must be `modelblueprint` objects.",
       fixed = TRUE
     )
   })
 
   it("errors when model_display_name is not set and pred_names not supplied", {
-    mb1 <- ModelBlueprint(
+    mb1 <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars,
       y_name = "mpg"
       # no model_display_name
     )
-    mb2 <- ModelBlueprint(
+    mb2 <- modelblueprint(
       model = stats::lm(mpg ~ hp, data = mtcars),
       train = mtcars,
       y_name = "mpg"
@@ -369,7 +369,7 @@ describe("sami.list — input validation", {
     mb_list <- make_mb_list()
     expect_error(
       sami(mb_list, set = "holdout"),
-      "ModelBlueprint `@holdout` is NULL",
+      "modelblueprint `@holdout` is NULL",
       fixed = TRUE
     )
   })

@@ -1,8 +1,8 @@
 ---
-title: "Getting started with ModelBlueprint"
+title: "Getting started with modelblueprint"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with ModelBlueprint}
+  %\VignetteIndexEntry{Getting started with modelblueprint}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,19 +14,19 @@ knitr::opts_chunk$set(
   fig.width  = 7,
   fig.height = 4
 )
-library(ModelBlueprint)
+library(modelblueprint)
 library(dplyr)
 ```
 
-## What is a ModelBlueprint?
+## What is a modelblueprint?
 
-A `ModelBlueprint` is an S7 object that wraps a fitted model alongside its
+A `modelblueprint` is an S7 object that wraps a fitted model alongside its
 training data, pipeline functions, and deployment metadata. The goal is a
 single object that carries everything needed to reproduce predictions,
 run diagnostics, and save/restore the model.
 
 ```{r create}
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model              = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train              = mtcars,
   y_name             = "vs",
@@ -83,7 +83,7 @@ residuals_grouped(mb, exposure_per_bin = 5)
 ## Pipe-friendly data manipulation
 
 `filter()`, `mutate()`, and `left_join()` operate on the blueprint's internal
-datasets and return a new `ModelBlueprint` — the original is never mutated.
+datasets and return a new `modelblueprint` — the original is never mutated.
 
 ```{r pipes}
 mb_filtered <- mb |>
@@ -99,7 +99,7 @@ Use `feat_eng_fun` to apply transformations before prediction — the same
 function is applied to both training data and new data at prediction time.
 
 ```{r feat-eng}
-mb_fe <- ModelBlueprint(
+mb_fe <- modelblueprint(
   model        = lm(mpg ~ wt + wt2, data = transform(mtcars, wt2 = wt^2)),
   feat_eng_fun = function(df) transform(df, wt2 = wt^2),
   train        = mtcars,

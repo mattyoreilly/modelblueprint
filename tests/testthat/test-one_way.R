@@ -56,7 +56,7 @@ describe("validate_inputs", {
   df <- make_df()
 
   it("accepts a data.frame", {
-    expect_no_error(ModelBlueprint:::validate_inputs(
+    expect_no_error(modelblueprint:::validate_inputs(
       df,
       "x_num",
       "obs",
@@ -68,7 +68,7 @@ describe("validate_inputs", {
 
   it("accepts a data.table", {
     expect_no_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         data.table::as.data.table(df),
         "x_num",
         "obs",
@@ -81,7 +81,7 @@ describe("validate_inputs", {
 
   it("rejects non-data-frame input", {
     expect_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         list(x = 1),
         "x",
         "obs",
@@ -96,7 +96,7 @@ describe("validate_inputs", {
 
   it("rejects a missing var column", {
     expect_error(
-      ModelBlueprint:::validate_inputs(df, "not_a_col", "obs", "expo", NA, 10L),
+      modelblueprint:::validate_inputs(df, "not_a_col", "obs", "expo", NA, 10L),
       "`var` column(s) not found in `data`: not_a_col",
       fixed = TRUE
     )
@@ -104,7 +104,7 @@ describe("validate_inputs", {
 
   it("rejects a missing obs column", {
     expect_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         df,
         "x_num",
         "not_a_col",
@@ -119,7 +119,7 @@ describe("validate_inputs", {
 
   it("rejects a missing split column when split is not NA", {
     expect_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         df,
         "x_num",
         "obs",
@@ -134,13 +134,13 @@ describe("validate_inputs", {
 
   it("accepts split = NA without checking split column existence", {
     expect_no_error(
-      ModelBlueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, 10L)
+      modelblueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, 10L)
     )
   })
 
   it("rejects bins < 2", {
     expect_error(
-      ModelBlueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, 1L),
+      modelblueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, 1L),
       "`bins` must be a single integer >= 2.",
       fixed = TRUE
     )
@@ -148,7 +148,7 @@ describe("validate_inputs", {
 
   it("rejects non-numeric bins", {
     expect_error(
-      ModelBlueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, "ten"),
+      modelblueprint:::validate_inputs(df, "x_num", "obs", "expo", NA, "ten"),
       "`bins` must be a single integer >= 2.",
       fixed = TRUE
     )
@@ -156,7 +156,7 @@ describe("validate_inputs", {
 
   it("rejects vector bins", {
     expect_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         df,
         "x_num",
         "obs",
@@ -171,7 +171,7 @@ describe("validate_inputs", {
 
   it("names all missing obs columns in the error message", {
     expect_error(
-      ModelBlueprint:::validate_inputs(
+      modelblueprint:::validate_inputs(
         df,
         "x_num",
         c("bad1", "bad2"),
@@ -193,17 +193,17 @@ describe("one_way — return type", {
   df <- make_df()
 
   it("returns a plotly object by default", {
-    p <- ModelBlueprint::one_way(df, var = "x_num", obs = "obs")
+    p <- modelblueprint::one_way(df, var = "x_num", obs = "obs")
     expect_true(is_plotly(p))
   })
 
   it("returns a data.table when ret = 'data'", {
-    d <- ModelBlueprint::one_way(df, var = "x_num", obs = "obs", ret = "data")
+    d <- modelblueprint::one_way(df, var = "x_num", obs = "obs", ret = "data")
     expect_true(data.table::is.data.table(d))
   })
 
   it("returned data has expected columns: x, split, obs, exposure", {
-    d <- ModelBlueprint::one_way(df, var = "x_num", obs = "obs", ret = "data")
+    d <- modelblueprint::one_way(df, var = "x_num", obs = "obs", ret = "data")
     expect_true(all(c("x_num", "split", "obs", "exposure") %in% names(d)))
   })
 })
@@ -212,7 +212,7 @@ describe("one_way — var types", {
   df <- make_df()
 
   it("handles a continuous numeric var", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs"
@@ -220,7 +220,7 @@ describe("one_way — var types", {
   })
 
   it("handles a low-cardinality integer var (no binning)", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_int",
       obs = "obs"
@@ -228,7 +228,7 @@ describe("one_way — var types", {
   })
 
   it("handles a character var", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_cat",
       obs = "obs"
@@ -238,7 +238,7 @@ describe("one_way — var types", {
   it("handles a factor var", {
     df2 <- df
     df2$fac <- factor(df2$x_cat)
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df2,
       var = "fac",
       obs = "obs"
@@ -250,7 +250,7 @@ describe("one_way — obs argument", {
   df <- make_df()
 
   it("accepts a single obs column", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs"
@@ -258,7 +258,7 @@ describe("one_way — obs argument", {
   })
 
   it("accepts multiple obs columns", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = c("obs", "obs2")
@@ -266,7 +266,7 @@ describe("one_way — obs argument", {
   })
 
   it("returns data with both obs columns when ret = 'data'", {
-    d <- ModelBlueprint::one_way(
+    d <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = c("obs", "obs2"),
@@ -280,7 +280,7 @@ describe("one_way — exposure argument", {
   df <- make_df()
 
   it("uses the exposure column when present", {
-    d_expo <- ModelBlueprint::one_way(
+    d_expo <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -293,7 +293,7 @@ describe("one_way — exposure argument", {
 
   it("falls back to unit weights when exposure column is missing", {
     df2 <- df[, setdiff(names(df), "expo")]
-    d <- ModelBlueprint::one_way(
+    d <- modelblueprint::one_way(
       df2,
       var = "x_num",
       obs = "obs",
@@ -305,7 +305,7 @@ describe("one_way — exposure argument", {
   })
 
   it("falls back to unit weights for the default 'vec_of_ones' sentinel", {
-    d <- ModelBlueprint::one_way(
+    d <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -317,7 +317,7 @@ describe("one_way — exposure argument", {
 
   it("does not mutate the caller's data frame", {
     df_orig <- df
-    ModelBlueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
+    modelblueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
     expect_equal(names(df), names(df_orig))
     expect_equal(nrow(df), nrow(df_orig))
   })
@@ -327,7 +327,7 @@ describe("one_way — split argument", {
   df <- make_df()
 
   it("produces a split plot when split is supplied", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -336,7 +336,7 @@ describe("one_way — split argument", {
   })
 
   it("split data has one row per (x-bin × split group)", {
-    d <- ModelBlueprint::one_way(
+    d <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -350,7 +350,7 @@ describe("one_way — split argument", {
   it("high-cardinality numeric split is auto-binned into groups", {
     df2 <- df
     df2$split_num <- rnorm(nrow(df2)) # continuous — > 20 unique values
-    d <- ModelBlueprint::one_way(
+    d <- modelblueprint::one_way(
       df2,
       var = "x_num",
       obs = "obs",
@@ -362,13 +362,13 @@ describe("one_way — split argument", {
   })
 
   it("NA split is treated as no split", {
-    p_no_split <- ModelBlueprint::one_way(
+    p_no_split <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
       split = NA
     )
-    p_with_split <- ModelBlueprint::one_way(
+    p_with_split <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -383,14 +383,14 @@ describe("one_way — bins argument", {
   df <- make_df()
 
   it("fewer bins produces fewer x levels", {
-    d10 <- ModelBlueprint::one_way(
+    d10 <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
       bins = 10L,
       ret = "data"
     )
-    d20 <- ModelBlueprint::one_way(
+    d20 <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -401,7 +401,7 @@ describe("one_way — bins argument", {
   })
 
   it("bins = 2 is the minimum and does not error", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -410,7 +410,7 @@ describe("one_way — bins argument", {
   })
 
   it("large bins value still returns a plot", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -419,14 +419,14 @@ describe("one_way — bins argument", {
   })
 
   it("bins has no effect on a categorical var (no binning applied)", {
-    d5 <- ModelBlueprint::one_way(
+    d5 <- modelblueprint::one_way(
       df,
       var = "x_cat",
       obs = "obs",
       bins = 5L,
       ret = "data"
     )
-    d50 <- ModelBlueprint::one_way(
+    d50 <- modelblueprint::one_way(
       df,
       var = "x_cat",
       obs = "obs",
@@ -442,7 +442,7 @@ describe("one_way — type_agg argument", {
 
   it("equal_exposure returns a plotly object", {
     expect_true(
-      is_plotly(ModelBlueprint::one_way(
+      is_plotly(modelblueprint::one_way(
         df,
         var = "x_num",
         obs = "obs",
@@ -453,7 +453,7 @@ describe("one_way — type_agg argument", {
 
   it("equal_range returns a plotly object", {
     expect_true(
-      is_plotly(ModelBlueprint::one_way(
+      is_plotly(modelblueprint::one_way(
         df,
         var = "x_num",
         obs = "obs",
@@ -464,7 +464,7 @@ describe("one_way — type_agg argument", {
 
   it("rejects an invalid type_agg value", {
     expect_error(
-      ModelBlueprint::one_way(
+      modelblueprint::one_way(
         df,
         var = "x_num",
         obs = "obs",
@@ -476,7 +476,7 @@ describe("one_way — type_agg argument", {
   })
 
   it("equal_exposure bins have more balanced row counts than equal_range", {
-    d_ee <- ModelBlueprint::one_way(
+    d_ee <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -484,7 +484,7 @@ describe("one_way — type_agg argument", {
       type_agg = "equal_exposure",
       ret = "data"
     )
-    d_er <- ModelBlueprint::one_way(
+    d_er <- modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -502,7 +502,7 @@ describe("one_way — ret argument", {
   df <- make_df()
 
   it("ret = 'plot' returns plotly", {
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs",
@@ -512,7 +512,7 @@ describe("one_way — ret argument", {
 
   it("ret = 'data' returns data.table", {
     expect_true(
-      data.table::is.data.table(ModelBlueprint::one_way(
+      data.table::is.data.table(modelblueprint::one_way(
         df,
         var = "x_num",
         obs = "obs",
@@ -523,7 +523,7 @@ describe("one_way — ret argument", {
 
   it("rejects invalid ret value", {
     expect_error(
-      ModelBlueprint::one_way(df, var = "x_num", obs = "obs", ret = "tibble"),
+      modelblueprint::one_way(df, var = "x_num", obs = "obs", ret = "tibble"),
       "should be one of",
       fixed = TRUE
     )
@@ -538,7 +538,7 @@ describe("one_way — NA handling", {
   it("handles NAs in var without error", {
     df <- make_df()
     df$x_num[sample(nrow(df), 20L)] <- NA
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs"
@@ -548,7 +548,7 @@ describe("one_way — NA handling", {
   it("NA values appear as a trailing 'NA' category in aggregated data", {
     df <- make_df()
     df$x_cat[1:5] <- NA
-    d <- ModelBlueprint::one_way(df, var = "x_cat", obs = "obs", ret = "data")
+    d <- modelblueprint::one_way(df, var = "x_cat", obs = "obs", ret = "data")
     expect_true("NA" %in% d$x_cat)
     # NA must be last
     expect_equal(tail(d$x_cat, 1L), "NA")
@@ -557,7 +557,7 @@ describe("one_way — NA handling", {
   it("handles NAs in obs column (computes mean over non-NA rows)", {
     df <- make_df()
     df$obs[sample(nrow(df), 10L)] <- NA
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "obs"
@@ -569,7 +569,7 @@ describe("one_way — NA handling", {
     df$expo[1:5] <- NA
     # Should not error — na.rm = TRUE in aggregation
     expect_true(is_plotly(
-      ModelBlueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
+      modelblueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
     ))
   })
 })
@@ -582,7 +582,7 @@ describe("one_way — cardinality guards", {
       stringsAsFactors = FALSE
     )
     expect_warning(
-      result <- ModelBlueprint::one_way(df_wide, var = "x", obs = "obs"),
+      result <- modelblueprint::one_way(df_wide, var = "x", obs = "obs"),
       "2001 unique values"
     )
     expect_null(result)
@@ -591,7 +591,7 @@ describe("one_way — cardinality guards", {
   it("does NOT warn or return NULL for numeric var with > 2000 unique values", {
     df_big <- data.frame(x = rnorm(3000L), obs = runif(3000L))
     expect_no_warning(
-      result <- ModelBlueprint::one_way(
+      result <- modelblueprint::one_way(
         df_big,
         var = "x",
         obs = "obs",
@@ -607,7 +607,7 @@ describe("one_way — does not mutate caller data", {
     df <- make_df()
     cols_before <- names(df)
     nrow_before <- nrow(df)
-    ModelBlueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
+    modelblueprint::one_way(df, var = "x_num", obs = "obs", exposure = "expo")
     expect_equal(names(df), cols_before)
     expect_equal(nrow(df), nrow_before)
   })
@@ -615,7 +615,7 @@ describe("one_way — does not mutate caller data", {
   it("leaves the original data.table unchanged", {
     dt <- data.table::as.data.table(make_df())
     cols_before <- names(dt)
-    ModelBlueprint::one_way(dt, var = "x_num", obs = "obs", exposure = "expo")
+    modelblueprint::one_way(dt, var = "x_num", obs = "obs", exposure = "expo")
     expect_equal(names(dt), cols_before)
   })
 })
@@ -624,7 +624,7 @@ describe("one_way — column name collision resistance", {
   it("works when the var column is named 'var'", {
     df <- make_df()
     df$var <- df$x_num
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "var",
       obs = "obs"
@@ -634,7 +634,7 @@ describe("one_way — column name collision resistance", {
   it("works when the obs column is named 'x'", {
     df <- make_df()
     df$x <- df$obs
-    expect_true(is_plotly(ModelBlueprint::one_way(
+    expect_true(is_plotly(modelblueprint::one_way(
       df,
       var = "x_num",
       obs = "x"
@@ -645,7 +645,7 @@ describe("one_way — column name collision resistance", {
     df <- make_df()
     df$exposure <- df$obs
     expect_true(is_plotly(
-      ModelBlueprint::one_way(
+      modelblueprint::one_way(
         df,
         var = "x_num",
         obs = "exposure",
@@ -658,7 +658,7 @@ describe("one_way — column name collision resistance", {
     df <- make_df()
     df$split <- df$grp
     expect_true(is_plotly(
-      ModelBlueprint::one_way(df, var = "x_num", obs = "obs", split = "split")
+      modelblueprint::one_way(df, var = "x_num", obs = "obs", split = "split")
     ))
   })
 })
@@ -672,7 +672,7 @@ describe("aggregate_one_way", {
   dt[, .expo := 1L] # unit weights
 
   it("returns a data.table", {
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt,
       "x_num",
       "obs",
@@ -685,7 +685,7 @@ describe("aggregate_one_way", {
   })
 
   it("has columns: x, split, obs, exposure", {
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt,
       "x_num",
       "obs",
@@ -698,7 +698,7 @@ describe("aggregate_one_way", {
   })
 
   it("exposure column sums to total weight of input", {
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt,
       "x_num",
       "obs",
@@ -711,7 +711,7 @@ describe("aggregate_one_way", {
   })
 
   it("weighted mean is within [min(obs), max(obs)]", {
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt,
       "x_num",
       "obs",
@@ -732,7 +732,7 @@ describe("aggregate_one_way", {
       obs = seq(0, 1, length.out = 200L)
     )
     dt_clean[, .expo := 1L]
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt_clean,
       "x_num",
       "obs",
@@ -743,7 +743,7 @@ describe("aggregate_one_way", {
     )
     # Drop any NA sentinel row — this test is only about numeric interval order
     bins <- unique(agg$.x_bin[agg$.x_bin != "NA"])
-    ordered <- ModelBlueprint:::smart_level_order(bins)
+    ordered <- modelblueprint:::smart_level_order(bins)
     expect_equal(bins, ordered)
   })
 
@@ -753,7 +753,7 @@ describe("aggregate_one_way", {
       data.frame(x_num = c(NA_real_, rnorm(199L, 50, 15)), obs = runif(200L))
     )
     dt_na[, .expo := 1L]
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt_na,
       "x_num",
       "obs",
@@ -770,7 +770,7 @@ describe("aggregate_one_way", {
   })
 
   it("split = NA produces a single '__none__' split group", {
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt,
       "x_num",
       "obs",
@@ -784,7 +784,7 @@ describe("aggregate_one_way", {
 
   it("split column produces multiple groups", {
     dt2 <- data.table::copy(dt)
-    agg <- ModelBlueprint:::aggregate_one_way(
+    agg <- modelblueprint:::aggregate_one_way(
       dt2,
       "x_num",
       "obs",
@@ -804,7 +804,7 @@ describe("aggregate_one_way", {
 describe("apply_binning", {
   it("does not bin a character column", {
     dt <- data.table::data.table(var = c("A", "B", "A", "C"), .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 2L,
       type_agg = "equal_exposure"
@@ -815,7 +815,7 @@ describe("apply_binning", {
   it("does not bin a low-cardinality numeric column (unique values <= bins)", {
     # 5 unique values, bins = 10 — uniqueN(5) <= 10 so binning is skipped
     dt <- data.table::data.table(var = rep(1:5, 10L), .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -827,7 +827,7 @@ describe("apply_binning", {
     # 32 unique values, bins = 5 — should bin (this was the mtcars$wt bug)
     set.seed(1L)
     dt <- data.table::data.table(var = seq(1, 100, length.out = 32L), .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 5L,
       type_agg = "equal_exposure"
@@ -838,7 +838,7 @@ describe("apply_binning", {
   it("bins a high-cardinality numeric column into interval strings", {
     set.seed(1L)
     dt <- data.table::data.table(var = rnorm(500L), .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -851,7 +851,7 @@ describe("apply_binning", {
     set.seed(1L)
     v <- c(NA, rnorm(199L))
     dt <- data.table::data.table(var = v, .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 10L,
       type_agg = "equal_exposure"
@@ -862,7 +862,7 @@ describe("apply_binning", {
   it("equal_range produces approximately equal-width intervals", {
     set.seed(1L)
     dt <- data.table::data.table(var = runif(500L, 0, 100), .w = 1L)
-    out <- ModelBlueprint:::apply_binning(
+    out <- modelblueprint:::apply_binning(
       dt,
       bins = 5L,
       type_agg = "equal_range"
@@ -880,24 +880,24 @@ describe("apply_binning", {
 describe("bin_equal_exposure", {
   it("returns a factor", {
     x <- sort(rnorm(100L))
-    expect_true(is.factor(ModelBlueprint:::bin_equal_exposure(x, 10L)))
+    expect_true(is.factor(modelblueprint:::bin_equal_exposure(x, 10L)))
   })
 
   it("number of levels <= bins", {
     x <- sort(rnorm(100L))
-    b <- ModelBlueprint:::bin_equal_exposure(x, 10L)
+    b <- modelblueprint:::bin_equal_exposure(x, 10L)
     expect_lte(nlevels(b), 10L)
   })
 
   it("every element is assigned a bin (no NAs)", {
     x <- sort(rnorm(200L)) # bin_equal_exposure contract: input must be sorted
-    b <- ModelBlueprint:::bin_equal_exposure(x, 10L)
+    b <- modelblueprint:::bin_equal_exposure(x, 10L)
     expect_true(all(!is.na(b)))
   })
 
   it("bins are roughly equal in size", {
     x <- sort(rnorm(1000L))
-    b <- ModelBlueprint:::bin_equal_exposure(x, 10L)
+    b <- modelblueprint:::bin_equal_exposure(x, 10L)
     counts <- table(b)
     # No bin should be more than 3× the size of the smallest
     expect_lt(max(counts) / min(counts), 3)
@@ -911,18 +911,18 @@ describe("bin_equal_exposure", {
 describe("bin_equal_range", {
   it("returns a factor", {
     x <- rnorm(100L)
-    expect_true(is.factor(ModelBlueprint:::bin_equal_range(x, 10L)))
+    expect_true(is.factor(modelblueprint:::bin_equal_range(x, 10L)))
   })
 
   it("number of levels <= bins", {
     x <- rnorm(100L)
-    expect_lte(nlevels(ModelBlueprint:::bin_equal_range(x, 10L)), 10L)
+    expect_lte(nlevels(modelblueprint:::bin_equal_range(x, 10L)), 10L)
   })
 
   it("handles a constant vector without error", {
     # All same value — range = 0, spread = 0
     x <- rep(5, 50L)
-    expect_no_error(ModelBlueprint:::bin_equal_range(x, 5L))
+    expect_no_error(modelblueprint:::bin_equal_range(x, 5L))
   })
 })
 
@@ -933,7 +933,7 @@ describe("bin_equal_range", {
 describe("smart_level_order", {
   it("returns empty vector for empty input", {
     expect_equal(
-      ModelBlueprint:::smart_level_order(character(0L)),
+      modelblueprint:::smart_level_order(character(0L)),
       character(0L)
     )
   })
@@ -941,25 +941,25 @@ describe("smart_level_order", {
   it("sorts interval labels numerically not lexicographically", {
     labels <- c("[10,20)", "[2,10)", "[1,2)")
     expected <- c("[1,2)", "[2,10)", "[10,20)")
-    expect_equal(ModelBlueprint:::smart_level_order(labels), expected)
+    expect_equal(modelblueprint:::smart_level_order(labels), expected)
   })
 
   it("places NA label last", {
     labels <- c("B", "A", "NA", "[1,5)")
-    result <- ModelBlueprint:::smart_level_order(labels)
+    result <- modelblueprint:::smart_level_order(labels)
     expect_equal(tail(result, 1L), "NA")
   })
 
   it("sorts categorical labels alphabetically after numerics", {
     labels <- c("C", "A", "[1,5)", "B")
-    result <- ModelBlueprint:::smart_level_order(labels)
+    result <- modelblueprint:::smart_level_order(labels)
     expect_equal(result, c("[1,5)", "A", "B", "C"))
   })
 
   it("handles negative numeric labels correctly", {
     labels <- c("[-10,-5)", "[-5,0)", "[0,5)")
     expect_equal(
-      ModelBlueprint:::smart_level_order(labels),
+      modelblueprint:::smart_level_order(labels),
       c("[-10,-5)", "[-5,0)", "[0,5)")
     )
   })
@@ -967,7 +967,7 @@ describe("smart_level_order", {
   it("handles purely categorical input", {
     labels <- c("Medium", "High", "Low")
     expect_equal(
-      ModelBlueprint:::smart_level_order(labels),
+      modelblueprint:::smart_level_order(labels),
       c("High", "Low", "Medium")
     )
   })
@@ -979,23 +979,23 @@ describe("smart_level_order", {
 
 describe("hex_to_rgba", {
   it("converts a hex colour to rgba string", {
-    result <- ModelBlueprint:::hex_to_rgba("#2563eb", 0.5)
+    result <- modelblueprint:::hex_to_rgba("#2563eb", 0.5)
     expect_true(grepl("^rgba\\(", result))
   })
 
   it("alpha = 1 produces fully opaque rgba", {
-    result <- ModelBlueprint:::hex_to_rgba("#000000", 1)
+    result <- modelblueprint:::hex_to_rgba("#000000", 1)
     expect_equal(result, "rgba(0,0,0,1.00)")
   })
 
   it("alpha = 0 produces fully transparent rgba", {
-    result <- ModelBlueprint:::hex_to_rgba("#ffffff", 0)
+    result <- modelblueprint:::hex_to_rgba("#ffffff", 0)
     expect_equal(result, "rgba(255,255,255,0.00)")
   })
 
   it("handles shorthand and named colours", {
-    expect_no_error(ModelBlueprint:::hex_to_rgba("red", 0.5))
-    expect_no_error(ModelBlueprint:::hex_to_rgba("blue", 0.3))
+    expect_no_error(modelblueprint:::hex_to_rgba("red", 0.5))
+    expect_no_error(modelblueprint:::hex_to_rgba("blue", 0.3))
   })
 })
 
@@ -1005,22 +1005,22 @@ describe("hex_to_rgba", {
 
 describe("make_palette", {
   it("returns a single colour for n = 1", {
-    result <- ModelBlueprint:::make_palette(1L)
+    result <- modelblueprint:::make_palette(1L)
     expect_length(result, 1L)
   })
 
   it("returns n colours for n >= 3", {
     for (n in 3:12) {
-      expect_length(ModelBlueprint:::make_palette(n), n)
+      expect_length(modelblueprint:::make_palette(n), n)
     }
   })
 
   it("returns 2 colours for n = 2", {
-    expect_length(ModelBlueprint:::make_palette(2L), 2L)
+    expect_length(modelblueprint:::make_palette(2L), 2L)
   })
 
   it("all returned values are valid hex colours", {
-    cols <- ModelBlueprint:::make_palette(6L)
+    cols <- modelblueprint:::make_palette(6L)
     expect_true(all(grepl("^#[0-9A-Fa-f]{6}$", cols)))
   })
 })
@@ -1031,29 +1031,29 @@ describe("make_palette", {
 
 describe("sig_dig", {
   it("returns a character vector", {
-    expect_type(ModelBlueprint:::sig_dig(3.14159), "character")
+    expect_type(modelblueprint:::sig_dig(3.14159), "character")
   })
 
   it("rounds to the specified number of significant digits", {
-    result <- as.numeric(ModelBlueprint:::sig_dig(123456.789, n = 4L))
+    result <- as.numeric(modelblueprint:::sig_dig(123456.789, n = 4L))
     expect_equal(result, 123500, tolerance = 1)
   })
 
   it("handles zero", {
-    expect_no_error(ModelBlueprint:::sig_dig(0, n = 7L))
+    expect_no_error(modelblueprint:::sig_dig(0, n = 7L))
   })
 
   it("handles negative numbers", {
-    expect_no_error(ModelBlueprint:::sig_dig(-42.5, n = 3L))
+    expect_no_error(modelblueprint:::sig_dig(-42.5, n = 3L))
   })
 
   it("handles NA input", {
-    result <- ModelBlueprint:::sig_dig(NA_real_, n = 7L)
+    result <- modelblueprint:::sig_dig(NA_real_, n = 7L)
     expect_true(is.na(suppressWarnings(as.numeric(result))))
   })
 
   it("vectorises correctly", {
-    result <- ModelBlueprint:::sig_dig(c(1.111, 2.222, 3.333), n = 3L)
+    result <- modelblueprint:::sig_dig(c(1.111, 2.222, 3.333), n = 3L)
     expect_length(result, 3L)
   })
 })
@@ -1066,7 +1066,7 @@ describe("one_way — scale", {
   it("completes in < 10 seconds on 1M rows", {
     df_big <- make_large_df(1e6L)
     t <- system.time(
-      ModelBlueprint::one_way(df_big, var = "x", obs = "obs", bins = 25L)
+      modelblueprint::one_way(df_big, var = "x", obs = "obs", bins = 25L)
     )
     expect_lt(t[["elapsed"]], 10)
   })

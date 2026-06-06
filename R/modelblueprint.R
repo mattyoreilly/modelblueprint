@@ -1,5 +1,5 @@
 # =============================================================================
-# ModelBlueprint.R
+# modelblueprint.R
 # S7 class for managing the full lifecycle of a machine learning model.
 # =============================================================================
 
@@ -9,10 +9,10 @@ NULL
 class_tabular <- new_union(NULL, class_data.frame)
 
 # =============================================================================
-# ModelBlueprint S7 class
+# modelblueprint S7 class
 # =============================================================================
 
-#' ModelBlueprint: a model-agnostic container for ML model lifecycles
+#' modelblueprint: a model-agnostic container for ML model lifecycles
 #'
 #' @param model A fitted model object. Any class implementing `predict()`.
 #' @param train,test,holdout Datasets as `data.frame`. Default `NULL`.
@@ -33,7 +33,7 @@ class_tabular <- new_union(NULL, class_data.frame)
 #'
 #' @examples
 #' \dontrun{
-#' mb <- ModelBlueprint(
+#' mb <- modelblueprint(
 #'   model  = lm(mpg ~ wt + hp, data = mtcars),
 #'   train  = mtcars,
 #'   y_name = "mpg"
@@ -43,8 +43,8 @@ class_tabular <- new_union(NULL, class_data.frame)
 #'
 #' @usage NULL
 #' @export
-ModelBlueprint <- new_class(
-  name = "ModelBlueprint",
+modelblueprint <- new_class(
+  name = "modelblueprint",
 
   properties = list(
     model = new_property(
@@ -106,17 +106,17 @@ ModelBlueprint <- new_class(
 # predict method
 # =============================================================================
 
-#' Generate predictions from a ModelBlueprint
+#' Generate predictions from a modelblueprint
 #'
 #' Applies `pre_process_fun` -> `feat_eng_fun` -> model prediction ->
 #' `post_process_fun` to `newdata`.
 #'
-#' @param object  A `ModelBlueprint`.
+#' @param object  A `modelblueprint`.
 #' @param newdata A `data.frame` or `data.table`.
 #' @param ...     Unused.
 #' @return A numeric vector of predictions.
 #' @export
-predict.ModelBlueprint <- function(object, newdata, ...) {
+predict.modelblueprint <- function(object, newdata, ...) {
   if (missing(newdata) || is.null(newdata)) {
     stop("`newdata` is required for prediction.", call. = FALSE)
   }
@@ -143,10 +143,10 @@ predict.ModelBlueprint <- function(object, newdata, ...) {
 
 #' @keywords internal
 #' @noRd
-method(print, ModelBlueprint) <- function(x, ...) {
+method(print, modelblueprint) <- function(x, ...) {
   rule <- function(ch = "-", n = 60L) paste(rep(ch, n), collapse = "")
   cat(rule("="), "\n")
-  cat("ModelBlueprint\n")
+  cat("modelblueprint\n")
   cat(rule("="), "\n")
   cat(sprintf("  Model:        %s\n", paste(class(x@model), collapse = "/")))
   cat(sprintf("  Display name: %s\n", x@model_display_name %||% "<not set>"))
@@ -178,14 +178,14 @@ format_nrow <- function(d) {
 # dplyr-style methods
 # =============================================================================
 
-#' Filter rows in a ModelBlueprint's datasets
-#' @param .data A `ModelBlueprint`.
+#' Filter rows in a modelblueprint's datasets
+#' @param .data A `modelblueprint`.
 #' @param ... Filter expressions passed to `dplyr::filter()`.
 #' @param sets Which datasets to filter. Default: all non-NULL.
-#' @return A new `ModelBlueprint`.
-#' @method filter ModelBlueprint
+#' @return A new `modelblueprint`.
+#' @method filter modelblueprint
 #' @export
-filter.ModelBlueprint <- function(
+filter.modelblueprint <- function(
   .data,
   ...,
   sets = c("train", "test", "holdout")
@@ -198,14 +198,14 @@ filter.ModelBlueprint <- function(
   mb
 }
 
-#' Mutate columns in a ModelBlueprint's datasets
-#' @param .data A `ModelBlueprint`.
+#' Mutate columns in a modelblueprint's datasets
+#' @param .data A `modelblueprint`.
 #' @param ... Expressions passed to `dplyr::mutate()`.
 #' @param sets Which datasets to mutate. Default: all non-NULL.
-#' @return A new `ModelBlueprint`.
-#' @method mutate ModelBlueprint
+#' @return A new `modelblueprint`.
+#' @method mutate modelblueprint
 #' @export
-mutate.ModelBlueprint <- function(
+mutate.modelblueprint <- function(
   .data,
   ...,
   sets = c("train", "test", "holdout")
@@ -218,16 +218,16 @@ mutate.ModelBlueprint <- function(
   mb
 }
 
-#' Left-join into a ModelBlueprint's datasets
-#' @param x A `ModelBlueprint`.
+#' Left-join into a modelblueprint's datasets
+#' @param x A `modelblueprint`.
 #' @param y A `data.frame` to join.
 #' @param by Join keys.
 #' @param sets Which datasets to join. Default: all non-NULL.
 #' @param ... Passed to `dplyr::left_join()`.
-#' @return A new `ModelBlueprint`.
-#' @method left_join ModelBlueprint
+#' @return A new `modelblueprint`.
+#' @method left_join modelblueprint
 #' @export
-left_join.ModelBlueprint <- function(
+left_join.modelblueprint <- function(
   x,
   y,
   by = NULL,
@@ -247,13 +247,13 @@ left_join.ModelBlueprint <- function(
 # saveMB
 # =============================================================================
 
-#' Save a ModelBlueprint to disk
+#' Save a modelblueprint to disk
 #'
-#' Serialises a `ModelBlueprint` to a compressed `.tar.gz` archive containing
+#' Serialises a `modelblueprint` to a compressed `.tar.gz` archive containing
 #' all components needed to fully reconstruct it: model, data splits, pipeline
 #' functions, and metadata.
 #'
-#' @param object   A `ModelBlueprint` object.
+#' @param object   A `modelblueprint` object.
 #' @param path     Directory to write the archive to. Default: working directory.
 #' @param filename Optional filename. When `NULL`, `model_display_name` is used.
 #' @param ...      Currently unused. Reserved for future subclass methods.
@@ -266,7 +266,7 @@ saveMB <- new_generic(
   function(object, path = getwd(), filename = NULL, ...) S7_dispatch()
 )
 
-method(saveMB, ModelBlueprint) <- function(
+method(saveMB, modelblueprint) <- function(
   object,
   path = getwd(),
   filename = NULL
@@ -293,11 +293,11 @@ method(saveMB, ModelBlueprint) <- function(
 
   # Save class metadata so loadMB() can reconstruct the right class.
   # This is what allows loadMB() to be a plain function that works for both
-  # ModelBlueprint and any future subclass (ModelBlueprintSequence etc.)
+  # modelblueprint and any future subclass (modelblueprintSequence etc.)
   saveRDS(
     list(
       class = class(object),
-      version = utils::packageVersion("ModelBlueprint")
+      version = utils::packageVersion("modelblueprint")
     ),
     file = file.path(tmp, "meta.rds"),
     compress = FALSE
@@ -331,7 +331,7 @@ method(saveMB, ModelBlueprint) <- function(
 
   final_path <- file.path(path, basename(filename))
   file.copy(file.path(tmp, tarfile), final_path, overwrite = TRUE)
-  message(sprintf("ModelBlueprint saved: %s", normalizePath(final_path)))
+  message(sprintf("modelblueprint saved: %s", normalizePath(final_path)))
   invisible(normalizePath(final_path))
 }
 
@@ -340,12 +340,12 @@ method(saveMB, ModelBlueprint) <- function(
 # loadMB
 # =============================================================================
 
-#' Load a ModelBlueprint from disk
+#' Load a modelblueprint from disk
 #'
-#' Reconstructs a `ModelBlueprint` from a `.tar.gz` archive created by [saveMB()].
+#' Reconstructs a `modelblueprint` from a `.tar.gz` archive created by [saveMB()].
 #'
 #' @param path Path to the `.tar.gz` archive created by [saveMB()].
-#' @return A fully reconstructed `ModelBlueprint` object.
+#' @return A fully reconstructed `modelblueprint` object.
 #' @seealso [saveMB()]
 #' @export
 loadMB <- function(path) {
@@ -360,20 +360,20 @@ loadMB <- function(path) {
 
   meta_path <- file.path(tmp, "meta.rds")
   if (!file.exists(meta_path)) {
-    message("Note: archive has no metadata; assuming ModelBlueprint class.")
+    message("Note: archive has no metadata; assuming modelblueprint class.")
     return(load_modelblueprint(tmp))
   }
 
   meta <- readRDS(meta_path)
 
-  # Add a new branch here when ModelBlueprintSequence is introduced.
-  # S7 stores the class as "ModelBlueprint::ModelBlueprint" (package-qualified).
+  # Add a new branch here when modelblueprintSequence is introduced.
+  # S7 stores the class as "modelblueprint::modelblueprint" (package-qualified).
   # Strip the package prefix before switching so both bare and qualified names work.
   bare_class <- sub("^.*::", "", meta$class[[1L]])
 
   switch(
     bare_class,
-    ModelBlueprint = load_modelblueprint(tmp),
+    modelblueprint = load_modelblueprint(tmp),
     stop(
       sprintf(
         "Don't know how to load class '%s'. Is the right package version installed?",
@@ -444,7 +444,7 @@ load_modelblueprint <- function(tmp) {
     args[[tools::file_path_sans_ext(basename(f))]] <- readRDS(f)
   }
 
-  do.call(ModelBlueprint, args)
+  do.call(modelblueprint, args)
 }
 
 #' @keywords internal
@@ -571,16 +571,16 @@ check_package <- function(pkg, context) {
 
 
 # =============================================================================
-# one_way.ModelBlueprint
+# one_way.modelblueprint
 # =============================================================================
 
-#' One-way analysis for a ModelBlueprint
+#' One-way analysis for a modelblueprint
 #'
-#' Calls [one_way()] using the ModelBlueprint's target, exposure, and data
+#' Calls [one_way()] using the modelblueprint's target, exposure, and data
 #' slots. Optionally overlays the model's in-sample predictions to produce
 #' a lift chart (pass `predictions = TRUE`).
 #'
-#' @param data        A `ModelBlueprint`.
+#' @param data        A `modelblueprint`.
 #' @param var         `[character(1)]` Feature to plot on the x-axis.
 #' @param set         `[character(1)]` Which dataset to use: `"train"`,
 #'                    `"test"`, or `"holdout"`. Default `"train"`.
@@ -593,9 +593,9 @@ check_package <- function(pkg, context) {
 #' @param ret         `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...         Further arguments passed to [one_way()].
 #' @return A plotly object or data.table depending on `ret`.
-#' @method one_way ModelBlueprint
+#' @method one_way modelblueprint
 #' @export
-one_way.ModelBlueprint <- function(
+one_way.modelblueprint <- function(
   data,
   var,
   set = c("train", "test", "holdout"),
@@ -614,7 +614,7 @@ one_way.ModelBlueprint <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL. Supply data when constructing the object.",
+        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
         set
       ),
       call. = FALSE
@@ -639,15 +639,15 @@ one_way.ModelBlueprint <- function(
 
 
 # =============================================================================
-# pdp.ModelBlueprint
+# pdp.modelblueprint
 # =============================================================================
 
-#' Partial dependence plot for a ModelBlueprint
+#' Partial dependence plot for a modelblueprint
 #'
-#' Calls [pdp()] using the ModelBlueprint's model, target, exposure, and
+#' Calls [pdp()] using the modelblueprint's model, target, exposure, and
 #' data slots.
 #'
-#' @param data        A `ModelBlueprint`.
+#' @param data        A `modelblueprint`.
 #' @param var         `[character(1)]` Feature to compute the PDP for.
 #' @param set         `[character(1)]` Dataset to use: `"train"`, `"test"`,
 #'                    or `"holdout"`. Default `"train"`.
@@ -657,9 +657,9 @@ one_way.ModelBlueprint <- function(
 #' @param ret         `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...         Further arguments passed to [pdp()].
 #' @return A plotly object or data.table depending on `ret`.
-#' @method pdp ModelBlueprint
+#' @method pdp modelblueprint
 #' @export
-pdp.ModelBlueprint <- function(
+pdp.modelblueprint <- function(
   data,
   var,
   set = c("train", "test", "holdout"),
@@ -677,7 +677,7 @@ pdp.ModelBlueprint <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL. Supply data when constructing the object.",
+        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
         set
       ),
       call. = FALSE
@@ -686,7 +686,7 @@ pdp.ModelBlueprint <- function(
 
   if (is.na(data@y_name)) {
     stop(
-      "ModelBlueprint `@y_name` is not set. Specify the target variable name.",
+      "modelblueprint `@y_name` is not set. Specify the target variable name.",
       call. = FALSE
     )
   }
@@ -723,7 +723,7 @@ resolve_obs <- function(object, df, set, predictions) {
   y <- object@y_name
   if (is.na(y)) {
     stop(
-      "ModelBlueprint `@y_name` is not set. Specify the target variable name.",
+      "modelblueprint `@y_name` is not set. Specify the target variable name.",
       call. = FALSE
     )
   }
@@ -732,7 +732,7 @@ resolve_obs <- function(object, df, set, predictions) {
   }
 
   pred_col <- paste0(".pred_", object@model_display_name %||% "model")
-  df[[pred_col]] <- predict.ModelBlueprint(object, df)
+  df[[pred_col]] <- predict.modelblueprint(object, df)
   assign("df", df, envir = parent.frame())
   c(y, pred_col)
 }
@@ -752,7 +752,7 @@ resolve_exposure <- function(object, df) {
 # =============================================================================
 # .onLoad — register S3 methods for the S7 package-qualified class name
 # =============================================================================
-# S7 stores the class as "ModelBlueprint::ModelBlueprint". UseMethod() needs
+# S7 stores the class as "modelblueprint::modelblueprint". UseMethod() needs
 # methods registered under that exact string. registerS3method() at load time
 # is the correct approach — it avoids backtick-named functions that R CMD check
 # flags as apparent unregistered methods.
@@ -760,63 +760,63 @@ resolve_exposure <- function(object, df) {
   ns <- asNamespace(pkgname)
   registerS3method(
     "predict",
-    "ModelBlueprint::ModelBlueprint",
-    predict.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    predict.modelblueprint,
     envir = ns
   )
   registerS3method(
     "filter",
-    "ModelBlueprint::ModelBlueprint",
-    filter.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    filter.modelblueprint,
     envir = ns
   )
   registerS3method(
     "mutate",
-    "ModelBlueprint::ModelBlueprint",
-    mutate.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    mutate.modelblueprint,
     envir = ns
   )
   registerS3method(
     "left_join",
-    "ModelBlueprint::ModelBlueprint",
-    left_join.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    left_join.modelblueprint,
     envir = ns
   )
   registerS3method(
     "one_way",
-    "ModelBlueprint::ModelBlueprint",
-    one_way.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    one_way.modelblueprint,
     envir = ns
   )
   registerS3method(
     "pdp",
-    "ModelBlueprint::ModelBlueprint",
-    pdp.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    pdp.modelblueprint,
     envir = ns
   )
   registerS3method(
     "gain",
-    "ModelBlueprint::ModelBlueprint",
-    gain.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    gain.modelblueprint,
     envir = ns
   )
   registerS3method(
     "pred_vs_obs",
-    "ModelBlueprint::ModelBlueprint",
-    pred_vs_obs.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    pred_vs_obs.modelblueprint,
     envir = ns
   )
   registerS3method(
     "residuals_grouped",
-    "ModelBlueprint::ModelBlueprint",
-    residuals_grouped.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    residuals_grouped.modelblueprint,
     envir = ns
   )
   registerS3method("sami", "list", sami.list, envir = ns)
   registerS3method(
     "gain",
-    "ModelBlueprint::ModelBlueprint",
-    gain.ModelBlueprint,
+    "modelblueprint::modelblueprint",
+    gain.modelblueprint,
     envir = ns
   )
 }

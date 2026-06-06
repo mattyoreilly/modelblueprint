@@ -1,4 +1,4 @@
-Package: ModelBlueprint
+Package: modelblueprint
 Title: One-Way and Partial Dependence Plots for Models
 Version: 0.1.0
 Authors@R: person("Matt", role = c("aut", "cre"), email = "fermoymatt@gmail.com")

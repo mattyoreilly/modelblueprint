@@ -1,9 +1,9 @@
 # =============================================================================
 # MB_examples.R
-# Example ModelBlueprint constructors for common R model types.
+# Example modelblueprint constructors for common R model types.
 #
 # All functions share a single help page (see ?mb_examples) and are grouped
-# under the "Example ModelBlueprints" family in the package documentation.
+# under the "Example modelblueprints" family in the package documentation.
 # =============================================================================
 
 # mtcars is a lazy-loaded dataset from the datasets package; it is always
@@ -27,10 +27,10 @@ utils::globalVariables("mtcars")
 # Shared documentation page
 # =============================================================================
 
-#' Example ModelBlueprint objects
+#' Example modelblueprint objects
 #'
 #' A family of constructor functions that return ready-to-use
-#' `ModelBlueprint` objects for common R model types. All examples use the
+#' `modelblueprint` objects for common R model types. All examples use the
 #' built-in `mtcars` dataset with a reproducible 75/25 train/test split.
 #'
 #' **Regression target:** `mpg` (continuous)
@@ -47,7 +47,7 @@ utils::globalVariables("mtcars")
 #' matrix (rpart, randomForest) so that `predict()` always returns a plain
 #' numeric vector of P(class = 1).
 #'
-#' @return A `ModelBlueprint` object.
+#' @return A `modelblueprint` object.
 #'
 #' @examples
 #' mb <- mb_lm_regression()
@@ -58,7 +58,7 @@ utils::globalVariables("mtcars")
 #' predict(mb_cls, mtcars)   # returns probabilities in 0 to 1
 #'
 #' @name mb_examples
-#' @family Example ModelBlueprints
+#' @family Example modelblueprints
 NULL
 
 
@@ -70,7 +70,7 @@ NULL
 #' @export
 mb_lm_regression <- function() {
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(mpg ~ wt + hp + cyl, data = d$train),
     train = d$train,
     test = d$test,
@@ -85,7 +85,7 @@ mb_lm_regression <- function() {
 #' @export
 mb_lm_classification <- function() {
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = stats::lm(vs ~ wt + hp + am, data = d$train),
     train = d$train,
     test = d$test,
@@ -105,7 +105,7 @@ mb_lm_classification <- function() {
 #' @export
 mb_glm_regression <- function() {
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(mpg ~ wt + hp + cyl, data = d$train, family = gaussian),
     train = d$train,
     test = d$test,
@@ -120,7 +120,7 @@ mb_glm_regression <- function() {
 #' @export
 mb_glm_binomial <- function() {
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(vs ~ wt + hp + am, data = d$train, family = binomial),
     train = d$train,
     test = d$test,
@@ -137,7 +137,7 @@ mb_glm_poisson <- function() {
   d <- .mb_split()
   d$train$mpg_i <- as.integer(round(d$train$mpg))
   d$test$mpg_i <- as.integer(round(d$test$mpg))
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(mpg_i ~ wt + hp + cyl, data = d$train, family = poisson),
     train = d$train,
     test = d$test,
@@ -158,7 +158,7 @@ mb_glm_poisson <- function() {
 mb_rpart_regression <- function() {
   check_package("rpart", "mb_rpart_regression()")
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = rpart::rpart(
       mpg ~ wt + hp + cyl + am + gear,
       data = d$train,
@@ -179,7 +179,7 @@ mb_rpart_regression <- function() {
 mb_rpart_classification <- function() {
   check_package("rpart", "mb_rpart_classification()")
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = rpart::rpart(
       vs ~ wt + hp + am + gear + carb,
       data = d$train,
@@ -208,7 +208,7 @@ mb_rpart_classification <- function() {
 mb_rf_regression <- function() {
   check_package("randomForest", "mb_rf_regression()")
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = randomForest::randomForest(
       mpg ~ wt + hp + cyl + am + gear + carb,
       data = d$train,
@@ -228,7 +228,7 @@ mb_rf_regression <- function() {
 mb_rf_classification <- function() {
   check_package("randomForest", "mb_rf_classification()")
   d <- .mb_split()
-  ModelBlueprint(
+  modelblueprint(
     model = randomForest::randomForest(
       factor(vs) ~ wt + hp + am + gear + carb,
       data = d$train,
@@ -257,7 +257,7 @@ mb_xgb_regression <- function() {
   check_package("xgboost", "mb_xgb_regression()")
   d <- .mb_split()
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
-  ModelBlueprint(
+  modelblueprint(
     model = xgboost::xgboost(
       x = as.matrix(d$train[, features]),
       y = d$train$mpg,
@@ -280,7 +280,7 @@ mb_xgb_classification <- function() {
   check_package("xgboost", "mb_xgb_classification()")
   d <- .mb_split()
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
-  ModelBlueprint(
+  modelblueprint(
     model = xgboost::xgboost(
       x = as.matrix(d$train[, features]),
       y = factor(d$train$vs),
@@ -310,7 +310,7 @@ mb_h2o_regression <- function() {
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
   suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = -1L)))
   h2o::h2o.no_progress()
-  ModelBlueprint(
+  modelblueprint(
     model = h2o::h2o.glm(
       x = features,
       y = "mpg",
@@ -338,7 +338,7 @@ mb_h2o_classification <- function() {
   h2o::h2o.no_progress()
   train_h2o <- h2o::as.h2o(d$train)
   train_h2o[, "vs"] <- h2o::as.factor(train_h2o[, "vs"])
-  ModelBlueprint(
+  modelblueprint(
     model = h2o::h2o.glm(
       x = features,
       y = "vs",

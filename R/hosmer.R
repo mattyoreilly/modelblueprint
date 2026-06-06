@@ -4,7 +4,7 @@
 #
 # Design:
 #   - pred_vs_obs() is an S3 generic — works on data.frames directly or via
-#     pred_vs_obs.ModelBlueprint() which pulls slots automatically
+#     pred_vs_obs.modelblueprint() which pulls slots automatically
 #   - Binning reuses the same equal-exposure / equal-range logic as one_way()
 #   - No external dependencies beyond data.table and plotly
 #   - No mutation of caller data
@@ -23,7 +23,7 @@ utils::globalVariables(c("left", "right", ".expo", ".pred", ".obs", ".bin"))
 #' against average observed values across bins of the prediction space. A
 #' yellow exposure bar on the secondary axis shows the distribution of data.
 #'
-#' @param data A `data.frame`, `data.table`, or `ModelBlueprint`.
+#' @param data A `data.frame`, `data.table`, or `modelblueprint`.
 #' @param ...  Arguments passed to methods.
 #' @export
 pred_vs_obs <- function(data, ...) UseMethod("pred_vs_obs")
@@ -93,9 +93,9 @@ pred_vs_obs.default <- function(
 
 
 #' @rdname pred_vs_obs
-#' @method pred_vs_obs ModelBlueprint
+#' @method pred_vs_obs modelblueprint
 #'
-#' @param data     A `ModelBlueprint` object.
+#' @param data     A `modelblueprint` object.
 #' @param set      `[character(1)]` Which dataset to use: `"train"`,
 #'                 `"test"`, or `"holdout"`. Default `"train"`.
 #' @param bins     `[integer(1)]` Number of bins. Default `10L`.
@@ -109,7 +109,7 @@ pred_vs_obs.default <- function(
 #'
 #' @examples
 #' \dontrun{
-#' mb <- ModelBlueprint(
+#' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
 #'   y_name = "vs",
@@ -118,7 +118,7 @@ pred_vs_obs.default <- function(
 #' pred_vs_obs(mb)
 #' }
 #' @export
-pred_vs_obs.ModelBlueprint <- function(
+pred_vs_obs.modelblueprint <- function(
   data,
   set = c("train", "test", "holdout"),
   bins = 10L,
@@ -135,7 +135,7 @@ pred_vs_obs.ModelBlueprint <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL. Supply data when constructing the object.",
+        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
         set
       ),
       call. = FALSE
@@ -144,7 +144,7 @@ pred_vs_obs.ModelBlueprint <- function(
 
   if (is.na(data@y_name)) {
     stop(
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       call. = FALSE
     )
   }
@@ -163,7 +163,7 @@ pred_vs_obs.ModelBlueprint <- function(
   } else {
     "pred"
   }
-  df[[pred_col]] <- predict.ModelBlueprint(data, df)
+  df[[pred_col]] <- predict.modelblueprint(data, df)
 
   chart_title <- title %||%
     (data@model_display_name %||% "Predicted vs Observed")
@@ -182,7 +182,7 @@ pred_vs_obs.ModelBlueprint <- function(
 }
 
 # Register package-qualified S7 class name for UseMethod dispatch
-`pred_vs_obs.ModelBlueprint::ModelBlueprint` <- pred_vs_obs.ModelBlueprint
+`pred_vs_obs.modelblueprint::modelblueprint` <- pred_vs_obs.modelblueprint
 
 
 # =============================================================================

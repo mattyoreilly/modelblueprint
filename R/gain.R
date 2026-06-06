@@ -1,10 +1,10 @@
 # =============================================================================
 # gain.R
-# Cumulative gains chart and Gini coefficient for ModelBlueprint objects.
+# Cumulative gains chart and Gini coefficient for modelblueprint objects.
 #
 # Design:
 #   - gain() is an S3 generic — works on data.frames directly or via
-#     gain.ModelBlueprint() which pulls slots automatically
+#     gain.modelblueprint() which pulls slots automatically
 #   - No mutation of caller data — copies made internally
 #   - data.table used internally, never exposed in the return value
 #   - trapz() and helpers are @noRd internals
@@ -22,7 +22,7 @@ utils::globalVariables("perfect_model")
 #' perfect model baseline. The Gini coefficient for each score is shown in
 #' the legend.
 #'
-#' @param data A `data.frame`, `data.table`, or `ModelBlueprint`.
+#' @param data A `data.frame`, `data.table`, or `modelblueprint`.
 #' @param ...  Arguments passed to methods.
 #' @export
 gain <- function(data, ...) UseMethod("gain")
@@ -98,9 +98,9 @@ gain.default <- function(
 
 
 #' @rdname gain
-#' @method gain ModelBlueprint
+#' @method gain modelblueprint
 #'
-#' @param data  A `ModelBlueprint` object.
+#' @param data  A `modelblueprint` object.
 #' @param set   Which dataset to use: `"train"`, `"test"`, or `"holdout"`.
 #' @param title Chart title. Defaults to `model_display_name`.
 #' @param ret   `"plot"`, `"data"`, or `"gini"`. Default `"plot"`.
@@ -110,7 +110,7 @@ gain.default <- function(
 #'
 #' @examples
 #' \dontrun{
-#' mb <- ModelBlueprint(
+#' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
 #'   y_name = "vs",
@@ -119,7 +119,7 @@ gain.default <- function(
 #' gain(mb)
 #' }
 #' @export
-gain.ModelBlueprint <- function(
+gain.modelblueprint <- function(
   data,
   set = c("train", "test", "holdout"),
   title = NULL,
@@ -133,7 +133,7 @@ gain.ModelBlueprint <- function(
   if (is.null(df)) {
     stop(
       sprintf(
-        "ModelBlueprint `@%s` is NULL. Supply data when constructing the object.",
+        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
         set
       ),
       call. = FALSE
@@ -142,7 +142,7 @@ gain.ModelBlueprint <- function(
 
   if (is.na(data@y_name)) {
     stop(
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       call. = FALSE
     )
   }
@@ -161,7 +161,7 @@ gain.ModelBlueprint <- function(
   } else {
     "model_pred"
   }
-  df[[pred_col]] <- predict.ModelBlueprint(data, df)
+  df[[pred_col]] <- predict.modelblueprint(data, df)
 
   chart_title <- title %||% pred_col
 
@@ -177,7 +177,7 @@ gain.ModelBlueprint <- function(
 }
 
 # Register package-qualified S7 class name so UseMethod() dispatches correctly
-`gain.ModelBlueprint::ModelBlueprint` <- gain.ModelBlueprint
+`gain.modelblueprint::modelblueprint` <- gain.modelblueprint
 
 
 # =============================================================================

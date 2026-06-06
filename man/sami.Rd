@@ -32,7 +32,7 @@ sami(data, ...)
 )
 }
 \arguments{
-\item{data}{A list of \code{ModelBlueprint} objects. Must have length
+\item{data}{A list of \code{modelblueprint} objects. Must have length
 2 or more. All blueprints must share the same \code{y_name},
 \code{expo_name}, and training data structure.}
 
@@ -83,9 +83,9 @@ df <- data.frame(
 sami(df, obs = "obs", pred = c("pred1", "pred2"), bins = 10)
 }
 \dontrun{
-mb1 <- ModelBlueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
+mb1 <- modelblueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
                        y_name = "mpg", model_display_name = "lm_wt")
-mb2 <- ModelBlueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,
+mb2 <- modelblueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,
                        y_name = "mpg", model_display_name = "lm_hp")
 sami(list(mb1, mb2), set = "train", bins = 10)
 }

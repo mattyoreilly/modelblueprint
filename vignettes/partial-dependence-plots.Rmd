@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   fig.width  = 7,
   fig.height = 4
 )
-library(ModelBlueprint)
+library(modelblueprint)
 ```
 
 ## What is a partial dependence plot?
@@ -40,7 +40,7 @@ The chart has the same dual-axis layout as one-way plots:
 ## Basic usage
 
 ```{r basic, eval = FALSE}
-library(ModelBlueprint)
+library(modelblueprint)
 
 mb <- mb_glm_binomial()
 

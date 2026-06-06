@@ -1,24 +1,24 @@
-# ModelBlueprint
+# modelblueprint
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/matt/ModelBlueprint/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/matt/ModelBlueprint/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/matt/modelblueprint/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/matt/modelblueprint/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-**ModelBlueprint** is a model-agnostic container for managing machine learning model lifecycles in R. Wrap any `predict()`-compatible model — `lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline functions, and metadata, then run diagnostics with a single function call.
+**modelblueprint** is a model-agnostic container for managing machine learning model lifecycles in R. Wrap any `predict()`-compatible model — `lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline functions, and metadata, then run diagnostics with a single function call.
 
 ## Installation
 
 ```r
 # Install from GitHub
-pak::pak("matt/ModelBlueprint")
+pak::pak("matt/modelblueprint")
 ```
 
 ## Overview
 
 ```r
-library(ModelBlueprint)
+library(modelblueprint)
 
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

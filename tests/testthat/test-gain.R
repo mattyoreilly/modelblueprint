@@ -1,6 +1,6 @@
 # =============================================================================
 # test-gain.R
-# Tests for gain(), gain.default(), gain.ModelBlueprint(), and internals.
+# Tests for gain(), gain.default(), gain.modelblueprint(), and internals.
 #
 # Conventions:
 #   - One describe() block per function/behaviour group
@@ -10,7 +10,7 @@
 # =============================================================================
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
 
 # =============================================================================
@@ -48,7 +48,7 @@ make_random_df <- function(n = 1000L, seed = 1L) {
 }
 
 make_mb <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(vs ~ wt + hp, data = mtcars, family = binomial),
     train = mtcars,
     test = mtcars[1:16, ],
@@ -306,10 +306,10 @@ describe("gain.default — returned data structure", {
 
 
 # =============================================================================
-# gain.ModelBlueprint
+# gain.modelblueprint
 # =============================================================================
 
-describe("gain.ModelBlueprint — return type", {
+describe("gain.modelblueprint — return type", {
   mb <- make_mb()
 
   it("returns a plotly object by default", {
@@ -329,7 +329,7 @@ describe("gain.ModelBlueprint — return type", {
 })
 
 
-describe("gain.ModelBlueprint — slot usage", {
+describe("gain.modelblueprint — slot usage", {
   mb <- make_mb()
 
   it("uses y_name from blueprint", {
@@ -348,7 +348,7 @@ describe("gain.ModelBlueprint — slot usage", {
 })
 
 
-describe("gain.ModelBlueprint — set argument", {
+describe("gain.modelblueprint — set argument", {
   mb <- make_mb()
 
   it("uses train by default", {
@@ -360,32 +360,32 @@ describe("gain.ModelBlueprint — set argument", {
   })
 
   it("errors informatively when chosen set is NULL", {
-    mb_no_data <- ModelBlueprint(
+    mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
       gain(mb_no_data),
-      "ModelBlueprint `@train` is NULL.",
+      "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
   })
 
   it("errors when y_name is not set", {
-    mb_no_y <- ModelBlueprint(
+    mb_no_y <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars
     )
     expect_error(
       gain(mb_no_y),
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       fixed = TRUE
     )
   })
 })
 
 
-describe("gain.ModelBlueprint — title argument", {
+describe("gain.modelblueprint — title argument", {
   mb <- make_mb()
 
   it("accepts a custom title without error", {
@@ -406,32 +406,32 @@ describe("trapz", {
   it("integrates a constant function (area = base * height)", {
     x <- seq(0, 1, length.out = 100L)
     y <- rep(2, 100L)
-    expect_equal(ModelBlueprint:::trapz(x, y), 2, tolerance = 1e-6)
+    expect_equal(modelblueprint:::trapz(x, y), 2, tolerance = 1e-6)
   })
 
   it("integrates a linear function exactly", {
     x <- c(0, 1, 2)
     y <- c(0, 1, 2) # area under y = x from 0 to 2 = 2
-    expect_equal(ModelBlueprint:::trapz(x, y), 2, tolerance = 1e-6)
+    expect_equal(modelblueprint:::trapz(x, y), 2, tolerance = 1e-6)
   })
 
   it("approximates integral of sin(x) from 0 to pi", {
     x <- seq(0, pi, length.out = 1000L)
     y <- sin(x)
-    expect_equal(ModelBlueprint:::trapz(x, y), 2, tolerance = 1e-4)
+    expect_equal(modelblueprint:::trapz(x, y), 2, tolerance = 1e-4)
   })
 
   it("returns 0 for empty input", {
-    expect_equal(ModelBlueprint:::trapz(numeric(0)), 0)
+    expect_equal(modelblueprint:::trapz(numeric(0)), 0)
   })
 
   it("returns 0 for a single point", {
-    expect_equal(ModelBlueprint:::trapz(1, 1), 0)
+    expect_equal(modelblueprint:::trapz(1, 1), 0)
   })
 
   it("errors when x and y have different lengths", {
     expect_error(
-      ModelBlueprint:::trapz(1:3, 1:4),
+      modelblueprint:::trapz(1:3, 1:4),
       "`x` and `y` must be the same length.",
       fixed = TRUE
     )
@@ -439,7 +439,7 @@ describe("trapz", {
 
   it("errors when inputs are not numeric", {
     expect_error(
-      ModelBlueprint:::trapz("a", "b"),
+      modelblueprint:::trapz("a", "b"),
       "must be numeric or complex vectors.",
       fixed = TRUE
     )
@@ -447,7 +447,7 @@ describe("trapz", {
 
   it("handles single-argument form (treats x as y)", {
     # trapz(y) with x = seq_along(y)
-    result <- ModelBlueprint:::trapz(c(0, 1, 2))
+    result <- modelblueprint:::trapz(c(0, 1, 2))
     expect_equal(result, 2, tolerance = 1e-6)
   })
 })
@@ -469,7 +469,7 @@ describe("compute_cumulative", {
   }
 
   it("returns a list with data, gini, and auc elements", {
-    result <- ModelBlueprint:::compute_cumulative(
+    result <- modelblueprint:::compute_cumulative(
       make_cumulative_dt(),
       "pred",
       "obs",
@@ -479,7 +479,7 @@ describe("compute_cumulative", {
   })
 
   it("returned data has exactly 2 columns", {
-    result <- ModelBlueprint:::compute_cumulative(
+    result <- modelblueprint:::compute_cumulative(
       make_cumulative_dt(),
       "pred",
       "obs",
@@ -489,7 +489,7 @@ describe("compute_cumulative", {
   })
 
   it("cumulative exposure ends at 1", {
-    result <- ModelBlueprint:::compute_cumulative(
+    result <- modelblueprint:::compute_cumulative(
       make_cumulative_dt(),
       "pred",
       "obs",
@@ -499,7 +499,7 @@ describe("compute_cumulative", {
   })
 
   it("gini is numeric scalar", {
-    result <- ModelBlueprint:::compute_cumulative(
+    result <- modelblueprint:::compute_cumulative(
       make_cumulative_dt(),
       "pred",
       "obs",
@@ -512,7 +512,7 @@ describe("compute_cumulative", {
   it("does not mutate the input data.table", {
     dt <- make_cumulative_dt()
     cols_before <- names(dt)
-    ModelBlueprint:::compute_cumulative(dt, "pred", "obs", "exposure")
+    modelblueprint:::compute_cumulative(dt, "pred", "obs", "exposure")
     expect_equal(names(dt), cols_before)
   })
 })

@@ -1,7 +1,7 @@
 # =============================================================================
 # test-residuals-grouped.R
 # Tests for residuals_grouped(), residuals_grouped.default(),
-# residuals_grouped.ModelBlueprint(), and plot_residuals_grouped().
+# residuals_grouped.modelblueprint(), and plot_residuals_grouped().
 #
 # Conventions:
 #   - One describe() block per behaviour group
@@ -11,7 +11,7 @@
 # =============================================================================
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
 
 # =============================================================================
@@ -39,7 +39,7 @@ make_df_expo <- function(n = 500L, seed = 42L) {
 }
 
 make_mb <- function() {
-  ModelBlueprint(
+  modelblueprint(
     model = stats::glm(vs ~ wt + hp, data = mtcars, family = binomial),
     train = mtcars,
     test = mtcars[1:16, ],
@@ -333,10 +333,10 @@ describe("residuals_grouped.default — immutability", {
 
 
 # =============================================================================
-# residuals_grouped.ModelBlueprint — return type
+# residuals_grouped.modelblueprint — return type
 # =============================================================================
 
-describe("residuals_grouped.ModelBlueprint — return type", {
+describe("residuals_grouped.modelblueprint — return type", {
   mb <- make_mb()
 
   it("returns a plotly object by default", {
@@ -351,10 +351,10 @@ describe("residuals_grouped.ModelBlueprint — return type", {
 
 
 # =============================================================================
-# residuals_grouped.ModelBlueprint — slot usage
+# residuals_grouped.modelblueprint — slot usage
 # =============================================================================
 
-describe("residuals_grouped.ModelBlueprint — slot usage", {
+describe("residuals_grouped.modelblueprint — slot usage", {
   it("uses y_name from blueprint without error", {
     mb <- make_mb()
     expect_no_error(residuals_grouped(mb))
@@ -376,7 +376,7 @@ describe("residuals_grouped.ModelBlueprint — slot usage", {
     df <- mtcars
     set.seed(1L)
     df$expo <- runif(nrow(df), 0.5, 2)
-    mb_expo <- ModelBlueprint(
+    mb_expo <- modelblueprint(
       model = stats::glm(vs ~ wt + hp, data = df, family = binomial),
       train = df,
       y_name = "vs",
@@ -390,10 +390,10 @@ describe("residuals_grouped.ModelBlueprint — slot usage", {
 
 
 # =============================================================================
-# residuals_grouped.ModelBlueprint — set argument
+# residuals_grouped.modelblueprint — set argument
 # =============================================================================
 
-describe("residuals_grouped.ModelBlueprint — set argument", {
+describe("residuals_grouped.modelblueprint — set argument", {
   mb <- make_mb()
 
   it("uses train by default", {
@@ -405,25 +405,25 @@ describe("residuals_grouped.ModelBlueprint — set argument", {
   })
 
   it("errors informatively when chosen set is NULL", {
-    mb_no_data <- ModelBlueprint(
+    mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
       residuals_grouped(mb_no_data),
-      "ModelBlueprint `@train` is NULL.",
+      "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
   })
 
   it("errors when y_name is not set", {
-    mb_no_y <- ModelBlueprint(
+    mb_no_y <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       train = mtcars
     )
     expect_error(
       residuals_grouped(mb_no_y),
-      "ModelBlueprint `@y_name` is not set.",
+      "modelblueprint `@y_name` is not set.",
       fixed = TRUE
     )
   })
@@ -431,10 +431,10 @@ describe("residuals_grouped.ModelBlueprint — set argument", {
 
 
 # =============================================================================
-# residuals_grouped.ModelBlueprint — passthrough arguments
+# residuals_grouped.modelblueprint — passthrough arguments
 # =============================================================================
 
-describe("residuals_grouped.ModelBlueprint — passthrough arguments", {
+describe("residuals_grouped.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("residual_type = 'pearson' returns a plot", {

@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(ModelBlueprint)
+library(modelblueprint)
 
-test_check("ModelBlueprint")
+test_check("modelblueprint")

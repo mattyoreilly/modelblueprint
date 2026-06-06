@@ -2,7 +2,7 @@
 % Please edit documentation in R/modelblueprint.R
 \name{loadMB}
 \alias{loadMB}
-\title{Load a ModelBlueprint from disk}
+\title{Load a modelblueprint from disk}
 \usage{
 loadMB(path)
 }
@@ -10,10 +10,10 @@ loadMB(path)
 \item{path}{Path to the \code{.tar.gz} archive created by \code{\link[=saveMB]{saveMB()}}.}
 }
 \value{
-A fully reconstructed \code{ModelBlueprint} object.
+A fully reconstructed \code{modelblueprint} object.
 }
 \description{
-Reconstructs a \code{ModelBlueprint} from a \code{.tar.gz} archive created by \code{\link[=saveMB]{saveMB()}}.
+Reconstructs a \code{modelblueprint} from a \code{.tar.gz} archive created by \code{\link[=saveMB]{saveMB()}}.
 }
 \seealso{
 \code{\link[=saveMB]{saveMB()}}
