@@ -108,6 +108,9 @@ pdp.default <- function(
   type_agg = c("equal_exposure", "equal_range"),
   model_name = "model",
   ret = c("plot", "data"),
+  pre_process_fun = function(df) df,
+  feat_eng_fun = function(df) df,
+  post_process_fun = function(preds, df_raw) preds,
   ...
 ) {
   type_agg <- match.arg(type_agg)
@@ -116,8 +119,13 @@ pdp.default <- function(
   # -- Validate -----------------------------------------------------------------
   pdp_validate(data, var, obs, exposure, bins, sample_size)
 
-  # -- Coerce - never mutate caller's object ------------------------------------
-  dt <- data.table::as.data.table(data)
+  # -- Coerce; always copy so the caller's object is never mutated -------------
+  dt <- data.table::copy(data.table::as.data.table(data))
+
+  # -- Apply pipeline for in-sample predictions --------------------------------
+  df_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(dt))))
+  preds  <- model_predict(model, df_eng)
+  dt[, .pred := post_process_fun(preds, as.data.frame(dt))]
 
   # -- Resolve exposure ---------------------------------------------------------
   expo_col <- if (exposure %in% names(dt)) exposure else ".expo"
@@ -136,19 +144,13 @@ pdp.default <- function(
     return(NULL)
   }
 
-  # -- Compute in-sample predictions on the full dataset ------------------------
-  # These feed the "avg predicted" one-way line (not the PDP line).
-  dt[, .pred := model_predict(model, .SD)]
-
   # -- Bin var across the full dataset ------------------------------------------
   bin_info <- compute_bins(dt[[var]], bins, type_agg)
   dt[, .bin := bin_info$labels]
 
-  # -- Aggregate one-way actuals + in-sample predictions ------------------------
-  agg <- aggregate_pdp_oneway(dt, obs, expo_col)
-
-  # -- Sample for PDP computation -----------------------------------------------
-  # Use a fixed seed for reproducibility; restore RNG state afterwards.
+  # -- Sample for PDP (raw snapshot, before obs is overwritten) ----------------
+  # rep_set must hold raw feature values so compute_pdp can apply feat_eng once
+  # cleanly per bin. Sampling happens after binning so .bin labels are present.
   n <- nrow(dt)
   samp_idx <- if (sample_size < n) {
     old_seed <- .Random.seed
@@ -159,10 +161,26 @@ pdp.default <- function(
   } else {
     seq_len(n)
   }
-  rep_set <- dt[samp_idx]
+  rep_set <- data.table::copy(dt[samp_idx])
+
+  # -- Align obs scale ---------------------------------------------------------
+  # If feat_eng transforms the response (e.g. unitise), overwrite the obs
+  # column in dt so that obs_mean and pred_mean are on the same scale.
+  # Must use := so the update is by reference — [[<- on a data.table does not
+  # modify in place and would leave the raw values visible to subsequent steps.
+  if (is.data.frame(df_eng) && obs %in% names(df_eng)) {
+    obs_eng <- df_eng[[obs]]
+    dt[, (obs) := obs_eng]
+  }
+
+  # -- Aggregate one-way actuals + in-sample predictions ------------------------
+  agg <- aggregate_pdp_oneway(dt, obs, expo_col)
 
   # -- Compute PDP ---------------------------------------------------------------
-  pdp_agg <- compute_pdp(rep_set, var, model, bin_info, expo_col)
+  pdp_agg <- compute_pdp(
+    rep_set, var, bin_info, expo_col,
+    model, pre_process_fun, feat_eng_fun, post_process_fun
+  )
 
   # -- Merge one-way + PDP -------------------------------------------------------
   result <- merge(agg, pdp_agg, by = ".bin", all.x = TRUE)
@@ -418,7 +436,16 @@ aggregate_pdp_oneway <- function(dt, obs, expo_col) {
 #'
 #' @return data.table with columns: .bin, pdp_mean
 #' @keywords internal
-compute_pdp <- function(rep_set, var, model, bin_info, expo_col) {
+compute_pdp <- function(
+  rep_set,
+  var,
+  bin_info,
+  expo_col,
+  model,
+  pre_process_fun,
+  feat_eng_fun,
+  post_process_fun
+) {
   # Build bins_to_use from the OBSERVED .bin labels in rep_set - these are
   # guaranteed to match agg$.bin exactly because both come from bin_info$labels.
   # Using names(bin_info$midpoints) instead caused subtle label mismatches
@@ -459,7 +486,9 @@ compute_pdp <- function(rep_set, var, model, bin_info, expo_col) {
       coerce_to_original(rep_set[[var]], bin_label)
     }
 
-    preds <- model_predict(model, nd)
+    nd_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(nd))))
+    preds  <- model_predict(model, nd_eng)
+    preds  <- post_process_fun(preds, as.data.frame(nd))
     results[[i]] <- data.table::data.table(
       .bin = bin_label,
       pdp_mean = mean(preds, na.rm = TRUE)

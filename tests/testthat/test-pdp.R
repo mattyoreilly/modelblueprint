@@ -934,23 +934,23 @@ describe("compute_pdp", {
   df[, .expo := 1L]
 
   it("returns a data.table", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
     expect_true(data.table::is.data.table(out))
   })
 
   it("has columns .bin and pdp_mean", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
     expect_true(all(c(".bin", "pdp_mean") %in% names(out)))
   })
 
   it("has one row per bin", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
     n_bins <- length(unique(bin_info$labels[bin_info$labels != "NA"]))
     expect_equal(nrow(out), n_bins)
   })
 
   it("pdp_mean values are numeric and finite", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", m, bin_info, ".expo")
+    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
     expect_true(all(is.finite(out$pdp_mean)))
   })
 })

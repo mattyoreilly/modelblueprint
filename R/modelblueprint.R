@@ -691,26 +691,47 @@ pdp.modelblueprint <- function(
     )
   }
 
-  exposure <- resolve_exposure(data, df)
-  model_name <- if (!is.na(data@model_display_name)) {
-    data@model_display_name
+  exposure   <- resolve_exposure(data, df)
+  model_name <- data@model_display_name %||% "model"
+
+  # Resolve variables: NA means "all x_original_inputs"
+  vars <- if (length(var) == 1L && is.na(var)) {
+    x <- na.omit(data@x_original_inputs)
+    if (length(x) == 0L) {
+      stop(
+        "var = NA requires `@x_original_inputs` to be set on the modelblueprint.",
+        call. = FALSE
+      )
+    }
+    x
   } else {
-    "model"
+    var
   }
 
-  pdp(
-    data = df,
-    var = var,
-    obs = data@y_name,
-    model = data@model,
-    exposure = exposure,
-    bins = bins,
-    sample_size = sample_size,
-    type_agg = type_agg,
-    model_name = model_name,
-    ret = ret,
-    ...
-  )
+  run_pdp <- function(v) {
+    pdp(
+      data          = df,
+      var           = v,
+      obs           = data@y_name,
+      model         = data@model,
+      exposure      = exposure,
+      bins          = bins,
+      sample_size   = sample_size,
+      type_agg      = type_agg,
+      model_name    = model_name,
+      ret           = ret,
+      pre_process_fun  = data@pre_process_fun,
+      feat_eng_fun     = data@feat_eng_fun,
+      post_process_fun = data@post_process_fun,
+      ...
+    )
+  }
+
+  if (length(vars) == 1L) {
+    run_pdp(vars)
+  } else {
+    stats::setNames(lapply(vars, run_pdp), vars)
+  }
 }
 
 # =============================================================================

@@ -18,6 +18,9 @@ pdp(data, ...)
   type_agg = c("equal_exposure", "equal_range"),
   model_name = "model",
   ret = c("plot", "data"),
+  pre_process_fun = function(df) df,
+  feat_eng_fun = function(df) df,
+  post_process_fun = function(preds, df_raw) preds,
   ...
 )
 }

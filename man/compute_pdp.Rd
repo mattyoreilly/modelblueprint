@@ -4,7 +4,16 @@
 \alias{compute_pdp}
 \title{Compute PDP values for each bin}
 \usage{
-compute_pdp(rep_set, var, model, bin_info, expo_col)
+compute_pdp(
+  rep_set,
+  var,
+  bin_info,
+  expo_col,
+  model,
+  pre_process_fun,
+  feat_eng_fun,
+  post_process_fun
+)
 }
 \value{
 data.table with columns: .bin, pdp_mean
