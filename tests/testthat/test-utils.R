@@ -36,8 +36,7 @@ describe("unitise — input validation", {
   it("errors when var column does not exist", {
     expect_error(
       unitise(make_df(), "z", 0, 10),
-      "`var` column 'z' not found in `data`.",
-      fixed = TRUE
+      "column.*z.*not found"
     )
   })
 

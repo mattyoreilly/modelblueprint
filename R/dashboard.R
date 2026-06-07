@@ -1,0 +1,475 @@
+# =============================================================================
+# dashboard.R
+# Interactive Shiny dashboard for a modelblueprint object.
+# =============================================================================
+
+#' Launch an interactive dashboard for a modelblueprint
+#'
+#' Opens a Shiny app that provides an interactive view of a fitted
+#' `modelblueprint`. The app has four tabs:
+#'
+#' - **Summary** — model class, display name, target, exposure, dataset row
+#'   counts, sum of target and exposure per split, the full variable list, and
+#'   an overlaid density chart of the target vs model predictions.
+#' - **Validation** — gain chart, predicted vs observed calibration, and
+#'   grouped residuals. All three can be shown side-by-side across train, test,
+#'   and holdout sets simultaneously, making overfitting immediately visible.
+#' - **PDPs** — partial dependence plot for any variable in
+#'   `@x_original_inputs`, with controls for bins, aggregation strategy, and
+#'   sample size. Aggregated data can be downloaded as CSV.
+#' - **One-ways** — exposure-weighted mean of the target across bins of any
+#'   feature, with an optional model prediction overlay and split variable.
+#'   Aggregated data can be downloaded as CSV.
+#'
+#' All sidebar controls (bins, aggregation type, dataset) update plots
+#' reactively. Errors in individual plots are caught and displayed inline so
+#' a single failing chart never crashes the app.
+#'
+#' @param mb A [`modelblueprint`] object. Must have at least one of `@train`,
+#'   `@test`, or `@holdout` set.
+#' @param ... Currently unused. Reserved for future arguments.
+#'
+#' @return A `shiny.appobj`. The app launches in the browser when the return
+#'   value is printed (the normal behaviour when called interactively). Returns
+#'   invisibly when assigned.
+#'
+#' @section Required packages:
+#' `shiny`, `bslib`, and `plotly` must be installed. These are listed under
+#' `Suggests` so they are not installed automatically with the package.
+#' Install them with:
+#' ```r
+#' install.packages(c("shiny", "bslib", "plotly"))
+#' ```
+#' Install `shinycssloaders` for loading spinners on slow plots:
+#' ```r
+#' install.packages("shinycssloaders")
+#' ```
+#'
+#' @examples
+#' \dontrun{
+#' mb <- modelblueprint(
+#'   model              = glm(vs ~ wt + hp, data = mtcars, family = binomial),
+#'   train              = mtcars,
+#'   y_name             = "vs",
+#'   x_original_inputs  = c("wt", "hp"),
+#'   model_display_name = "logistic_vs"
+#' )
+#'
+#' mb_dashboard(mb)
+#' }
+#'
+#' @seealso
+#' [pdp()], [one_way()], [pred_vs_obs()], [gain()], [residuals_grouped()]
+#' for the underlying functions used inside the dashboard.
+#'
+#' @export
+mb_dashboard <- function(mb, ...) {
+
+  for (pkg in c("shiny", "bslib", "plotly")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      cli::cli_abort(c(
+        "Package {.pkg {pkg}} is required for {.fn mb_dashboard}.",
+        i = "Install with {.run install.packages('{pkg}')}"
+      ))
+    }
+  }
+
+  has_spinner <- requireNamespace("shinycssloaders", quietly = TRUE)
+  spinner <- function(x) {
+    if (has_spinner) shinycssloaders::withSpinner(x, type = 6L) else x
+  }
+
+  # -- Resolve available sets ------------------------------------------------
+  available_sets <- Filter(
+    function(s) !is.null(prop(mb, s)),
+    c("train", "test", "holdout")
+  )
+  if (length(available_sets) == 0L) {
+    cli::cli_abort("modelblueprint has no data. Supply train/test/holdout when constructing.")
+  }
+
+  # -- Variable lists --------------------------------------------------------
+  pdp_vars <- stats::na.omit(mb@x_original_inputs)
+  if (length(pdp_vars) == 0L) {
+    pdp_vars <- setdiff(names(prop(mb, available_sets[[1L]])), mb@y_name)
+  }
+
+  all_cols   <- names(prop(mb, available_sets[[1L]]))
+  expo_col   <- if (!is.na(mb@expo_name) && mb@expo_name %in% all_cols) mb@expo_name else NULL
+  ow_vars    <- setdiff(all_cols, c(mb@y_name, expo_col))
+  split_choices <- c("None" = "none", ow_vars)
+
+  model_name <- mb@model_display_name %||% "modelblueprint"
+
+  # ==========================================================================
+  # UI
+  # ==========================================================================
+
+  ui <- bslib::page_navbar(
+    title    = paste0("ModelBlueprint — ", model_name),
+    theme    = bslib::bs_theme(bootswatch = "flatly", version = 5L),
+    fillable = FALSE,
+
+    # -- Summary tab ----------------------------------------------------------
+    bslib::nav_panel(
+      "Summary",
+      icon = shiny::icon("table"),
+      bslib::layout_columns(
+        col_widths = c(4L, 8L),
+        bslib::card(
+          bslib::card_header("Model"),
+          shiny::tableOutput("model_info")
+        ),
+        bslib::card(
+          bslib::card_header("Datasets"),
+          shiny::tableOutput("data_info")
+        )
+      ),
+      bslib::card(
+        bslib::card_header("Variables"),
+        shiny::tableOutput("var_info")
+      ),
+      bslib::card(
+        bslib::card_header(
+          bslib::layout_columns(
+            col_widths = c(6L, 3L, 3L),
+            "Target vs Predicted Distribution",
+            shiny::selectInput(
+              "dist_set", label = NULL,
+              choices  = available_sets,
+              selected = available_sets[[1L]],
+              width    = "100%"
+            ),
+            shiny::numericInput(
+              "dist_bins", label = NULL,
+              value = 30L, min = 5L, max = 200L, step = 5L,
+              width = "100%"
+            )
+          )
+        ),
+        spinner(plotly::plotlyOutput("dist_plot", height = "300px"))
+      )
+    ),
+
+    # -- Validation tab -------------------------------------------------------
+    bslib::nav_panel(
+      "Validation",
+      icon = shiny::icon("chart-line"),
+      bslib::layout_sidebar(
+        sidebar = bslib::sidebar(
+          shiny::checkboxGroupInput(
+            "val_sets", "Sets to show",
+            choices  = available_sets,
+            selected = available_sets
+          ),
+          shiny::numericInput(
+            "val_bins", "Bins",
+            value = 10L, min = 2L, max = 100L, step = 1L
+          ),
+          shiny::selectInput(
+            "val_type_agg", "Aggregation",
+            choices  = c("Equal Exposure" = "equal_exposure",
+                         "Equal Range"    = "equal_range"),
+            selected = "equal_exposure"
+          ),
+          shiny::numericInput(
+            "exposure_per_bin", "Residuals: exposure per bin",
+            value = 2500L, min = 10L, step = 100L
+          )
+        ),
+        shiny::uiOutput("validation_ui")
+      )
+    ),
+
+    # -- PDPs tab -------------------------------------------------------------
+    bslib::nav_panel(
+      "PDPs",
+      icon = shiny::icon("wave-square"),
+      bslib::layout_sidebar(
+        sidebar = bslib::sidebar(
+          shiny::selectInput(
+            "pdp_set", "Dataset",
+            choices  = available_sets,
+            selected = available_sets[[1L]]
+          ),
+          shiny::selectInput(
+            "pdp_var", "Variable",
+            choices = pdp_vars
+          ),
+          shiny::numericInput(
+            "pdp_bins", "Bins",
+            value = 10L, min = 2L, max = 100L, step = 1L
+          ),
+          shiny::selectInput(
+            "pdp_type_agg", "Aggregation",
+            choices  = c("Equal Exposure" = "equal_exposure",
+                         "Equal Range"    = "equal_range"),
+            selected = "equal_exposure"
+          ),
+          shiny::numericInput(
+            "pdp_sample_size", "Sample size",
+            value = 10000L, min = 100L, max = 100000L, step = 1000L
+          ),
+          shiny::hr(),
+          shiny::downloadButton("pdp_download", "Download data", class = "btn-sm w-100")
+        ),
+        bslib::card(
+          bslib::card_header(shiny::textOutput("pdp_title", inline = TRUE)),
+          spinner(plotly::plotlyOutput("pdp_plot", height = "500px"))
+        )
+      )
+    ),
+
+    # -- One-ways tab ---------------------------------------------------------
+    bslib::nav_panel(
+      "One-ways",
+      icon = shiny::icon("chart-bar"),
+      bslib::layout_sidebar(
+        sidebar = bslib::sidebar(
+          shiny::selectInput(
+            "ow_set", "Dataset",
+            choices  = available_sets,
+            selected = available_sets[[1L]]
+          ),
+          shiny::selectInput(
+            "ow_var", "Variable",
+            choices = ow_vars
+          ),
+          shiny::numericInput(
+            "ow_bins", "Bins",
+            value = 35L, min = 2L, max = 100L, step = 1L
+          ),
+          shiny::selectInput(
+            "ow_type_agg", "Aggregation",
+            choices  = c("Equal Exposure" = "equal_exposure",
+                         "Equal Range"    = "equal_range"),
+            selected = "equal_exposure"
+          ),
+          shiny::selectInput(
+            "ow_split", "Split by",
+            choices  = split_choices,
+            selected = "none"
+          ),
+          shiny::checkboxInput("ow_predictions", "Overlay predictions", value = FALSE),
+          shiny::hr(),
+          shiny::downloadButton("ow_download", "Download data", class = "btn-sm w-100")
+        ),
+        bslib::card(
+          bslib::card_header(shiny::textOutput("ow_title", inline = TRUE)),
+          spinner(plotly::plotlyOutput("ow_plot", height = "500px"))
+        )
+      )
+    )
+  )
+
+  # ==========================================================================
+  # Server
+  # ==========================================================================
+
+  server <- function(input, output, session) {
+
+    # -- Summary: tables -------------------------------------------------------
+
+    output$model_info <- shiny::renderTable({
+      data.frame(
+        Field = c("Class", "Display name", "Target", "Exposure", "Deploy notes"),
+        Value = c(
+          paste(class(mb@model), collapse = "/"),
+          if (is.na(mb@model_display_name)) "—" else mb@model_display_name,
+          if (is.na(mb@y_name))             "—" else mb@y_name,
+          if (is.na(mb@expo_name))          "—" else mb@expo_name,
+          if (is.na(mb@deploy_notes))       "—" else mb@deploy_notes
+        ),
+        stringsAsFactors = FALSE
+      )
+    }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%")
+
+    output$data_info <- shiny::renderTable({
+      sets     <- c("train", "test", "holdout")
+      y_col    <- mb@y_name
+      e_col    <- if (!is.na(mb@expo_name)) mb@expo_name else NULL
+      fmt      <- function(x) format(round(x), big.mark = ",")
+
+      data.frame(
+        Set = sets,
+        Rows = vapply(sets, function(s) {
+          d <- prop(mb, s)
+          if (is.null(d)) "—" else format(nrow(d), big.mark = ",")
+        }, character(1L)),
+        `Sum target` = vapply(sets, function(s) {
+          d <- prop(mb, s)
+          if (is.null(d) || is.na(y_col) || !y_col %in% names(d)) "—"
+          else fmt(sum(d[[y_col]], na.rm = TRUE))
+        }, character(1L)),
+        `Sum exposure` = vapply(sets, function(s) {
+          d <- prop(mb, s)
+          if (is.null(d) || is.null(e_col) || !e_col %in% names(d)) "—"
+          else fmt(sum(d[[e_col]], na.rm = TRUE))
+        }, character(1L)),
+        stringsAsFactors = FALSE,
+        check.names      = FALSE
+      )
+    }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%")
+
+    output$var_info <- shiny::renderTable({
+      orig <- stats::na.omit(mb@x_original_inputs)
+      eng  <- stats::na.omit(mb@x_names)
+      data.frame(
+        Type     = c(rep("Original input", length(orig)),
+                     rep("Engineered",     length(eng))),
+        Variable = c(orig, eng),
+        stringsAsFactors = FALSE
+      )
+    }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%")
+
+    # -- Summary: distribution plot -------------------------------------------
+
+    output$dist_plot <- plotly::renderPlotly({
+      shiny::req(input$dist_set, input$dist_bins, !is.na(mb@y_name))
+      df   <- as.data.frame(prop(mb, input$dist_set))
+      obs  <- df[[mb@y_name]]
+      pred <- tryCatch(predict.modelblueprint(mb, df), error = function(e) NULL)
+      bins <- input$dist_bins
+
+      p <- plotly::plot_ly(
+          x = obs, type = "histogram", histnorm = "probability density",
+          nbinsx = bins, name = "Observed", opacity = 0.65,
+          marker = list(color = "#F8766D", line = list(color = "#F8766D", width = 0.5))
+        ) |>
+        plotly::layout(
+          barmode = "overlay",
+          xaxis   = list(title = mb@y_name),
+          yaxis   = list(title = "Density"),
+          legend  = list(x = 1.05, y = 0.5),
+          plot_bgcolor  = "rgba(0,0,0,0)",
+          paper_bgcolor = "rgba(0,0,0,0)"
+        )
+
+      if (!is.null(pred)) {
+        p <- plotly::add_histogram(
+          p, x = pred, histnorm = "probability density",
+          nbinsx = bins, name = "Predicted", opacity = 0.65,
+          marker = list(color = "#619CFF", line = list(color = "#619CFF", width = 0.5))
+        )
+      }
+      p
+    })
+
+    # -- Validation -----------------------------------------------------------
+
+    output$validation_ui <- shiny::renderUI({
+      sets <- shiny::req(input$val_sets)
+
+      cols <- lapply(sets, function(s) {
+        bslib::card(
+          bslib::card_header(toupper(s)),
+          bslib::card(
+            bslib::card_header("Gain"),
+            plotly::plotlyOutput(paste0("gain_", s), height = "320px")
+          ),
+          bslib::card(
+            bslib::card_header("Predicted vs Observed"),
+            plotly::plotlyOutput(paste0("pvo_", s), height = "320px")
+          ),
+          bslib::card(
+            bslib::card_header("Residuals"),
+            plotly::plotlyOutput(paste0("resid_", s), height = "320px")
+          )
+        )
+      })
+
+      n      <- length(cols)
+      widths <- switch(as.character(n), "1" = 12L, "2" = 6L, "3" = 4L, rep(4L, n))
+      do.call(bslib::layout_columns, c(list(col_widths = widths), cols))
+    })
+
+    for (s in available_sets) {
+      local({
+        set <- s
+
+        output[[paste0("gain_", set)]] <- plotly::renderPlotly({
+          tryCatch(gain(mb, set = set),
+            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
+        })
+
+        output[[paste0("pvo_", set)]] <- plotly::renderPlotly({
+          tryCatch(pred_vs_obs(mb, set = set, bins = input$val_bins, type_agg = input$val_type_agg),
+            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
+        })
+
+        output[[paste0("resid_", set)]] <- plotly::renderPlotly({
+          tryCatch(residuals_grouped(mb, set = set, exposure_per_bin = input$exposure_per_bin),
+            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
+        })
+      })
+    }
+
+    # -- PDPs -----------------------------------------------------------------
+
+    output$pdp_title <- shiny::renderText(paste("PDP —", input$pdp_var, "—", input$pdp_set))
+
+    pdp_data <- shiny::reactive({
+      shiny::req(input$pdp_var)
+      tryCatch(
+        pdp(mb, var = input$pdp_var, set = input$pdp_set, bins = input$pdp_bins,
+            type_agg = input$pdp_type_agg, sample_size = input$pdp_sample_size, ret = "data"),
+        error = function(e) NULL
+      )
+    })
+
+    output$pdp_plot <- plotly::renderPlotly({
+      shiny::req(input$pdp_var)
+      tryCatch(
+        pdp(mb, var = input$pdp_var, set = input$pdp_set, bins = input$pdp_bins,
+            type_agg = input$pdp_type_agg, sample_size = input$pdp_sample_size),
+        error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e))
+      )
+    })
+
+    output$pdp_download <- shiny::downloadHandler(
+      filename = function() paste0("pdp_", input$pdp_var, "_", input$pdp_set, ".csv"),
+      content  = function(file) {
+        d <- pdp_data()
+        if (!is.null(d)) utils::write.csv(d, file, row.names = FALSE)
+      }
+    )
+
+    # -- One-ways -------------------------------------------------------------
+
+    output$ow_title <- shiny::renderText(paste("One-way —", input$ow_var, "—", input$ow_set))
+
+    ow_split <- shiny::reactive({
+      if (is.null(input$ow_split) || input$ow_split == "none") NA_character_ else input$ow_split
+    })
+
+    ow_data <- shiny::reactive({
+      shiny::req(input$ow_var)
+      tryCatch(
+        one_way(mb, var = input$ow_var, set = input$ow_set, bins = input$ow_bins,
+                type_agg = input$ow_type_agg, predictions = input$ow_predictions,
+                split = ow_split(), ret = "data"),
+        error = function(e) NULL
+      )
+    })
+
+    output$ow_plot <- plotly::renderPlotly({
+      shiny::req(input$ow_var)
+      tryCatch(
+        one_way(mb, var = input$ow_var, set = input$ow_set, bins = input$ow_bins,
+                type_agg = input$ow_type_agg, predictions = input$ow_predictions,
+                split = ow_split()),
+        error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e))
+      )
+    })
+
+    output$ow_download <- shiny::downloadHandler(
+      filename = function() paste0("oneway_", input$ow_var, "_", input$ow_set, ".csv"),
+      content  = function(file) {
+        d <- ow_data()
+        if (!is.null(d)) utils::write.csv(d, file, row.names = FALSE)
+      }
+    )
+  }
+
+  shiny::shinyApp(ui, server)
+}

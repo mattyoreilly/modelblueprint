@@ -136,11 +136,7 @@ pdp.default <- function(
   # -- Guard: non-numeric columns with absurd cardinality -----------------------
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
   if (n_unique > 500L && !is.numeric(dt[[var]])) {
-    warning(sprintf(
-      "pdp: '%s' has %d unique values (max 500 for non-numeric). Skipping.",
-      var,
-      n_unique
-    ))
+    cli::cli_warn("{.arg {var}} has {n_unique} unique values (max 500 for non-numeric). Skipping.")
     return(NULL)
   }
 
@@ -221,24 +217,21 @@ pdp.default <- function(
 
 pdp_validate <- function(data, var, obs, exposure, bins, sample_size) {
   if (!is.data.frame(data) && !data.table::is.data.table(data)) {
-    stop("`data` must be a data frame or data.table.", call. = FALSE)
+    cli::cli_abort("{.arg data} must be a data frame or data.table.")
   }
   if (length(var) == 1L && is.na(var)) {
-    stop(
-      "`var` is NA. Pass a column name, or call pdp() on a modelblueprint with `@x_original_inputs` set.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg var} is NA. Pass a column name, or call {.fn pdp} on a modelblueprint with {.arg @x_original_inputs} set.")
   }
   assert_col_exists(data, var, "`var`")
   assert_col_exists(data, obs, "`obs`")
 
   if (!is.numeric(bins) || length(bins) != 1L || bins < 2L) {
-    stop("`bins` must be a single integer >= 2.", call. = FALSE)
+    cli::cli_abort("{.arg bins} must be a single integer >= 2.")
   }
   if (
     !is.numeric(sample_size) || length(sample_size) != 1L || sample_size < 1L
   ) {
-    stop("`sample_size` must be a positive integer.", call. = FALSE)
+    cli::cli_abort("{.arg sample_size} must be a positive integer.")
   }
 }
 
@@ -247,14 +240,7 @@ if (!exists("assert_col_exists")) {
   assert_col_exists <- function(data, cols, arg_name) {
     missing_cols <- setdiff(cols, names(data))
     if (length(missing_cols) > 0L) {
-      stop(
-        sprintf(
-          "%s column(s) not found in `data`: %s",
-          arg_name,
-          paste(missing_cols, collapse = ", ")
-        ),
-        call. = FALSE
-      )
+      cli::cli_abort("{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}")
     }
   }
 }
@@ -317,14 +303,10 @@ model_predict <- function(model, newdata) {
       predict(model, newdata = nd)
     },
     error = function(e) {
-      stop(
-        sprintf(
-          "pdp: predict() failed for model class '%s' - %s",
-          paste(class(model), collapse = "/"),
-          conditionMessage(e)
-        ),
-        call. = FALSE
-      )
+      cli::cli_abort(c(
+        "{.fn predict} failed for model class {.val {paste(class(model), collapse = '/')}}.",
+        x = conditionMessage(e)
+      ))
     }
   )
 

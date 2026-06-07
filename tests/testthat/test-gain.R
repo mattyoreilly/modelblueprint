@@ -378,8 +378,7 @@ describe("gain.modelblueprint — set argument", {
     )
     expect_error(
       gain(mb_no_y),
-      "modelblueprint `@y_name` is not set.",
-      fixed = TRUE
+      "@y_name.*not set"
     )
   })
 })

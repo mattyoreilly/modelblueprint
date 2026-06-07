@@ -21,10 +21,10 @@
 #' @export
 unitise <- function(data, var, min_val, max_val) {
   if (!is.data.frame(data) && !inherits(data, "data.table")) {
-    stop("`data` must be a data.frame or data.table.", call. = FALSE)
+    cli::cli_abort("{.arg data} must be a data.frame or data.table.")
   }
   if (!var %in% names(data)) {
-    stop(sprintf("`var` column '%s' not found in `data`.", var), call. = FALSE)
+    cli::cli_abort("{.arg var} column {.val {var}} not found in {.arg data}.")
   }
   if (
     !is.numeric(min_val) ||
@@ -32,13 +32,10 @@ unitise <- function(data, var, min_val, max_val) {
       !is.numeric(max_val) ||
       length(max_val) != 1L
   ) {
-    stop(
-      "`min_val` and `max_val` must be single numeric values.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg min_val} and {.arg max_val} must be single numeric values.")
   }
   if (min_val >= max_val) {
-    stop("`min_val` must be less than `max_val`.", call. = FALSE)
+    cli::cli_abort("{.arg min_val} must be less than {.arg max_val}.")
   }
 
   # Work on a copy — never mutate caller data

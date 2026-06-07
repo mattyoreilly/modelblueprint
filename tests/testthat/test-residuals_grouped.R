@@ -423,8 +423,7 @@ describe("residuals_grouped.modelblueprint — set argument", {
     )
     expect_error(
       residuals_grouped(mb_no_y),
-      "modelblueprint `@y_name` is not set.",
-      fixed = TRUE
+      "@y_name.*not set"
     )
   })
 })

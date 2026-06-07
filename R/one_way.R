@@ -89,11 +89,7 @@ one_way.default <- function(
   # -- Guard: too many levels for a non-numeric column -------------------------
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
   if (n_unique > 2000L && !is.numeric(dt[[var]])) {
-    warning(sprintf(
-      "one_way: '%s' has %d unique values (max 2,000 for non-numeric). Skipping.",
-      var,
-      n_unique
-    ))
+    cli::cli_warn("{.arg {var}} has {n_unique} unique values (max 2,000 for non-numeric). Skipping.")
     return(NULL)
   }
 
@@ -125,7 +121,7 @@ one_way.default <- function(
 
 validate_inputs <- function(data, var, obs, exposure, split, bins) {
   if (!is.data.frame(data) && !data.table::is.data.table(data)) {
-    stop("`data` must be a data frame or data.table.", call. = FALSE)
+    cli::cli_abort("{.arg data} must be a data frame or data.table.")
   }
   assert_col_exists(data, var, "`var`")
   assert_col_exists(data, obs, "`obs`")
@@ -134,21 +130,14 @@ validate_inputs <- function(data, var, obs, exposure, split, bins) {
   }
 
   if (!is.numeric(bins) || length(bins) != 1L || bins < 2L) {
-    stop("`bins` must be a single integer >= 2.", call. = FALSE)
+    cli::cli_abort("{.arg bins} must be a single integer >= 2.")
   }
 }
 
 assert_col_exists <- function(data, cols, arg_name) {
   missing_cols <- setdiff(cols, names(data))
   if (length(missing_cols) > 0L) {
-    stop(
-      sprintf(
-        "%s column(s) not found in `data`: %s",
-        arg_name,
-        paste(missing_cols, collapse = ", ")
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}")
   }
 }
 

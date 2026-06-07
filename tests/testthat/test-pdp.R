@@ -622,8 +622,7 @@ describe("pdp — model compatibility", {
     bad_model <- structure(list(), class = "broken_model")
     expect_error(
       modelblueprint::pdp(df, var = "x_num", obs = "target", model = bad_model),
-      "predict() failed for model class 'broken_model'",
-      fixed = TRUE
+      "predict.*failed.*broken_model"
     )
   })
 })
@@ -743,8 +742,7 @@ describe("pdp_validate", {
         10L,
         1000L
       ),
-      "`var` column(s) not found in `data`: not_a_col",
-      fixed = TRUE
+      "column.*not found.*not_a_col"
     )
   })
 
@@ -758,8 +756,7 @@ describe("pdp_validate", {
         10L,
         1000L
       ),
-      "`obs` column(s) not found in `data`: not_a_col",
-      fixed = TRUE
+      "column.*not found.*not_a_col"
     )
   })
 
@@ -827,8 +824,7 @@ describe("model_predict", {
     bad <- structure(list(), class = "totally_broken")
     expect_error(
       modelblueprint:::model_predict(bad, df),
-      "predict() failed for model class 'totally_broken'",
-      fixed = TRUE
+      "predict.*failed.*totally_broken"
     )
   })
 })

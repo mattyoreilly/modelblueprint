@@ -158,11 +158,10 @@ residuals_grouped.default <- function(
   }
 
   if (nrow(agg) < 3L) {
-    warning(
-      "residuals_grouped(): fewer than 3 bins -- cannot fit loess. ",
-      "Increase data size or reduce `exposure_per_bin`.",
-      call. = FALSE
-    )
+    cli::cli_warn(c(
+      "{.fn residuals_grouped}: fewer than 3 bins -- cannot fit loess.",
+      i = "Increase data size or reduce {.arg exposure_per_bin}."
+    ))
     return(agg)
   }
 
@@ -213,20 +212,11 @@ residuals_grouped.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
   }
 
   if (is.na(data@y_name)) {
-    stop(
-      "modelblueprint `@y_name` is not set.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
   }
 
   # Resolve exposure -- fall back to unit weights

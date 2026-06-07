@@ -118,10 +118,10 @@ modelblueprint <- new_class(
 #' @export
 predict.modelblueprint <- function(object, newdata, ...) {
   if (missing(newdata) || is.null(newdata)) {
-    stop("`newdata` is required for prediction.", call. = FALSE)
+    cli::cli_abort("{.arg newdata} is required for prediction.")
   }
   if (!is.data.frame(newdata) && !inherits(newdata, "data.table")) {
-    stop("`newdata` must be a data.frame or data.table.", call. = FALSE)
+    cli::cli_abort("{.arg newdata} must be a data.frame or data.table.")
   }
 
   tmp <- if (inherits(newdata, "data.table")) {
@@ -154,8 +154,8 @@ method(print, modelblueprint) <- function(x, ...) {
   cat(sprintf("  Exposure:     %s (val = %s)\n", x@expo_name, x@expo_val))
   cat(sprintf(
     "  Features:     %d original / %d engineered\n",
-    length(na.omit(x@x_original_inputs)),
-    length(na.omit(x@x_names))
+    length(stats::na.omit(x@x_original_inputs)),
+    length(stats::na.omit(x@x_names))
   ))
   cat(rule("-"), "\n")
   cat(sprintf("  Train rows:   %s\n", format_nrow(x@train)))
@@ -274,10 +274,7 @@ method(saveMB, modelblueprint) <- function(
   if (is.null(filename)) {
     filename <- prop(object, "model_display_name")
     if (is.na(filename) || !nzchar(filename)) {
-      stop(
-        "`filename` must be supplied when `model_display_name` is not set.",
-        call. = FALSE
-      )
+      cli::cli_abort("{.arg filename} must be supplied when {.arg model_display_name} is not set.")
     }
   }
   if (tools::file_ext(filename) == "") {
@@ -350,7 +347,7 @@ method(saveMB, modelblueprint) <- function(
 #' @export
 loadMB <- function(path) {
   if (!file.exists(path)) {
-    stop(sprintf("Archive not found: %s", path), call. = FALSE)
+    cli::cli_abort("Archive not found: {.path {path}}")
   }
 
   tmp <- file.path(tempdir(), paste0("loadMB_", as.integer(Sys.time())))
@@ -374,13 +371,7 @@ loadMB <- function(path) {
   switch(
     bare_class,
     modelblueprint = load_modelblueprint(tmp),
-    stop(
-      sprintf(
-        "Don't know how to load class '%s'. Is the right package version installed?",
-        bare_class
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("Don't know how to load class {.val {bare_class}}. Is the right package version installed?")
   )
 }
 
@@ -451,7 +442,7 @@ load_modelblueprint <- function(tmp) {
 load_model_slot <- function(tmp) {
   r_model_path <- file.path(tmp, "r_model.rds")
   if (!file.exists(r_model_path)) {
-    stop("Archive is missing the model file (r_model.rds).", call. = FALSE)
+    cli::cli_abort("Archive is missing the model file ({.file r_model.rds}).")
   }
   r_model <- readRDS(r_model_path)
 
@@ -485,11 +476,7 @@ load_model_slot <- function(tmp) {
           startH2O = TRUE
         ))),
         error = function(e2) {
-          stop(
-            "Could not start an H2O cluster to load the model: ",
-            conditionMessage(e2),
-            call. = FALSE
-          )
+          cli::cli_abort(c("Could not start an H2O cluster to load the model.", x = conditionMessage(e2)))
         }
       )
     }
@@ -557,15 +544,7 @@ load_data_slot <- function(slot_name, tmp) {
 #' @keywords internal
 check_package <- function(pkg, context) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
-    stop(
-      sprintf(
-        "Package '%s' is required for %s.\nInstall it with: install.packages(\"%s\")",
-        pkg,
-        context,
-        pkg
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort(c("Package {.pkg {pkg}} is required for {context}.", i = "Install with {.run install.packages('{pkg}')}"))
   }
 }
 
@@ -612,16 +591,20 @@ one_way.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
   }
 
-  obs <- resolve_obs(data, df, set, predictions)
+  # Align obs scale with predictions — if feat_eng_fun transforms the response,
+  # update the obs column in df so obs and predictions are on the same scale.
+  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(as.data.frame(df))))
+  if (data@y_name %in% names(df_eng)) {
+    df <- as.data.frame(df)
+    df[[data@y_name]] <- df_eng[[data@y_name]]
+  }
+
+  resolved <- resolve_obs(data, df, predictions)
+  obs      <- resolved$obs
+  df       <- resolved$df
   exposure <- resolve_exposure(data, df)
 
   # Resolve variables: NA means all columns except target and exposure
@@ -702,20 +685,11 @@ pdp.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
   }
 
   if (is.na(data@y_name)) {
-    stop(
-      "modelblueprint `@y_name` is not set. Specify the target variable name.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
   }
 
   exposure <- resolve_exposure(data, df)
@@ -725,10 +699,7 @@ pdp.modelblueprint <- function(
   vars <- if (length(var) == 1L && is.na(var)) {
     x <- data@x_original_inputs
     if (length(x) == 0L) {
-      stop(
-        "var = NA requires `@x_original_inputs` to be set on the modelblueprint.",
-        call. = FALSE
-      )
+      cli::cli_abort("{.arg var} = NA requires {.arg @x_original_inputs} to be set on the modelblueprint.")
     }
     x
   } else {
@@ -776,22 +747,18 @@ pdp.modelblueprint <- function(
 
 #' @keywords internal
 #' @noRd
-resolve_obs <- function(object, df, set, predictions) {
+resolve_obs <- function(object, df, predictions) {
   y <- object@y_name
   if (is.na(y)) {
-    stop(
-      "modelblueprint `@y_name` is not set. Specify the target variable name.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
   }
   if (!predictions) {
-    return(y)
+    return(list(obs = y, df = df))
   }
 
   pred_col <- paste0(".pred_", object@model_display_name %||% "model")
   df[[pred_col]] <- predict.modelblueprint(object, df)
-  assign("df", df, envir = parent.frame())
-  c(y, pred_col)
+  list(obs = c(y, pred_col), df = df)
 }
 
 #' @keywords internal

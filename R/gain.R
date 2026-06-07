@@ -131,20 +131,11 @@ gain.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
   }
 
   if (is.na(data@y_name)) {
-    stop(
-      "modelblueprint `@y_name` is not set.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
   }
 
   # Resolve exposure — fall back to unit weights
@@ -312,11 +303,11 @@ trapz <- function(x, y) {
     !(is.numeric(x) || is.complex(x)) ||
       !(is.numeric(y) || is.complex(y))
   ) {
-    stop("`x` and `y` must be numeric or complex vectors.", call. = FALSE)
+    cli::cli_abort("{.arg x} and {.arg y} must be numeric or complex vectors.")
   }
   m <- length(x)
   if (length(y) != m) {
-    stop("`x` and `y` must be the same length.", call. = FALSE)
+    cli::cli_abort("{.arg x} and {.arg y} must be the same length.")
   }
   if (m <= 1L) {
     return(0)

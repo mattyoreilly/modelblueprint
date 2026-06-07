@@ -337,16 +337,14 @@ describe("sami.list — input validation", {
     mb_list <- make_mb_list()
     expect_error(
       sami(mb_list[1L]),
-      "`data` must be a list of at least two modelblueprint objects.",
-      fixed = TRUE
+      "list.*two.*modelblueprint"
     )
   })
 
   it("errors when list contains non-modelblueprint elements", {
     expect_error(
       sami(list(make_mb_list()[[1L]], "not_a_blueprint")),
-      "All elements of `data` must be `modelblueprint` objects.",
-      fixed = TRUE
+      "elements.*modelblueprint"
     )
   })
 

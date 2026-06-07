@@ -22,6 +22,7 @@ Depends:
     R (>= 4.1.0)
 Imports:
     S7 (>= 0.1.1),
+    cli (>= 3.4.0),
     dplyr (>= 1.1.0),
     data.table (>= 1.14.0),
     plotly (>= 4.10.0),
@@ -36,6 +37,7 @@ Suggests:
     devtools (>= 2.4.0),
     shiny (>= 1.7.0),
     bslib (>= 0.5.0),
+    shinycssloaders (>= 1.0.0),
     xgboost (>= 1.7.0),
     rmarkdown,
     knitr

@@ -416,8 +416,7 @@ describe("predict.modelblueprint — model compatibility", {
     mb <- modelblueprint(model = broken_model)
     expect_error(
       predict(mb, mtcars),
-      "predict() failed for model class 'broken_model'",
-      fixed = TRUE
+      "predict.*failed.*broken_model"
     )
   })
 })
@@ -741,8 +740,7 @@ describe("one_way.modelblueprint — validation", {
     mb_no_y <- make_mb_no_y()
     expect_error(
       one_way(mb_no_y, var = "wt"),
-      "modelblueprint `@y_name` is not set.",
-      fixed = TRUE
+      "@y_name.*not set"
     )
   })
 
@@ -897,8 +895,7 @@ describe("pdp.modelblueprint — validation", {
     mb_no_y <- make_mb_no_y()
     expect_error(
       pdp(mb_no_y, var = "wt"),
-      "modelblueprint `@y_name` is not set.",
-      fixed = TRUE
+      "@y_name.*not set"
     )
   })
 })

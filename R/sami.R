@@ -83,10 +83,7 @@ sami.default <- function(
   ret <- match.arg(ret)
 
   if (length(pred) < 2L) {
-    stop(
-      "`pred` must contain at least two prediction column names.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg pred} must contain at least two prediction column names.")
   }
 
   # Defensive copy — never mutate caller data
@@ -176,31 +173,19 @@ sami.list <- function(
   ret <- match.arg(ret)
 
   if (length(data) < 2L) {
-    stop(
-      "`data` must be a list of at least two modelblueprint objects.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg data} must be a list of at least two {.cls modelblueprint} objects.")
   }
 
   # Validate all elements are modelblueprint
   is_mb <- vapply(data, function(x) S7_inherits(x, modelblueprint), logical(1L))
   if (!all(is_mb)) {
-    stop(
-      "All elements of `data` must be `modelblueprint` objects.",
-      call. = FALSE
-    )
+    cli::cli_abort("All elements of {.arg data} must be {.cls modelblueprint} objects.")
   }
 
   # Get dataset from first blueprint
   df <- prop(data[[1L]], set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL in the first blueprint.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL in the first blueprint.")
   }
 
   df <- as.data.frame(df)
@@ -215,11 +200,10 @@ sami.list <- function(
       function(mb) {
         nm <- mb@model_display_name
         if (is.na(nm) || !nzchar(nm)) {
-          stop(
-            "All modelblueprint objects must have `model_display_name` set, ",
-            "or supply `pred_names` explicitly.",
-            call. = FALSE
-          )
+          cli::cli_abort(c(
+            "All {.cls modelblueprint} objects must have {.arg model_display_name} set.",
+            i = "Or supply {.arg pred_names} explicitly."
+          ))
         }
         paste0("pred_", nm)
       },

@@ -417,8 +417,7 @@ describe("pred_vs_obs.modelblueprint — set argument", {
     )
     expect_error(
       pred_vs_obs(mb_no_y),
-      "modelblueprint `@y_name` is not set.",
-      fixed = TRUE
+      "@y_name.*not set"
     )
   })
 })

@@ -133,20 +133,11 @@ pred_vs_obs.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    stop(
-      sprintf(
-        "modelblueprint `@%s` is NULL. Supply data when constructing the object.",
-        set
-      ),
-      call. = FALSE
-    )
+    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
   }
 
   if (is.na(data@y_name)) {
-    stop(
-      "modelblueprint `@y_name` is not set.",
-      call. = FALSE
-    )
+    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
   }
 
   # Resolve exposure

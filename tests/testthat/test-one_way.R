@@ -97,8 +97,7 @@ describe("validate_inputs", {
   it("rejects a missing var column", {
     expect_error(
       modelblueprint:::validate_inputs(df, "not_a_col", "obs", "expo", NA, 10L),
-      "`var` column(s) not found in `data`: not_a_col",
-      fixed = TRUE
+      "column.*not found.*not_a_col"
     )
   })
 
@@ -112,8 +111,7 @@ describe("validate_inputs", {
         NA,
         10L
       ),
-      "`obs` column(s) not found in `data`: not_a_col",
-      fixed = TRUE
+      "column.*not found.*not_a_col"
     )
   })
 
@@ -127,8 +125,7 @@ describe("validate_inputs", {
         "not_a_col",
         10L
       ),
-      "`split` column(s) not found in `data`: not_a_col",
-      fixed = TRUE
+      "column.*not found.*not_a_col"
     )
   })
 
@@ -179,8 +176,7 @@ describe("validate_inputs", {
         NA,
         10L
       ),
-      "bad1, bad2",
-      fixed = TRUE
+      "bad1.*bad2"
     )
   })
 })
