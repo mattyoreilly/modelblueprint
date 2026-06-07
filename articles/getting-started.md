@@ -267,7 +267,7 @@ model, data, and pipeline functions — to a `.tar.gz` archive.
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> modelblueprint saved: /tmp/Rtmp6TdPTJ/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/Rtmpd9vKRq/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical

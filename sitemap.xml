@@ -25,11 +25,13 @@
 <url><loc>/reference/left_join.ModelBlueprint.html</loc></url>
 <url><loc>/reference/loadMB.html</loc></url>
 <url><loc>/reference/make_palette.html</loc></url>
+<url><loc>/reference/mb_dashboard.html</loc></url>
 <url><loc>/reference/mb_examples.html</loc></url>
 <url><loc>/reference/model_predict.html</loc></url>
 <url><loc>/reference/mutate.ModelBlueprint.html</loc></url>
 <url><loc>/reference/one_way.ModelBlueprint.html</loc></url>
 <url><loc>/reference/one_way.html</loc></url>
+<url><loc>/reference/one_way_nse.html</loc></url>
 <url><loc>/reference/pdp.ModelBlueprint.html</loc></url>
 <url><loc>/reference/pdp.html</loc></url>
 <url><loc>/reference/plot_pdp.html</loc></url>

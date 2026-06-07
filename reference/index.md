@@ -12,6 +12,8 @@
 - [`left_join(`*`<modelblueprint>`*`)`](left_join.ModelBlueprint.md) :
   Left-join into a modelblueprint's datasets
 - [`loadMB()`](loadMB.md) : Load a modelblueprint from disk
+- [`mb_dashboard()`](mb_dashboard.md) : Launch an interactive dashboard
+  for a modelblueprint
 - [`mb_lm_regression()`](mb_examples.md)
   [`mb_lm_classification()`](mb_examples.md)
   [`mb_glm_regression()`](mb_examples.md)
@@ -31,6 +33,7 @@
 - [`one_way(`*`<modelblueprint>`*`)`](one_way.ModelBlueprint.md) :
   One-way analysis for a modelblueprint
 - [`one_way()`](one_way.md) : Create a one-way analysis plot
+- [`one_way_nse()`](one_way_nse.md) : NSE wrapper for one_way
 - [`pdp(`*`<modelblueprint>`*`)`](pdp.ModelBlueprint.md) : Partial
   dependence plot for a modelblueprint
 - [`pdp()`](pdp.md) : Partial dependence plot for any
