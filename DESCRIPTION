@@ -38,6 +38,7 @@ Suggests:
     devtools (>= 2.4.0),
     shiny (>= 1.7.0),
     bslib (>= 0.5.0),
+    htmltools (>= 0.5.0),
     shinycssloaders (>= 1.0.0),
     xgboost (>= 1.7.0),
     rmarkdown,
