@@ -27,6 +27,8 @@
 <url><loc>/reference/make_palette.html</loc></url>
 <url><loc>/reference/mb_dashboard.html</loc></url>
 <url><loc>/reference/mb_examples.html</loc></url>
+<url><loc>/reference/mb_layer.html</loc></url>
+<url><loc>/reference/mb_seq.html</loc></url>
 <url><loc>/reference/model_predict.html</loc></url>
 <url><loc>/reference/mutate.ModelBlueprint.html</loc></url>
 <url><loc>/reference/one_way.ModelBlueprint.html</loc></url>
@@ -37,6 +39,7 @@
 <url><loc>/reference/plot_pdp.html</loc></url>
 <url><loc>/reference/pred_vs_obs.html</loc></url>
 <url><loc>/reference/predict.ModelBlueprint.html</loc></url>
+<url><loc>/reference/predict.mb_seq.html</loc></url>
 <url><loc>/reference/residuals_grouped.html</loc></url>
 <url><loc>/reference/sami.html</loc></url>
 <url><loc>/reference/saveMB.html</loc></url>
