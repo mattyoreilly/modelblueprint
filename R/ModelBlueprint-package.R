@@ -17,4 +17,8 @@
 #' @importFrom stats var sd predict median
 #' @importFrom stats quantile binomial gaussian poisson
 
+# Shared S7 union types used across multiple files.
+# Defined here so they are available regardless of file load order.
+class_tabular <- new_union(NULL, class_data.frame)
+
 NULL

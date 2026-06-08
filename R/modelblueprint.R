@@ -5,8 +5,6 @@
 
 NULL
 
-# Union type: NULL | data.frame (covers tibble) — defined before new_class()
-class_tabular <- new_union(NULL, class_data.frame)
 
 # =============================================================================
 # modelblueprint S7 class
@@ -843,6 +841,8 @@ resolve_exposure <- function(object, df) {
     gain.modelblueprint,
     envir = ns
   )
+  registerS3method("predict", "mb_seq",                   predict.mb_seq, envir = ns)
+  registerS3method("predict", "modelblueprint::mb_seq",   predict.mb_seq, envir = ns)
 }
 
 
