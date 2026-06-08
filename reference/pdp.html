@@ -134,6 +134,22 @@ Default <code>"model"</code>.</p></dd>
 <dd><p><code>[character(1)]</code> <code>"plot"</code> (default) returns a plotly
 object; <code>"data"</code> returns the aggregated data.table.</p></dd>
 
+
+<dt id="arg-pre-process-fun">pre_process_fun<a class="anchor" aria-label="anchor" href="#arg-pre-process-fun"></a></dt>
+<dd><p><code>function(df) -&gt; df</code> applied to the data before
+feature engineering. Default is the identity function.</p></dd>
+
+
+<dt id="arg-feat-eng-fun">feat_eng_fun<a class="anchor" aria-label="anchor" href="#arg-feat-eng-fun"></a></dt>
+<dd><p><code>function(df) -&gt; df</code> (or matrix) applied after
+pre-processing to produce the model input. Default is the identity
+function.</p></dd>
+
+
+<dt id="arg-post-process-fun">post_process_fun<a class="anchor" aria-label="anchor" href="#arg-post-process-fun"></a></dt>
+<dd><p><code>function(preds, df_raw) -&gt; numeric</code> applied to raw
+model predictions. Default is the identity function.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>

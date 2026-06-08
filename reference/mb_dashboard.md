@@ -28,20 +28,20 @@ invisibly when assigned.
 
 ## Details
 
-- **Summary** — model class, display name, target, exposure, dataset row
+- **Summary** – model class, display name, target, exposure, dataset row
   counts, sum of target and exposure per split, the full variable list,
   and an overlaid density chart of the target vs model predictions.
 
-- **Validation** — gain chart, predicted vs observed calibration, and
+- **Validation** – gain chart, predicted vs observed calibration, and
   grouped residuals. All three can be shown side-by-side across train,
   test, and holdout sets simultaneously, making overfitting immediately
   visible.
 
-- **PDPs** — partial dependence plot for any variable in
+- **PDPs** – partial dependence plot for any variable in
   `@x_original_inputs`, with controls for bins, aggregation strategy,
   and sample size. Aggregated data can be downloaded as CSV.
 
-- **One-ways** — exposure-weighted mean of the target across bins of any
+- **One-ways** – exposure-weighted mean of the target across bins of any
   feature, with an optional model prediction overlay and split variable.
   Aggregated data can be downloaded as CSV.
 
