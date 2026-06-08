@@ -1,13 +1,6 @@
 # =============================================================================
 # residuals_grouped.R
 # Grouped residuals vs predicted plot with loess trend line.
-#
-# Design:
-#   - S3 generic -- works on data.frames directly or modelblueprint objects
-#   - exposure_per_bin controls grouping granularity, not number of bins
-#   - Both raw and Pearson residuals supported
-#   - Loess CI computed via stats::loess() -- no external dependencies
-#   - No mutation of caller data
 # =============================================================================
 
 utils::globalVariables(c(
@@ -212,11 +205,15 @@ residuals_grouped.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
   }
 
   if (is.na(data@y_name)) {
-    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
   }
 
   # Resolve exposure -- fall back to unit weights

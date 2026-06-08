@@ -1,13 +1,6 @@
 # =============================================================================
 # pred_vs_obs.R
 # Hosmer-style predicted vs observed calibration plot.
-#
-# Design:
-#   - pred_vs_obs() is an S3 generic — works on data.frames directly or via
-#     pred_vs_obs.modelblueprint() which pulls slots automatically
-#   - Binning reuses the same equal-exposure / equal-range logic as one_way()
-#   - No external dependencies beyond data.table and plotly
-#   - No mutation of caller data
 # =============================================================================
 
 utils::globalVariables(c("left", "right", ".expo", ".pred", ".obs", ".bin"))
@@ -133,11 +126,15 @@ pred_vs_obs.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
   }
 
   if (is.na(data@y_name)) {
-    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
   }
 
   # Resolve exposure

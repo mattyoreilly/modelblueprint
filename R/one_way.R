@@ -1,22 +1,9 @@
 # =============================================================================
 # one_way.R
-# One-way plot: exposure-weighted means of one or more observed variables
-# across bins of a feature variable, with optional split grouping.
-#
-# Design principles:
-#   - data.table for all aggregation (scales to 2M+ rows)
-#   - Native plotly for output (dual-axis: bars = exposure, lines = means)
-#   - Pure functions - no side effects, no global mutation, no print() calls
-#   - Fail fast with informative errors; return NULL on recoverable failures
-#   - One function, one responsibility
 # =============================================================================
 
 # Suppress R CMD check NOTEs for data.table's non-standard evaluation.
 utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
-
-# -----------------------------------------------------------------------------
-# Public API
-# -----------------------------------------------------------------------------
 
 #' Create a one-way analysis plot
 #'
@@ -89,7 +76,9 @@ one_way.default <- function(
   # -- Guard: too many levels for a non-numeric column -------------------------
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
   if (n_unique > 2000L && !is.numeric(dt[[var]])) {
-    cli::cli_warn("{.arg {var}} has {n_unique} unique values (max 2,000 for non-numeric). Skipping.")
+    cli::cli_warn(
+      "{.arg {var}} has {n_unique} unique values (max 2,000 for non-numeric). Skipping."
+    )
     return(NULL)
   }
 
@@ -137,7 +126,9 @@ validate_inputs <- function(data, var, obs, exposure, split, bins) {
 assert_col_exists <- function(data, cols, arg_name) {
   missing_cols <- setdiff(cols, names(data))
   if (length(missing_cols) > 0L) {
-    cli::cli_abort("{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}")
+    cli::cli_abort(
+      "{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}"
+    )
   }
 }
 

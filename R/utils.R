@@ -32,7 +32,9 @@ unitise <- function(data, var, min_val, max_val) {
       !is.numeric(max_val) ||
       length(max_val) != 1L
   ) {
-    cli::cli_abort("{.arg min_val} and {.arg max_val} must be single numeric values.")
+    cli::cli_abort(
+      "{.arg min_val} and {.arg max_val} must be single numeric values."
+    )
   }
   if (min_val >= max_val) {
     cli::cli_abort("{.arg min_val} must be less than {.arg max_val}.")

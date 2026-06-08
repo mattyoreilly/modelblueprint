@@ -2,17 +2,6 @@
 # sami.R
 # SAMI (double lift chart) — plots ratio of competing predictions against
 # observed loss to diagnose where two models disagree.
-#
-# For each pair of predictions (i, j), bins the ratio j/i and plots
-# observed mean, model i mean, and model j mean per bin.
-#
-# Design:
-#   - sami() is an S3 generic
-#   - sami.default() works on any data.frame / data.table
-#   - sami.modelblueprint() takes a list of modelblueprint objects,
-#     generates predictions, and delegates to sami.default()
-#   - No mutation of caller data
-#   - `ret` not `return` (return is a base R keyword)
 # =============================================================================
 
 utils::globalVariables(c("ratio_col"))
@@ -83,7 +72,9 @@ sami.default <- function(
   ret <- match.arg(ret)
 
   if (length(pred) < 2L) {
-    cli::cli_abort("{.arg pred} must contain at least two prediction column names.")
+    cli::cli_abort(
+      "{.arg pred} must contain at least two prediction column names."
+    )
   }
 
   # Defensive copy — never mutate caller data
@@ -173,19 +164,25 @@ sami.list <- function(
   ret <- match.arg(ret)
 
   if (length(data) < 2L) {
-    cli::cli_abort("{.arg data} must be a list of at least two {.cls modelblueprint} objects.")
+    cli::cli_abort(
+      "{.arg data} must be a list of at least two {.cls modelblueprint} objects."
+    )
   }
 
   # Validate all elements are modelblueprint
   is_mb <- vapply(data, function(x) S7_inherits(x, modelblueprint), logical(1L))
   if (!all(is_mb)) {
-    cli::cli_abort("All elements of {.arg data} must be {.cls modelblueprint} objects.")
+    cli::cli_abort(
+      "All elements of {.arg data} must be {.cls modelblueprint} objects."
+    )
   }
 
   # Get dataset from first blueprint
   df <- prop(data[[1L]], set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL in the first blueprint.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL in the first blueprint."
+    )
   }
 
   df <- as.data.frame(df)

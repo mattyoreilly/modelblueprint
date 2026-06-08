@@ -5,9 +5,7 @@
 # scattered across individual function files. Run `devtools::document()` after
 # any change to regenerate NAMESPACE.
 
-## usethis namespace: start
-
-# Whole-package imports (used pervasively across many files)
+# Whole-package imports
 #' @import S7
 #' @import data.table
 #' @import plotly
@@ -19,5 +17,4 @@
 #' @importFrom stats var sd predict median
 #' @importFrom stats quantile binomial gaussian poisson
 
-## usethis namespace: end
 NULL

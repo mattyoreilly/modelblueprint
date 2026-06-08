@@ -1,13 +1,6 @@
 # =============================================================================
 # gain.R
 # Cumulative gains chart and Gini coefficient for modelblueprint objects.
-#
-# Design:
-#   - gain() is an S3 generic — works on data.frames directly or via
-#     gain.modelblueprint() which pulls slots automatically
-#   - No mutation of caller data — copies made internally
-#   - data.table used internally, never exposed in the return value
-#   - trapz() and helpers are @noRd internals
 # =============================================================================
 
 # =============================================================================
@@ -131,11 +124,15 @@ gain.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
   }
 
   if (is.na(data@y_name)) {
-    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
   }
 
   # Resolve exposure — fall back to unit weights

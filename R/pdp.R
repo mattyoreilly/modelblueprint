@@ -3,14 +3,6 @@
 # Partial Dependence Plot: how a model's predictions change as one feature
 # varies across its range, averaged over the marginal distribution of all
 # other features.
-#
-# Design principles (matching one_way.R):
-#   - data.table for all aggregation - scales to 2M+ rows
-#   - Native plotly output, identical dual-axis style to one_way
-#   - Works with ANY model that implements a predict() S3/S4 method
-#   - Pure functions - no side effects, no print() calls, no global mutation
-#   - Fail fast with informative errors; return NULL on recoverable failures
-#   - One function, one responsibility
 # =============================================================================
 
 # Suppress R CMD check NOTEs for data.table's non-standard evaluation.
@@ -30,9 +22,6 @@ utils::globalVariables(c(
   "."
 ))
 
-# -----------------------------------------------------------------------------
-# PDP
-# -----------------------------------------------------------------------------
 
 #' Partial dependence plot for any predict()-compatible model
 #'
@@ -143,7 +132,9 @@ pdp.default <- function(
   # -- Guard: non-numeric columns with absurd cardinality -----------------------
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
   if (n_unique > 500L && !is.numeric(dt[[var]])) {
-    cli::cli_warn("{.arg {var}} has {n_unique} unique values (max 500 for non-numeric). Skipping.")
+    cli::cli_warn(
+      "{.arg {var}} has {n_unique} unique values (max 500 for non-numeric). Skipping."
+    )
     return(NULL)
   }
 
@@ -217,17 +208,14 @@ pdp.default <- function(
   plot_pdp(result, var, obs, model_name, global_obs, global_pred)
 }
 
-
-# -----------------------------------------------------------------------------
-# Validation
-# -----------------------------------------------------------------------------
-
 pdp_validate <- function(data, var, obs, exposure, bins, sample_size) {
   if (!is.data.frame(data) && !data.table::is.data.table(data)) {
     cli::cli_abort("{.arg data} must be a data frame or data.table.")
   }
   if (length(var) == 1L && is.na(var)) {
-    cli::cli_abort("{.arg var} is NA. Pass a column name, or call {.fn pdp} on a modelblueprint with {.arg @x_original_inputs} set.")
+    cli::cli_abort(
+      "{.arg var} is NA. Pass a column name, or call {.fn pdp} on a modelblueprint with {.arg @x_original_inputs} set."
+    )
   }
   assert_col_exists(data, var, "`var`")
   assert_col_exists(data, obs, "`obs`")
@@ -247,15 +235,12 @@ if (!exists("assert_col_exists")) {
   assert_col_exists <- function(data, cols, arg_name) {
     missing_cols <- setdiff(cols, names(data))
     if (length(missing_cols) > 0L) {
-      cli::cli_abort("{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}")
+      cli::cli_abort(
+        "{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}"
+      )
     }
   }
 }
-
-
-# -----------------------------------------------------------------------------
-# Prediction dispatch
-# -----------------------------------------------------------------------------
 
 #' Dispatch prediction to the correct backend
 #'
@@ -325,11 +310,6 @@ model_predict <- function(model, newdata) {
   as.numeric(raw)
 }
 
-
-# -----------------------------------------------------------------------------
-# Binning
-# -----------------------------------------------------------------------------
-
 #' Compute bin labels and midpoints for a feature vector
 #'
 #' Returns a list with:
@@ -386,11 +366,6 @@ compute_bins <- function(x, bins, type_agg) {
   list(labels = raw_labels, midpoints = midpoints, is_numeric = TRUE)
 }
 
-
-# -----------------------------------------------------------------------------
-# One-way aggregation (actuals + in-sample predictions)
-# -----------------------------------------------------------------------------
-
 #' Aggregate observed and in-sample predicted values per bin
 #'
 #' Operates on `dt` which must already have columns `.bin`, `.pred`,
@@ -423,11 +398,6 @@ aggregate_pdp_oneway <- function(dt, obs, expo_col) {
     .SDcols = c(.obs_col, .expo_col, ".pred")
   ]
 }
-
-
-# -----------------------------------------------------------------------------
-# PDP computation
-# -----------------------------------------------------------------------------
 
 #' Compute PDP values for each bin
 #'
@@ -516,11 +486,6 @@ coerce_to_original <- function(original_vec, label) {
   )
   rep(val, length(original_vec))
 }
-
-
-# -----------------------------------------------------------------------------
-# Plot
-# -----------------------------------------------------------------------------
 
 #' Render the PDP chart
 #'
@@ -682,69 +647,4 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
       plot_bgcolor = "rgba(0,0,0,0)",
       paper_bgcolor = "rgba(0,0,0,0)"
     )
-}
-
-
-# -----------------------------------------------------------------------------
-# Utilities (duplicated from one_way.R for standalone use)
-# -----------------------------------------------------------------------------
-
-# smart_level_order, sig_dig, bin_equal_exposure, bin_equal_range are shared
-# with one_way.R. When both files are sourced they share a common definition.
-# These fallbacks ensure pdp.R works standalone if one_way.R is not loaded.
-
-if (!exists("smart_level_order")) {
-  smart_level_order <- function(x) {
-    if (length(x) == 0L) {
-      return(x)
-    }
-    leading <- suppressWarnings(as.numeric(
-      sub("^[\\[\\(]?(-?[0-9]*\\.?[0-9]+).*", "\\1", trimws(x), perl = TRUE)
-    ))
-    is_num <- !is.na(leading)
-    na_label <- x[x == "NA"]
-    c(
-      x[is_num][order(leading[is_num])],
-      sort(x[!is_num & x != "NA"]),
-      na_label
-    )
-  }
-}
-
-if (!exists("sig_dig")) {
-  sig_dig <- function(x, n = 7L) {
-    formatC(signif(x, digits = n), digits = n, format = "fg", flag = "#")
-  }
-}
-
-if (!exists("bin_equal_exposure")) {
-  bin_equal_exposure <- function(x_sorted, bins) {
-    n <- length(x_sorted)
-    idx <- unique(as.integer(seq(n / bins, n, length.out = bins)))
-    breaks <- signif(c(x_sorted[1L], x_sorted[idx]), 7L)
-    breaks <- unique(breaks)
-    breaks[1L] <- min(x_sorted)
-    breaks[length(breaks)] <- max(x_sorted)
-    cut(x_sorted, breaks = breaks, include.lowest = TRUE, dig.lab = 7L)
-  }
-}
-
-if (!exists("bin_equal_range")) {
-  bin_equal_range <- function(x, bins) {
-    rng <- range(x, na.rm = TRUE)
-    spread <- diff(rng)
-    mag <- if (is.finite(spread) && spread > 0) {
-      floor(log10(spread / bins))
-    } else {
-      0L
-    }
-    decimals <- if (mag < 0L) 2L - mag else 0L
-    breaks <- round(seq(rng[1L], rng[2L], length.out = bins + 1L), decimals)
-    cut(
-      x,
-      breaks = unique(breaks),
-      include.lowest = TRUE,
-      dig.lab = max(7L, decimals + 3L)
-    )
-  }
 }
