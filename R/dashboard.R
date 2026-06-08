@@ -8,16 +8,16 @@
 #' Opens a Shiny app that provides an interactive view of a fitted
 #' `modelblueprint`. The app has four tabs:
 #'
-#' - **Summary** — model class, display name, target, exposure, dataset row
+#' - **Summary** -- model class, display name, target, exposure, dataset row
 #'   counts, sum of target and exposure per split, the full variable list, and
 #'   an overlaid density chart of the target vs model predictions.
-#' - **Validation** — gain chart, predicted vs observed calibration, and
+#' - **Validation** -- gain chart, predicted vs observed calibration, and
 #'   grouped residuals. All three can be shown side-by-side across train, test,
 #'   and holdout sets simultaneously, making overfitting immediately visible.
-#' - **PDPs** — partial dependence plot for any variable in
+#' - **PDPs** -- partial dependence plot for any variable in
 #'   `@x_original_inputs`, with controls for bins, aggregation strategy, and
 #'   sample size. Aggregated data can be downloaded as CSV.
-#' - **One-ways** — exposure-weighted mean of the target across bins of any
+#' - **One-ways** -- exposure-weighted mean of the target across bins of any
 #'   feature, with an optional model prediction overlay and split variable.
 #'   Aggregated data can be downloaded as CSV.
 #'
@@ -106,7 +106,7 @@ mb_dashboard <- function(mb, ...) {
   # ==========================================================================
 
   ui <- bslib::page_navbar(
-    title    = paste0("ModelBlueprint — ", model_name),
+    title    = paste0("ModelBlueprint \u2014 ", model_name),
     theme    = bslib::bs_theme(bootswatch = "flatly", version = 5L),
     fillable = FALSE,
 
@@ -275,10 +275,10 @@ mb_dashboard <- function(mb, ...) {
         Field = c("Class", "Display name", "Target", "Exposure", "Deploy notes"),
         Value = c(
           paste(class(mb@model), collapse = "/"),
-          if (is.na(mb@model_display_name)) "—" else mb@model_display_name,
-          if (is.na(mb@y_name))             "—" else mb@y_name,
-          if (is.na(mb@expo_name))          "—" else mb@expo_name,
-          if (is.na(mb@deploy_notes))       "—" else mb@deploy_notes
+          if (is.na(mb@model_display_name)) "\u2014" else mb@model_display_name,
+          if (is.na(mb@y_name))             "\u2014" else mb@y_name,
+          if (is.na(mb@expo_name))          "\u2014" else mb@expo_name,
+          if (is.na(mb@deploy_notes))       "\u2014" else mb@deploy_notes
         ),
         stringsAsFactors = FALSE
       )
@@ -294,16 +294,16 @@ mb_dashboard <- function(mb, ...) {
         Set = sets,
         Rows = vapply(sets, function(s) {
           d <- prop(mb, s)
-          if (is.null(d)) "—" else format(nrow(d), big.mark = ",")
+          if (is.null(d)) "\u2014" else format(nrow(d), big.mark = ",")
         }, character(1L)),
         `Sum target` = vapply(sets, function(s) {
           d <- prop(mb, s)
-          if (is.null(d) || is.na(y_col) || !y_col %in% names(d)) "—"
+          if (is.null(d) || is.na(y_col) || !y_col %in% names(d)) "\u2014"
           else fmt(sum(d[[y_col]], na.rm = TRUE))
         }, character(1L)),
         `Sum exposure` = vapply(sets, function(s) {
           d <- prop(mb, s)
-          if (is.null(d) || is.null(e_col) || !e_col %in% names(d)) "—"
+          if (is.null(d) || is.null(e_col) || !e_col %in% names(d)) "\u2014"
           else fmt(sum(d[[e_col]], na.rm = TRUE))
         }, character(1L)),
         stringsAsFactors = FALSE,
@@ -406,7 +406,7 @@ mb_dashboard <- function(mb, ...) {
 
     # -- PDPs -----------------------------------------------------------------
 
-    output$pdp_title <- shiny::renderText(paste("PDP —", input$pdp_var, "—", input$pdp_set))
+    output$pdp_title <- shiny::renderText(paste("PDP \u2014", input$pdp_var, "\u2014", input$pdp_set))
 
     pdp_data <- shiny::reactive({
       shiny::req(input$pdp_var)
@@ -436,7 +436,7 @@ mb_dashboard <- function(mb, ...) {
 
     # -- One-ways -------------------------------------------------------------
 
-    output$ow_title <- shiny::renderText(paste("One-way —", input$ow_var, "—", input$ow_set))
+    output$ow_title <- shiny::renderText(paste("One-way \u2014", input$ow_var, "\u2014", input$ow_set))
 
     ow_split <- shiny::reactive({
       if (is.null(input$ow_split) || input$ow_split == "none") NA_character_ else input$ow_split

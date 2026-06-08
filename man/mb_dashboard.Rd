@@ -23,16 +23,16 @@ Opens a Shiny app that provides an interactive view of a fitted
 }
 \details{
 \itemize{
-\item \strong{Summary} — model class, display name, target, exposure, dataset row
+\item \strong{Summary} -- model class, display name, target, exposure, dataset row
 counts, sum of target and exposure per split, the full variable list, and
 an overlaid density chart of the target vs model predictions.
-\item \strong{Validation} — gain chart, predicted vs observed calibration, and
+\item \strong{Validation} -- gain chart, predicted vs observed calibration, and
 grouped residuals. All three can be shown side-by-side across train, test,
 and holdout sets simultaneously, making overfitting immediately visible.
-\item \strong{PDPs} — partial dependence plot for any variable in
+\item \strong{PDPs} -- partial dependence plot for any variable in
 \verb{@x_original_inputs}, with controls for bins, aggregation strategy, and
 sample size. Aggregated data can be downloaded as CSV.
-\item \strong{One-ways} — exposure-weighted mean of the target across bins of any
+\item \strong{One-ways} -- exposure-weighted mean of the target across bins of any
 feature, with an optional model prediction overlay and split variable.
 Aggregated data can be downloaded as CSV.
 }

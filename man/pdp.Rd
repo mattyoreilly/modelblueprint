@@ -56,6 +56,16 @@ Default \code{"model"}.}
 
 \item{ret}{\verb{[character(1)]} \code{"plot"} (default) returns a plotly
 object; \code{"data"} returns the aggregated data.table.}
+
+\item{pre_process_fun}{\verb{function(df) -> df} applied to the data before
+feature engineering. Default is the identity function.}
+
+\item{feat_eng_fun}{\verb{function(df) -> df} (or matrix) applied after
+pre-processing to produce the model input. Default is the identity
+function.}
+
+\item{post_process_fun}{\verb{function(preds, df_raw) -> numeric} applied to raw
+model predictions. Default is the identity function.}
 }
 \value{
 A plotly object, or a data.table when \code{ret = "data"}, or \code{NULL}

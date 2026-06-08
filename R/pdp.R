@@ -69,6 +69,13 @@ utils::globalVariables(c(
 #'                    Default `"model"`.
 #' @param ret         `[character(1)]` `"plot"` (default) returns a plotly
 #'                    object; `"data"` returns the aggregated data.table.
+#' @param pre_process_fun  `function(df) -> df` applied to the data before
+#'   feature engineering. Default is the identity function.
+#' @param feat_eng_fun     `function(df) -> df` (or matrix) applied after
+#'   pre-processing to produce the model input. Default is the identity
+#'   function.
+#' @param post_process_fun `function(preds, df_raw) -> numeric` applied to raw
+#'   model predictions. Default is the identity function.
 #'
 #' @return A plotly object, or a data.table when `ret = "data"`, or `NULL`
 #'         with a warning when the variable cannot be plotted.
