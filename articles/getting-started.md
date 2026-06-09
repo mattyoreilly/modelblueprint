@@ -199,6 +199,7 @@ predictions across the training data.
 ``` r
 
 pdp(mb, var = "wt", bins = 8L)
+#> ℹ Calculating pdp for `wt`
 ```
 
 ## Model diagnostics
@@ -267,7 +268,7 @@ model, data, and pipeline functions — to a `.tar.gz` archive.
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> modelblueprint saved: /tmp/RtmpO24uR5/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/RtmpSN0oUC/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical
@@ -297,6 +298,7 @@ one_way(mb_rf, var = "wt", predictions = TRUE)
 ``` r
 
 pdp(mb_xgb, var = "hp")
+#> ℹ Calculating pdp for `hp`
 ```
 
 ``` r
