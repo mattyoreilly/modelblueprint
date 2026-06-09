@@ -272,7 +272,9 @@ method(saveMB, modelblueprint) <- function(
   if (is.null(filename)) {
     filename <- prop(object, "model_display_name")
     if (is.na(filename) || !nzchar(filename)) {
-      cli::cli_abort("{.arg filename} must be supplied when {.arg model_display_name} is not set.")
+      cli::cli_abort(
+        "{.arg filename} must be supplied when {.arg model_display_name} is not set."
+      )
     }
   }
   if (tools::file_ext(filename) == "") {
@@ -369,7 +371,9 @@ loadMB <- function(path) {
   switch(
     bare_class,
     modelblueprint = load_modelblueprint(tmp),
-    cli::cli_abort("Don't know how to load class {.val {bare_class}}. Is the right package version installed?")
+    cli::cli_abort(
+      "Don't know how to load class {.val {bare_class}}. Is the right package version installed?"
+    )
   )
 }
 
@@ -474,7 +478,10 @@ load_model_slot <- function(tmp) {
           startH2O = TRUE
         ))),
         error = function(e2) {
-          cli::cli_abort(c("Could not start an H2O cluster to load the model.", x = conditionMessage(e2)))
+          cli::cli_abort(c(
+            "Could not start an H2O cluster to load the model.",
+            x = conditionMessage(e2)
+          ))
         }
       )
     }
@@ -542,7 +549,10 @@ load_data_slot <- function(slot_name, tmp) {
 #' @keywords internal
 check_package <- function(pkg, context) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
-    cli::cli_abort(c("Package {.pkg {pkg}} is required for {context}.", i = "Install with {.run install.packages('{pkg}')}"))
+    cli::cli_abort(c(
+      "Package {.pkg {pkg}} is required for {context}.",
+      i = "Install with {.run install.packages('{pkg}')}"
+    ))
   }
 }
 
@@ -589,20 +599,24 @@ one_way.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
   }
 
   # Align obs scale with predictions — if feat_eng_fun transforms the response,
   # update the obs column in df so obs and predictions are on the same scale.
-  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(as.data.frame(df))))
+  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(as.data.frame(
+    df
+  ))))
   if (data@y_name %in% names(df_eng)) {
     df <- as.data.frame(df)
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }
 
   resolved <- resolve_obs(data, df, predictions)
-  obs      <- resolved$obs
-  df       <- resolved$df
+  obs <- resolved$obs
+  df <- resolved$df
   exposure <- resolve_exposure(data, df)
 
   # Resolve variables: NA means all columns except target and exposure
@@ -624,14 +638,14 @@ one_way.modelblueprint <- function(
       one_way,
       c(
         list(
-          data     = df,
-          var      = v,
-          obs      = obs,
+          data = df,
+          var = v,
+          obs = obs,
           exposure = exposure,
-          split    = split,
-          bins     = bins,
+          split = split,
+          bins = bins,
           type_agg = type_agg,
-          ret      = ret
+          ret = ret
         ),
         dots
       )
@@ -683,11 +697,15 @@ pdp.modelblueprint <- function(
 
   df <- prop(data, set)
   if (is.null(df)) {
-    cli::cli_abort("modelblueprint {.arg @{set}} is NULL. Supply data when constructing.")
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
   }
 
   if (is.na(data@y_name)) {
-    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
   }
 
   exposure <- resolve_exposure(data, df)
@@ -697,7 +715,9 @@ pdp.modelblueprint <- function(
   vars <- if (length(var) == 1L && is.na(var)) {
     x <- data@x_original_inputs
     if (length(x) == 0L) {
-      cli::cli_abort("{.arg var} = NA requires {.arg @x_original_inputs} to be set on the modelblueprint.")
+      cli::cli_abort(
+        "{.arg var} = NA requires {.arg @x_original_inputs} to be set on the modelblueprint."
+      )
     }
     x
   } else {
@@ -748,7 +768,9 @@ pdp.modelblueprint <- function(
 resolve_obs <- function(object, df, predictions) {
   y <- object@y_name
   if (is.na(y)) {
-    cli::cli_abort("{.arg @y_name} is not set. Specify the target variable name.")
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
   }
   if (!predictions) {
     return(list(obs = y, df = df))
@@ -841,8 +863,13 @@ resolve_exposure <- function(object, df) {
     gain.modelblueprint,
     envir = ns
   )
-  registerS3method("predict", "mb_seq",                   predict.mb_seq, envir = ns)
-  registerS3method("predict", "modelblueprint::mb_seq",   predict.mb_seq, envir = ns)
+  registerS3method("predict", "mb_seq", predict.mb_seq, envir = ns)
+  registerS3method(
+    "predict",
+    "modelblueprint::mb_seq",
+    predict.mb_seq,
+    envir = ns
+  )
 }
 
 

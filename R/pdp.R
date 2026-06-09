@@ -118,6 +118,9 @@ pdp.default <- function(
   # -- Coerce; always copy so the caller's object is never mutated -------------
   dt <- data.table::copy(data.table::as.data.table(data))
 
+  # Announce current variable
+  cli::cli_alert_info("Calculating pdp for {.var {var}}")
+
   # -- Apply pipeline for in-sample predictions --------------------------------
   df_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(dt))))
   preds <- model_predict(model, df_eng)
@@ -626,6 +629,7 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
   )
 
   # -- Layout - identical to one_way() ------------------------------------------
+  p$sizingPolicy$defaultHeight <- 800
   p %>%
     plotly::layout(
       xaxis = list(
