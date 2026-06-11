@@ -15,7 +15,8 @@ gain(
   set = c("train", "test", "holdout"),
   title = NULL,
   ret = c("plot", "data", "gini"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
@@ -40,6 +41,14 @@ gain(
 - ret:
 
   `"plot"`, `"data"`, or `"gini"`. Default `"plot"`.
+
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). When supplied, the internal
+  [`predict.modelblueprint()`](predict.ModelBlueprint.md) call is
+  skipped. Use this in loops or dashboards where predictions have
+  already been computed to avoid redundant scoring.
 
 ## Value
 

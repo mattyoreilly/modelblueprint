@@ -73,7 +73,8 @@ systematic model bias across the prediction range.</p>
 <span>  residual_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"raw"</span>, <span class="st">"pearson"</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plot"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  precomputed_preds <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,6 +125,12 @@ dataset is too small for meaningful grouping.</p></dd>
 <dt id="arg-set">set<a class="anchor" aria-label="anchor" href="#arg-set"></a></dt>
 <dd><p><code>[character(1)]</code> Dataset to use: <code>"train"</code>,
 <code>"test"</code>, or <code>"holdout"</code>. Default <code>"train"</code>.</p></dd>
+
+
+<dt id="arg-precomputed-preds">precomputed_preds<a class="anchor" aria-label="anchor" href="#arg-precomputed-preds"></a></dt>
+<dd><p><code>[numeric | NULL]</code> Optional vector of pre-computed
+predictions (one per row of the requested <code>set</code>). When supplied, the
+internal <code><a href="predict.ModelBlueprint.html">predict.modelblueprint()</a></code> call is skipped.</p></dd>
 
 </dl></div>
     <div class="section level2">

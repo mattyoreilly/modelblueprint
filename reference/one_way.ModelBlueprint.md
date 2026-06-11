@@ -17,7 +17,8 @@ one_way(
   bins = 35L,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
@@ -60,6 +61,14 @@ one_way(
 - ...:
 
   Further arguments passed to [`one_way()`](one_way.md).
+
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). Only used when `predictions = TRUE`.
+  When supplied, the internal
+  [`predict.modelblueprint()`](predict.ModelBlueprint.md) call is
+  skipped.
 
 ## Value
 

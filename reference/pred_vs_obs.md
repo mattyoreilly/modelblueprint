@@ -31,7 +31,8 @@ pred_vs_obs(
   type_agg = c("equal_exposure", "equal_range"),
   title = NULL,
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
@@ -77,6 +78,13 @@ pred_vs_obs(
 
   `[character(1)]` Which dataset to use: `"train"`, `"test"`, or
   `"holdout"`. Default `"train"`.
+
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). When supplied, the internal
+  [`predict.modelblueprint()`](predict.ModelBlueprint.md) call is
+  skipped.
 
 ## Value
 

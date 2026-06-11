@@ -33,7 +33,8 @@
   [`mb_xgb_regression()`](mb_examples.md)
   [`mb_xgb_classification()`](mb_examples.md)
   [`mb_h2o_regression()`](mb_examples.md)
-  [`mb_h2o_classification()`](mb_examples.md) : Example modelblueprint
+  [`mb_h2o_classification()`](mb_examples.md)
+  [`mb_h2o_glm_large()`](mb_examples.md) : Example modelblueprint
   objects
 
 - [`mb_layer()`](mb_layer.md) :
