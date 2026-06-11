@@ -1,4 +1,4 @@
-# Generate predictions from a ModelBlueprint
+# Generate predictions from a modelblueprint
 
 Applies `pre_process_fun` -\> `feat_eng_fun` -\> model prediction -\>
 `post_process_fun` to `newdata`.
@@ -6,7 +6,7 @@ Applies `pre_process_fun` -\> `feat_eng_fun` -\> model prediction -\>
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 predict(object, newdata, ...)
 ```
 
@@ -14,7 +14,7 @@ predict(object, newdata, ...)
 
 - object:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - newdata:
 

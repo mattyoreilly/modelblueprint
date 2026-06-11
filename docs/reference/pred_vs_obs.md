@@ -23,7 +23,7 @@ pred_vs_obs(
   ...
 )
 
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 pred_vs_obs(
   data,
   set = c("train", "test", "holdout"),
@@ -31,7 +31,8 @@ pred_vs_obs(
   type_agg = c("equal_exposure", "equal_range"),
   title = NULL,
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
@@ -39,7 +40,7 @@ pred_vs_obs(
 
 - data:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - ...:
 
@@ -78,6 +79,13 @@ pred_vs_obs(
   `[character(1)]` Which dataset to use: `"train"`, `"test"`, or
   `"holdout"`. Default `"train"`.
 
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). When supplied, the internal
+  [`predict.modelblueprint()`](predict.modelblueprint.md) call is
+  skipped.
+
 ## Value
 
 A plotly object or data.table depending on `ret`.
@@ -88,7 +96,7 @@ A plotly object or data.table depending on `ret`.
 
 ``` r
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

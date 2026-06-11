@@ -4,14 +4,18 @@
 
 - **Matt**. Author, maintainer.
 
+- **Hubert Ratajczyk**. Author.
+
 ## Citation
 
-Matt (2026). *ModelBlueprint: One-Way and Partial Dependence Plots for
-Models*. R package version 0.1.0.
+Matt, Ratajczyk H (2026). *modelblueprint: Model Diagnostics and
+Explainability for Pricing Workflows*. R package version 1.1.0,
+<https://mattyoreilly.github.io/modelblueprint/>.
 
     @Manual{,
-      title = {ModelBlueprint: One-Way and Partial Dependence Plots for Models},
-      author = {{Matt}},
+      title = {modelblueprint: Model Diagnostics and Explainability for Pricing Workflows},
+      author = {{Matt} and Hubert Ratajczyk},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 1.1.0},
+      url = {https://mattyoreilly.github.io/modelblueprint/},
     }

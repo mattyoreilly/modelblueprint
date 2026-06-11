@@ -1,15 +1,9 @@
 # Articles
 
-### Getting started
+### All vignettes
 
-- [Getting started with
-  ModelBlueprint](https://github.com/matt/ModelBlueprint/articles/getting-started.md):
-
-### Analysis
-
-- [One-way analysis
-  plots](https://github.com/matt/ModelBlueprint/articles/one-way-plots.md):
-- [Partial dependence
-  plots](https://github.com/matt/ModelBlueprint/articles/partial-dependence-plots.md):
-- [Model
-  diagnostics](https://github.com/matt/ModelBlueprint/articles/model-diagnostics.md):
+- [Getting started with modelblueprint](getting-started.md):
+- [Interactive model dashboard](mb-dashboard.md):
+- [Model diagnostics](model-diagnostics.md):
+- [One-way analysis plots](one-way-plots.md):
+- [Partial dependence plots](partial-dependence-plots.md):

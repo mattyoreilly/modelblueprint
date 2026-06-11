@@ -1,11 +1,11 @@
-# Left-join into a ModelBlueprint's datasets
+# Left-join into a modelblueprint's datasets
 
-Left-join into a ModelBlueprint's datasets
+Left-join into a modelblueprint's datasets
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 left_join(x, y, by = NULL, ..., sets = c("train", "test", "holdout"))
 ```
 
@@ -13,7 +13,7 @@ left_join(x, y, by = NULL, ..., sets = c("train", "test", "holdout"))
 
 - x:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - y:
 
@@ -34,4 +34,4 @@ left_join(x, y, by = NULL, ..., sets = c("train", "test", "holdout"))
 
 ## Value
 
-A new `ModelBlueprint`.
+A new `modelblueprint`.

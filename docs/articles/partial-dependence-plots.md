@@ -24,7 +24,7 @@ The chart has the same dual-axis layout as one-way plots:
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
 mb <- mb_glm_binomial()
 
@@ -122,8 +122,7 @@ Columns returned:
 
 ## Compatible model types
 
-[`pdp()`](https://github.com/matt/ModelBlueprint/reference/pdp.md) works
-with any model that implements
+[`pdp()`](../reference/pdp.md) works with any model that implements
 [`predict()`](https://rdrr.io/r/stats/predict.html):
 
 ``` r
@@ -141,10 +140,9 @@ pdp(mb_xgb_regression(), var = "wt")
 pdp(mb_h2o_regression(), var = "wt")
 ```
 
-For H2O models,
-[`pdp()`](https://github.com/matt/ModelBlueprint/reference/pdp.md)
-connects to the running H2O cluster automatically and handles the
-H2OFrame conversion internally.
+For H2O models, [`pdp()`](../reference/pdp.md) connects to the running
+H2O cluster automatically and handles the H2OFrame conversion
+internally.
 
 ## Interpreting PDPs
 

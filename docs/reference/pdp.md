@@ -24,6 +24,9 @@ pdp(
   type_agg = c("equal_exposure", "equal_range"),
   model_name = "model",
   ret = c("plot", "data"),
+  pre_process_fun = function(df) df,
+  feat_eng_fun = function(df) df,
+  post_process_fun = function(preds, df_raw) preds,
   ...
 )
 ```
@@ -81,6 +84,21 @@ pdp(
   `[character(1)]` `"plot"` (default) returns a plotly object; `"data"`
   returns the aggregated data.table.
 
+- pre_process_fun:
+
+  `function(df) -> df` applied to the data before feature engineering.
+  Default is the identity function.
+
+- feat_eng_fun:
+
+  `function(df) -> df` (or matrix) applied after pre-processing to
+  produce the model input. Default is the identity function.
+
+- post_process_fun:
+
+  `function(preds, df_raw) -> numeric` applied to raw model predictions.
+  Default is the identity function.
+
 ## Value
 
 A plotly object, or a data.table when `ret = "data"`, or `NULL` with a
@@ -97,12 +115,11 @@ Alongside the PDP line the chart also shows:
 - Global average observed and predicted reference lines
 
 - Yellow exposure bars (left axis) - identical style to
-  [`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md)
+  [`one_way()`](one_way.md)
 
 ## See also
 
-[`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md)
-for observed-only one-way analysis.
+[`one_way()`](one_way.md) for observed-only one-way analysis.
 
 ## Examples
 

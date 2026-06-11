@@ -22,7 +22,7 @@ residuals_grouped(
   ...
 )
 
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 residuals_grouped(
   data,
   set = c("train", "test", "holdout"),
@@ -30,7 +30,8 @@ residuals_grouped(
   residual_type = c("raw", "pearson"),
   title = NULL,
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
@@ -38,7 +39,7 @@ residuals_grouped(
 
 - data:
 
-  A `ModelBlueprint` object.
+  A `modelblueprint` object.
 
 - ...:
 
@@ -78,6 +79,13 @@ residuals_grouped(
   `[character(1)]` Dataset to use: `"train"`, `"test"`, or `"holdout"`.
   Default `"train"`.
 
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). When supplied, the internal
+  [`predict.modelblueprint()`](predict.modelblueprint.md) call is
+  skipped.
+
 ## Value
 
 A plotly object or data.table depending on `ret`.
@@ -96,7 +104,7 @@ df <- data.frame(
 residuals_grouped(df, pred = "pred", obs = "obs", exposure = "exposure")
 } # }
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",

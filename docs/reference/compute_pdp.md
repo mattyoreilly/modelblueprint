@@ -7,7 +7,16 @@ mean prediction.
 ## Usage
 
 ``` r
-compute_pdp(rep_set, var, model, bin_info, expo_col)
+compute_pdp(
+  rep_set,
+  var,
+  bin_info,
+  expo_col,
+  model,
+  pre_process_fun,
+  feat_eng_fun,
+  post_process_fun
+)
 ```
 
 ## Value

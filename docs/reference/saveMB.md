@@ -1,24 +1,20 @@
-# Save a ModelBlueprint to disk
+# Save a modelblueprint to disk
 
-Serialises a `ModelBlueprint` to a compressed `.tar.gz` archive
+Serialises a `modelblueprint` to a compressed `.tar.gz` archive
 containing all components needed to fully reconstruct it: model, data
 splits, pipeline functions, and metadata.
 
 ## Usage
 
 ``` r
-saveMB(object, ...)
+saveMB(object, path = getwd(), filename = NULL, ...)
 ```
 
 ## Arguments
 
 - object:
 
-  A `ModelBlueprint` object.
-
-- ...:
-
-  Currently unused. Reserved for future subclass methods.
+  A `modelblueprint` object.
 
 - path:
 
@@ -28,10 +24,14 @@ saveMB(object, ...)
 
   Optional filename. When `NULL`, `model_display_name` is used.
 
+- ...:
+
+  Currently unused. Reserved for future subclass methods.
+
 ## Value
 
 Invisibly returns the full normalised path to the saved archive.
 
 ## See also
 
-[`loadMB()`](https://github.com/matt/ModelBlueprint/reference/loadMB.md)
+[`loadMB()`](loadMB.md)

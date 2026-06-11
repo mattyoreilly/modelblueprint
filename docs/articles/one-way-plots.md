@@ -16,7 +16,7 @@ The chart has a dual-axis layout:
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
 mb <- mb_glm_binomial()
 
@@ -24,9 +24,8 @@ mb <- mb_glm_binomial()
 one_way(mb, var = "wt")
 ```
 
-You can also call
-[`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md)
-directly on a data frame:
+You can also call [`one_way()`](../reference/one_way.md) directly on a
+data frame:
 
 ``` r
 
@@ -88,7 +87,7 @@ one_way(mb, var = "wt", bins = 50L)
 
 ``` r
 
-one_way(mb, var = "wt", type_agg = "equal_range")
+one_way(mb, var = "wt", type_agg = "equal_range", bins = 5)
 ```
 
 ## Split variable
@@ -99,12 +98,12 @@ type, region, or claim flag.
 
 ``` r
 
-one_way(mb, var = "wt", split = "am")   # split by transmission type
+one_way(mb, var = "mpg", split = "am", bins = 5)   # split by transmission type
 ```
 
 ## Choosing the dataset
 
-When calling from a `ModelBlueprint`, use `set` to choose which internal
+When calling from a `modelblueprint`, use `set` to choose which internal
 dataset to plot. Comparing the same one-way on train vs test is a quick
 check for overfitting.
 

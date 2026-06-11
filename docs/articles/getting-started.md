@@ -1,15 +1,15 @@
-# Getting started with ModelBlueprint
+# Getting started with modelblueprint
 
-## What is a ModelBlueprint?
+## What is a modelblueprint?
 
-A `ModelBlueprint` is an S7 object that wraps a fitted model alongside
+A `modelblueprint` is an S7 object that wraps a fitted model alongside
 its training data, pipeline functions, and deployment metadata. The goal
 is a single object that carries everything needed to reproduce
 predictions, run diagnostics, and save/restore the model.
 
 ``` r
 
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model              = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train              = mtcars,
   y_name             = "vs",
@@ -17,8 +17,8 @@ mb <- ModelBlueprint(
   deploy_notes       = "Logistic regression baseline"
 )
 
-mb
-#> <ModelBlueprint::ModelBlueprint>
+print(mb)
+#> <modelblueprint::modelblueprint>
 #>  @ model             :List of 30
 #>  .. $ coefficients     : Named num [1:3] 7.4104 1.0033 -0.0853
 #>  ..  ..- attr(*, "names")= chr [1:3] "(Intercept)" "wt" "hp"
@@ -175,28 +175,31 @@ head(preds)
 
 ## One-way analysis
 
-[`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md)
-shows the exposure-weighted mean of the target across bins of a feature,
-giving a quick view of the marginal relationship. Pass
-`predictions = TRUE` to overlay the model’s in-sample predictions as a
-lift chart.
+[`one_way()`](../reference/one_way.md) shows the exposure-weighted mean
+of the target across bins of a feature, giving a quick view of the
+marginal relationship. Pass `predictions = TRUE` to overlay the model’s
+in-sample predictions as a lift chart.
 
 ``` r
 
 one_way(mb, var = "wt")
+```
+
+``` r
+
 one_way(mb, var = "wt", predictions = TRUE)   # lift chart
 ```
 
 ## Partial dependence plot
 
-[`pdp()`](https://github.com/matt/ModelBlueprint/reference/pdp.md)
-reveals the marginal effect of a feature on model output, controlling
-for all other features by averaging predictions across the training
-data.
+[`pdp()`](../reference/pdp.md) reveals the marginal effect of a feature
+on model output, controlling for all other features by averaging
+predictions across the training data.
 
 ``` r
 
 pdp(mb, var = "wt", bins = 8L)
+#> ℹ Calculating pdp for `wt`
 ```
 
 ## Model diagnostics
@@ -205,19 +208,27 @@ pdp(mb, var = "wt", bins = 8L)
 
 # Gains chart with Gini coefficient
 gain(mb)
+```
+
+``` r
+
 
 # Predicted vs observed calibration
 pred_vs_obs(mb)
+```
+
+``` r
+
 
 # Grouped residuals with loess trend
-residuals_grouped(mb)
+residuals_grouped(mb, exposure_per_bin = 5)
 ```
 
 ## Pipe-friendly data manipulation
 
 [`filter()`](https://rdrr.io/r/stats/filter.html), `mutate()`, and
 `left_join()` operate on the blueprint’s internal datasets and return a
-new `ModelBlueprint` — the original is never mutated.
+new `modelblueprint` — the original is never mutated.
 
 ``` r
 
@@ -237,7 +248,7 @@ time.
 
 ``` r
 
-mb_fe <- ModelBlueprint(
+mb_fe <- modelblueprint(
   model        = lm(mpg ~ wt + wt2, data = transform(mtcars, wt2 = wt^2)),
   feat_eng_fun = function(df) transform(df, wt2 = wt^2),
   train        = mtcars,
@@ -250,19 +261,19 @@ head(predict(mb_fe, mtcars))
 
 ## Saving and loading
 
-[`saveMB()`](https://github.com/matt/ModelBlueprint/reference/saveMB.md)
-serialises the complete blueprint — model, data, and pipeline functions
-— to a `.tar.gz` archive.
-[`loadMB()`](https://github.com/matt/ModelBlueprint/reference/loadMB.md)
-restores it exactly.
+[`saveMB()`](../reference/saveMB.md) serialises the complete blueprint —
+model, data, and pipeline functions — to a `.tar.gz` archive.
+[`loadMB()`](../reference/loadMB.md) restores it exactly.
 
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
+#> modelblueprint saved: /private/var/folders/np/rkn6xqnx7czgp7fppkdq73sc0000gn/T/RtmpRwN9QG/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical
 all.equal(predict(mb, mtcars), predict(mb2, mtcars))
+#> [1] TRUE
 ```
 
 ## Example blueprints
@@ -273,11 +284,24 @@ The package ships with example constructors for common model types:
 
 mb_lm  <- mb_lm_regression()
 mb_glm <- mb_glm_binomial()
+#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 mb_rf  <- mb_rf_regression()     # requires randomForest
 mb_xgb <- mb_xgb_classification() # requires xgboost
+#> Warning in throw_err_or_depr_msg("Parameter(s) have been removed from this
+#> function: ", : Parameter(s) have been removed from this function: params. This
+#> warning will become an error in a future version.
 
 # All work with the same diagnostic functions
-one_way(mb_rf, var = "wt")
+one_way(mb_rf, var = "wt", predictions = TRUE)
+```
+
+``` r
+
 pdp(mb_xgb, var = "hp")
+#> ℹ Calculating pdp for `hp`
+```
+
+``` r
+
 gain(mb_glm)
 ```

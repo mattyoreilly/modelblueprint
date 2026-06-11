@@ -324,9 +324,18 @@ mb_dashboard <- function(mb, ...) {
     # Predictions are computed once per set on first access and reused across
     # all plots (gain, pred_vs_obs, residuals_grouped, dist_plot, one_way).
     # This avoids 4+ independent full-dataset predict() calls for large models.
+    # .pred_env stores two keys per set:
+    #   <set>           \u2014 numeric prediction vector, or NULL if not yet computed
+    #   <set>_attempted \u2014 TRUE once a prediction attempt has been made
+    #
+    # The "attempted" flag prevents retrying a failed prediction on every
+    # subsequent plot render, which would flood the UI with repeated curl /
+    # connection errors.
     .pred_env <- new.env(parent = emptyenv())
     get_preds <- function(set) {
-      if (is.null(.pred_env[[set]])) {
+      attempted <- isTRUE(.pred_env[[paste0(set, "_attempted")]])
+      if (!attempted) {
+        .pred_env[[paste0(set, "_attempted")]] <- TRUE
         nid <- shiny::showNotification(
           paste0("Computing predictions for ", set, " set\u2026"),
           duration = NULL, type = "message", id = paste0("pred_", set)
@@ -335,7 +344,23 @@ mb_dashboard <- function(mb, ...) {
         df <- as.data.frame(prop(mb, set))
         .pred_env[[set]] <- tryCatch(
           predict.modelblueprint(mb, df),
-          error = function(e) NULL
+          error = function(e) {
+            msg <- conditionMessage(e)
+            # Give H2O connection failures an actionable hint
+            if (grepl("curl|localhost|connect", msg, ignore.case = TRUE)) {
+              msg <- paste0(
+                "Could not reach the H2O cluster. ",
+                "Call h2o::h2o.init() before launching mb_dashboard(). ",
+                "(", msg, ")"
+              )
+            }
+            shiny::showNotification(
+              paste0("[", set, "] Prediction failed: ", msg),
+              type = "error", duration = NULL,
+              id   = paste0("pred_err_", set)
+            )
+            NULL
+          }
         )
       }
       .pred_env[[set]]

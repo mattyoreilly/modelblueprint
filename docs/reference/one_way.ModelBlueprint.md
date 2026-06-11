@@ -1,33 +1,32 @@
-# One-way analysis for a ModelBlueprint
+# One-way analysis for a modelblueprint
 
-Calls
-[`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md)
-using the ModelBlueprint's target, exposure, and data slots. Optionally
-overlays the model's in-sample predictions to produce a lift chart (pass
-`predictions = TRUE`).
+Calls [`one_way()`](one_way.md) using the modelblueprint's target,
+exposure, and data slots. Optionally overlays the model's in-sample
+predictions to produce a lift chart (pass `predictions = TRUE`).
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 one_way(
-  object,
-  var,
+  data,
+  var = NA,
   set = c("train", "test", "holdout"),
   predictions = FALSE,
   split = NA_character_,
   bins = 35L,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 ```
 
 ## Arguments
 
-- object:
+- data:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - var:
 
@@ -61,8 +60,15 @@ one_way(
 
 - ...:
 
-  Further arguments passed to
-  [`one_way()`](https://github.com/matt/ModelBlueprint/reference/one_way.md).
+  Further arguments passed to [`one_way()`](one_way.md).
+
+- precomputed_preds:
+
+  `[numeric | NULL]` Optional vector of pre-computed predictions (one
+  per row of the requested `set`). Only used when `predictions = TRUE`.
+  When supplied, the internal
+  [`predict.modelblueprint()`](predict.modelblueprint.md) call is
+  skipped.
 
 ## Value
 

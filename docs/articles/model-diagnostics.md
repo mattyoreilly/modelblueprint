@@ -2,16 +2,16 @@
 
 ## Overview
 
-ModelBlueprint provides four diagnostic charts for evaluating model
+modelblueprint provides four diagnostic charts for evaluating model
 performance. Each works on a plain data frame or dispatches
-automatically from a `ModelBlueprint` object.
+automatically from a `modelblueprint` object.
 
 | Function | Purpose |
 |----|----|
-| [`gain()`](https://github.com/matt/ModelBlueprint/reference/gain.md) | Rank-ordering ability — Gini coefficient |
-| [`pred_vs_obs()`](https://github.com/matt/ModelBlueprint/reference/pred_vs_obs.md) | Calibration — are predicted rates accurate? |
-| [`residuals_grouped()`](https://github.com/matt/ModelBlueprint/reference/residuals_grouped.md) | Systematic bias across the prediction range |
-| [`sami()`](https://github.com/matt/ModelBlueprint/reference/sami.md) | Where do two models disagree? |
+| [`gain()`](../reference/gain.md) | Rank-ordering ability — Gini coefficient |
+| [`pred_vs_obs()`](../reference/pred_vs_obs.md) | Calibration — are predicted rates accurate? |
+| [`residuals_grouped()`](../reference/residuals_grouped.md) | Systematic bias across the prediction range |
+| [`sami()`](../reference/sami.md) | Where do two models disagree? |
 
 ------------------------------------------------------------------------
 
@@ -30,6 +30,8 @@ better.
 ``` r
 
 mb <- mb_glm_binomial()
+mtcars$pred_model1 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
+mtcars$pred_model2 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
 
 # Gains chart — Gini shown in legend
 gain(mb)
@@ -38,8 +40,7 @@ gain(mb)
 gain(
   mtcars,
   pred     = c("pred_model1", "pred_model2"),
-  obs      = "vs",
-  exposure = "exposure"
+  obs      = "vs"
 )
 ```
 
@@ -61,7 +62,7 @@ average.
 mb <- mb_glm_binomial()
 
 # Calibration chart
-pred_vs_obs(mb)
+pred_vs_obs(mb, ret = "data")
 
 # More bins for finer resolution
 pred_vs_obs(mb, bins = 20L)
@@ -143,11 +144,11 @@ On a plain data frame with predictions already attached:
 ``` r
 
 df        <- mtcars
-df$pred1  <- predict(mb1, mtcars)
-df$pred2  <- predict(mb2, mtcars)
+df$pred1  <- predict(mb1, mtcars) + rnorm(nrow(mtcars))
+df$pred2  <- predict(mb2, mtcars) + rnorm(nrow(mtcars))
 
 sami(df, obs = "mpg", pred = c("pred1", "pred2"),
-     exposure = "exposure", bins = 10L)
+     exposure = "exposure", bins = 5, recalib = TRUE)
 ```
 
 With `recalib = TRUE`, both predictions are scaled to match the observed

@@ -1,7 +1,7 @@
-# Load a ModelBlueprint from disk
+# Load a modelblueprint from disk
 
-Reconstructs a `ModelBlueprint` from a `.tar.gz` archive created by
-[`saveMB()`](https://github.com/matt/ModelBlueprint/reference/saveMB.md).
+Reconstructs a `modelblueprint` from a `.tar.gz` archive created by
+[`saveMB()`](saveMB.md).
 
 ## Usage
 
@@ -13,13 +13,12 @@ loadMB(path)
 
 - path:
 
-  Path to the `.tar.gz` archive created by
-  [`saveMB()`](https://github.com/matt/ModelBlueprint/reference/saveMB.md).
+  Path to the `.tar.gz` archive created by [`saveMB()`](saveMB.md).
 
 ## Value
 
-A fully reconstructed `ModelBlueprint` object.
+A fully reconstructed `modelblueprint` object.
 
 ## See also
 
-[`saveMB()`](https://github.com/matt/ModelBlueprint/reference/saveMB.md)
+[`saveMB()`](saveMB.md)

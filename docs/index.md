@@ -1,6 +1,6 @@
-# ModelBlueprint
+# modelblueprint
 
-**ModelBlueprint** is a model-agnostic container for managing machine
+**modelblueprint** is a model-agnostic container for managing machine
 learning model lifecycles in R. Wrap any
 [`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model —
 `lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline
@@ -12,20 +12,20 @@ call.
 ``` r
 
 # Install from GitHub
-pak::pak("matt/ModelBlueprint")
+pak::pak("mattyoreilly/modelblueprint")
 ```
 
 ## Overview
 
 ``` r
 
-library(ModelBlueprint)
+library(modelblueprint)
 
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
   y_name = "vs",
-  expo_name          = "exposure",
+  expo_name = "exposure",
   model_display_name = "logistic_vs"
 )
 
@@ -57,7 +57,7 @@ mb2 <- loadMB("models/logistic_vs.tar.gz")
 - **Model-agnostic** — works with any R model implementing
   [`predict()`](https://rdrr.io/r/stats/predict.html), including H2O
 - **Pipe-friendly** — [`filter()`](https://rdrr.io/r/stats/filter.html),
-  `mutate()`, and `left_join()` methods return new blueprints
+  `mutate()`, and `left_join()` methods return new modelblueprints
 - **Diagnostic plots** — one-way, PDP, gains, calibration, and residual
   plots built in
 - **Persistence** — save and restore full model pipelines including H2O
@@ -69,7 +69,7 @@ mb2 <- loadMB("models/logistic_vs.tar.gz")
 
 | Model | Package | Regression | Classification |
 |----|----|----|----|
-| Linear model | base R | ✓ | ✓ (LPM) |
+| Linear model | base R | ✓ | ✓ |
 | GLM (Gaussian, Binomial, Poisson) | base R | ✓ | ✓ |
 | Decision tree | rpart | ✓ | ✓ |
 | Random forest | randomForest | ✓ | ✓ |

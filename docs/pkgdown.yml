@@ -3,10 +3,8 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
+  mb-dashboard: mb-dashboard.html
   model-diagnostics: model-diagnostics.html
   one-way-plots: one-way-plots.html
   partial-dependence-plots: partial-dependence-plots.html
-last_built: 2026-05-25T20:31Z
-urls:
-  reference: https://github.com/matt/ModelBlueprint/reference
-  article: https://github.com/matt/ModelBlueprint/articles
+last_built: 2026-06-11T08:28Z

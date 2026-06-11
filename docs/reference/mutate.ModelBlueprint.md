@@ -1,11 +1,11 @@
-# Mutate columns in a ModelBlueprint's datasets
+# Mutate columns in a modelblueprint's datasets
 
-Mutate columns in a ModelBlueprint's datasets
+Mutate columns in a modelblueprint's datasets
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 mutate(.data, ..., sets = c("train", "test", "holdout"))
 ```
 
@@ -13,7 +13,7 @@ mutate(.data, ..., sets = c("train", "test", "holdout"))
 
 - .data:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - ...:
 
@@ -26,4 +26,4 @@ mutate(.data, ..., sets = c("train", "test", "holdout"))
 
 ## Value
 
-A new `ModelBlueprint`.
+A new `modelblueprint`.

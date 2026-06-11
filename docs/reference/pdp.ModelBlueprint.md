@@ -1,15 +1,15 @@
-# Partial dependence plot for a ModelBlueprint
+# Partial dependence plot for a modelblueprint
 
-Calls [`pdp()`](https://github.com/matt/ModelBlueprint/reference/pdp.md)
-using the ModelBlueprint's model, target, exposure, and data slots.
+Calls [`pdp()`](pdp.md) using the modelblueprint's model, target,
+exposure, and data slots.
 
 ## Usage
 
 ``` r
-# S3 method for class 'ModelBlueprint'
+# S3 method for class 'modelblueprint'
 pdp(
-  object,
-  var,
+  data,
+  var = NA,
   set = c("train", "test", "holdout"),
   bins = 10L,
   sample_size = 10000L,
@@ -21,9 +21,9 @@ pdp(
 
 ## Arguments
 
-- object:
+- data:
 
-  A `ModelBlueprint`.
+  A `modelblueprint`.
 
 - var:
 
@@ -52,8 +52,7 @@ pdp(
 
 - ...:
 
-  Further arguments passed to
-  [`pdp()`](https://github.com/matt/ModelBlueprint/reference/pdp.md).
+  Further arguments passed to [`pdp()`](pdp.md).
 
 ## Value
 

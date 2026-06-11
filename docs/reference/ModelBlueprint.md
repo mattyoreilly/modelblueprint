@@ -1,6 +1,6 @@
-# ModelBlueprint: a model-agnostic container for ML model lifecycles
+# modelblueprint: a model-agnostic container for ML model lifecycles
 
-ModelBlueprint: a model-agnostic container for ML model lifecycles
+modelblueprint: a model-agnostic container for ML model lifecycles
 
 ## Arguments
 
@@ -73,7 +73,7 @@ ModelBlueprint: a model-agnostic container for ML model lifecycles
 
 ``` r
 if (FALSE) { # \dontrun{
-mb <- ModelBlueprint(
+mb <- modelblueprint(
   model  = lm(mpg ~ wt + hp, data = mtcars),
   train  = mtcars,
   y_name = "mpg"
