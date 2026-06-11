@@ -27,7 +27,8 @@ pred_vs_obs(data, ...)
   type_agg = c("equal_exposure", "equal_range"),
   title = NULL,
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 }
 \arguments{
@@ -53,6 +54,10 @@ Default \code{"exposure"}.}
 
 \item{set}{\verb{[character(1)]} Which dataset to use: \code{"train"},
 \code{"test"}, or \code{"holdout"}. Default \code{"train"}.}
+
+\item{precomputed_preds}{\verb{[numeric | NULL]} Optional vector of pre-computed
+predictions (one per row of the requested \code{set}). When supplied, the
+internal \code{predict.modelblueprint()} call is skipped.}
 }
 \value{
 A plotly object or data.table depending on \code{ret}.

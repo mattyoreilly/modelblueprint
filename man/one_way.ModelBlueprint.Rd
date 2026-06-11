@@ -13,7 +13,8 @@
   bins = 35L,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 }
 \arguments{
@@ -37,6 +38,11 @@ Default \code{FALSE}.}
 \item{ret}{\verb{[character(1)]} \code{"plot"} or \code{"data"}. Default \code{"plot"}.}
 
 \item{...}{Further arguments passed to \code{\link[=one_way]{one_way()}}.}
+
+\item{precomputed_preds}{\verb{[numeric | NULL]} Optional vector of pre-computed
+predictions (one per row of the requested \code{set}). Only used when
+\code{predictions = TRUE}. When supplied, the internal
+\code{predict.modelblueprint()} call is skipped.}
 }
 \value{
 A plotly object or data.table depending on \code{ret}.

@@ -299,6 +299,37 @@ mb_xgb_classification <- function() {
 
 
 # =============================================================================
+# Large synthetic dataset helper (shared by H2O large-model examples)
+# =============================================================================
+
+#' @keywords internal
+.mb_large_split <- function(n = 50000L, seed = 42L) {
+  set.seed(seed)
+  df <- data.frame(
+    x1       = rnorm(n),
+    x2       = rnorm(n),
+    x3       = runif(n, 0, 10),
+    x4       = sample(c(0L, 1L, 2L), n, replace = TRUE),
+    x5       = rnorm(n, mean = 5, sd = 2),
+    exposure = pmax(0.1, rgamma(n, shape = 2, rate = 1))
+  )
+  # Gaussian target with a known linear signal
+  df$y <- 2 * df$x1 - 1.5 * df$x2 + 0.5 * df$x3 +
+    df$x4 * 0.8 + df$x5 * 0.3 + rnorm(n, sd = 1.5)
+
+  idx_train   <- seq_len(round(n * 0.70))
+  idx_test    <- seq(round(n * 0.70) + 1L, round(n * 0.85))
+  idx_holdout <- seq(round(n * 0.85) + 1L, n)
+
+  list(
+    train   = df[idx_train,   ],
+    test    = df[idx_test,    ],
+    holdout = df[idx_holdout, ]
+  )
+}
+
+
+# =============================================================================
 # H2O
 # =============================================================================
 
@@ -353,5 +384,36 @@ mb_h2o_classification <- function() {
     x_original_inputs = features,
     model_display_name = "h2o_glm_classification",
     deploy_notes = "H2O GLM Binomial: vs"
+  )
+}
+
+#' @rdname mb_examples
+#' @param n `[integer(1)]` Number of rows to simulate. Default `5000L` is
+#'   enough to see the caching benefit of the dashboard. Use `50000L` or more
+#'   to stress-test prediction latency on large models.
+#' @export
+mb_h2o_glm_large <- function(n = 5000L) {
+  check_package("h2o", "mb_h2o_glm_large()")
+  d <- .mb_large_split(n = n)
+  features <- c("x1", "x2", "x3", "x4", "x5")
+  suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = -1L)))
+  h2o::h2o.no_progress()
+  modelblueprint(
+    model = h2o::h2o.glm(
+      x              = features,
+      y              = "y",
+      training_frame = h2o::as.h2o(d$train),
+      family         = "gaussian",
+      lambda_search  = TRUE,
+      seed           = 42L
+    ),
+    train   = d$train,
+    test    = d$test,
+    holdout = d$holdout,
+    y_name             = "y",
+    expo_name          = "exposure",
+    x_original_inputs  = features,
+    model_display_name = "h2o_glm_large",
+    deploy_notes       = "H2O GLM Gaussian on 50k-row synthetic dataset"
   )
 }

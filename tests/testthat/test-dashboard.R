@@ -143,29 +143,332 @@ make_ui_html <- function(mb) {
   as.character(htmltools::renderTags(ui)$html)
 }
 
-describe("mb_dashboard — UI structure", {
+# =============================================================================
+# mb_dashboard — precomputed_preds (prediction cache correctness)
+# =============================================================================
+# These tests exercise the `precomputed_preds` path added to gain, pred_vs_obs,
+# residuals_grouped, and one_way for large-model performance. They verify that
+# passing pre-computed predictions produces output identical to letting each
+# method call predict() itself, using a fast lm so the suite runs without H2O.
+
+make_mb_with_preds <- function() {
+  mb <- make_mb()
+  df <- as.data.frame(prop(mb, "train"))
+  list(mb = mb, preds = predict.modelblueprint(mb, df))
+}
+
+describe("precomputed_preds — gain.modelblueprint", {
+  it("produces a plotly object when precomputed_preds is supplied", {
+    x <- make_mb_with_preds()
+    result <- gain(x$mb, set = "train", precomputed_preds = x$preds)
+    expect_s3_class(result, "plotly")
+  })
+
+  it("gini coefficient is identical with and without precomputed_preds", {
+    x <- make_mb_with_preds()
+    gini_direct <- gain(x$mb, set = "train", ret = "gini")
+    gini_cached <- gain(
+      x$mb,
+      set = "train",
+      precomputed_preds = x$preds,
+      ret = "gini"
+    )
+    expect_equal(gini_direct, gini_cached)
+  })
+
+  it("NULL precomputed_preds falls back to normal predict without error", {
+    x <- make_mb_with_preds()
+    expect_no_error(gain(x$mb, set = "train", precomputed_preds = NULL))
+  })
+})
+
+describe("precomputed_preds — pred_vs_obs.modelblueprint", {
+  it("produces a plotly object when precomputed_preds is supplied", {
+    x <- make_mb_with_preds()
+    result <- pred_vs_obs(x$mb, set = "train", precomputed_preds = x$preds)
+    expect_s3_class(result, "plotly")
+  })
+
+  it("aggregated data is identical with and without precomputed_preds", {
+    x <- make_mb_with_preds()
+    d_direct <- pred_vs_obs(x$mb, set = "train", ret = "data")
+    d_cached <- pred_vs_obs(
+      x$mb,
+      set = "train",
+      precomputed_preds = x$preds,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+})
+
+describe("precomputed_preds — residuals_grouped.modelblueprint", {
+  it("produces a plotly object when precomputed_preds is supplied", {
+    x <- make_mb_with_preds()
+    result <- residuals_grouped(
+      x$mb,
+      set = "train",
+      precomputed_preds = x$preds
+    )
+    expect_s3_class(result, "plotly")
+  })
+
+  it("aggregated data is identical with and without precomputed_preds", {
+    x <- make_mb_with_preds()
+    d_direct <- residuals_grouped(x$mb, set = "train", ret = "data")
+    d_cached <- residuals_grouped(
+      x$mb,
+      set = "train",
+      precomputed_preds = x$preds,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+})
+
+describe("precomputed_preds — one_way.modelblueprint (predictions overlay)", {
+  it("produces a plotly object when precomputed_preds is supplied", {
+    x <- make_mb_with_preds()
+    result <- one_way(
+      x$mb,
+      var = "wt",
+      set = "train",
+      predictions = TRUE,
+      precomputed_preds = x$preds
+    )
+    expect_s3_class(result, "plotly")
+  })
+
+  it("aggregated data is identical with and without precomputed_preds", {
+    x <- make_mb_with_preds()
+    d_direct <- one_way(
+      x$mb,
+      var = "wt",
+      set = "train",
+      predictions = TRUE,
+      ret = "data"
+    )
+    d_cached <- one_way(
+      x$mb,
+      var = "wt",
+      set = "train",
+      predictions = TRUE,
+      precomputed_preds = x$preds,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+
+  it("precomputed_preds is ignored when predictions = FALSE", {
+    x <- make_mb_with_preds()
+    d_no_pred <- one_way(
+      x$mb,
+      var = "wt",
+      set = "train",
+      predictions = FALSE,
+      ret = "data"
+    )
+    d_with_ptr <- one_way(
+      x$mb,
+      var = "wt",
+      set = "train",
+      predictions = FALSE,
+      precomputed_preds = x$preds,
+      ret = "data"
+    )
+    expect_equal(d_no_pred, d_with_ptr)
+  })
+})
+
+# =============================================================================
+# mb_dashboard — H2O GLM large model
+# =============================================================================
+# Guards against regressions in the dashboard's H2O path and validates that
+# the prediction cache works end-to-end on a slow model. The entire block is
+# skipped on CRAN and when H2O or Java is unavailable so CI stays green.
+
+describe("mb_dashboard — H2O GLM large model", {
+  # ── Skip guard ──────────────────────────────────────────────────────────────
+  skip_on_cran()   # JVM startup would exceed CRAN's 10-minute check limit
+  skip_if_not_installed("shiny")
+  skip_if_not_installed("bslib")
+  skip_if_not_installed("plotly")
+
+  h2o_available <- tryCatch(
+    {
+      requireNamespace("h2o", quietly = TRUE) &&
+        !inherits(
+          tryCatch(
+            suppressWarnings(suppressMessages(
+              h2o::h2o.init(
+                nthreads = 1L,
+                max_mem_size = "1g",
+                port = 54399L,
+                start_h2o = TRUE
+              )
+            )),
+            error = function(e) e
+          ),
+          "error"
+        )
+    },
+    error = function(e) FALSE
+  )
+  skip_if(!h2o_available, "H2O not available — skipping H2O dashboard tests")
+
+  h2o::h2o.no_progress()
+
+  # ── Fixture ─────────────────────────────────────────────────────────────────
+  # Data is generated inline — no ::: access to internal package helpers.
+  # Small n so JVM startup is the dominant cost, not data generation.
+  set.seed(42L)
+  n_fix    <- 2000L
+  features <- c("x1", "x2", "x3", "x4", "x5")
+  raw <- data.frame(
+    x1       = rnorm(n_fix),
+    x2       = rnorm(n_fix),
+    x3       = runif(n_fix, 0, 10),
+    x4       = sample(c(0L, 1L, 2L), n_fix, replace = TRUE),
+    x5       = rnorm(n_fix, mean = 5, sd = 2),
+    exposure = pmax(0.1, rgamma(n_fix, shape = 2, rate = 1))
+  )
+  raw$y <- 2 * raw$x1 - 1.5 * raw$x2 + 0.5 * raw$x3 +
+    raw$x4 * 0.8 + raw$x5 * 0.3 + rnorm(n_fix, sd = 1.5)
+  d <- list(
+    train   = raw[seq_len(1400L),       ],
+    test    = raw[1401L:1700L,          ],
+    holdout = raw[1701L:n_fix,          ]
+  )
+
+  hf_train <- h2o::as.h2o(d$train)
+  h2o_glm <- h2o::h2o.glm(
+    x = features,
+    y = "y",
+    training_frame = hf_train,
+    family = "gaussian",
+    lambda_search = TRUE,
+    seed = 42L
+  )
+
+  mb_large <- modelblueprint(
+    model = h2o_glm,
+    train = d$train,
+    test = d$test,
+    holdout = d$holdout,
+    y_name = "y",
+    expo_name = "exposure",
+    x_original_inputs = features,
+    model_display_name = "h2o_glm_large"
+  )
+
+  # ── Dashboard construction ──────────────────────────────────────────────────
+  it("returns a shiny.appobj for a large H2O MB with train/test/holdout", {
+    app <- mb_dashboard(mb_large)
+    expect_s3_class(app, "shiny.appobj")
+  })
+
   it("server component is a function", {
-    skip_if_not_installed("shiny")
-    skip_if_not_installed("bslib")
-    skip_if_not_installed("plotly")
-    app <- mb_dashboard(make_mb())
+    app <- mb_dashboard(mb_large)
     expect_true(is.function(app$serverFuncSource))
   })
 
-  it("available_sets reflects which slots are populated", {
-    skip_if_not_installed("shiny")
-    skip_if_not_installed("bslib")
-    skip_if_not_installed("plotly")
-    html <- make_ui_html(make_mb_train_only())
-    expect_true(grepl("train", html, fixed = TRUE))
-    expect_false(grepl("holdout", html, fixed = TRUE))
+  # ── precomputed_preds correctness on H2O ───────────────────────────────────
+  # Compute predictions once — mirrors exactly what get_preds() does in the
+  # dashboard server — then verify each method produces identical output.
+
+  preds_train <- predict.modelblueprint(mb_large, d$train)
+
+  it("precomputed_preds are numeric with one value per training row", {
+    expect_true(is.numeric(preds_train))
+    expect_length(preds_train, nrow(d$train))
+    expect_false(anyNA(preds_train))
   })
 
-  it("model display name appears in the page title", {
-    skip_if_not_installed("shiny")
-    skip_if_not_installed("bslib")
-    skip_if_not_installed("plotly")
-    html <- make_ui_html(make_mb())
-    expect_true(grepl("test_lm", html, fixed = TRUE))
+  it("gain: gini is identical via precomputed_preds vs direct predict", {
+    gini_direct <- gain(mb_large, set = "train", ret = "gini")
+    gini_cached <- gain(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "gini"
+    )
+    expect_equal(gini_direct, gini_cached)
   })
+
+  it("pred_vs_obs: aggregated data identical via precomputed_preds vs direct predict", {
+    d_direct <- pred_vs_obs(mb_large, set = "train", ret = "data")
+    d_cached <- pred_vs_obs(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+
+  it("residuals_grouped: aggregated data identical via precomputed_preds vs direct predict", {
+    d_direct <- residuals_grouped(mb_large, set = "train", ret = "data")
+    d_cached <- residuals_grouped(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+
+  it("one_way with predictions overlay: data identical via precomputed_preds vs direct predict", {
+    d_direct <- one_way(
+      mb_large,
+      var = "x1",
+      set = "train",
+      predictions = TRUE,
+      ret = "data"
+    )
+    d_cached <- one_way(
+      mb_large,
+      var = "x1",
+      set = "train",
+      predictions = TRUE,
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
+    expect_equal(d_direct, d_cached)
+  })
+
+  # ── Teardown ────────────────────────────────────────────────────────────────
+  withr::defer(
+    tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    )
+  )
+})
+
+# =============================================================================
+# mb_dashboard — UI structure
+# =============================================================================
+it("server component is a function", {
+  skip_if_not_installed("shiny")
+  skip_if_not_installed("bslib")
+  skip_if_not_installed("plotly")
+  app <- mb_dashboard(make_mb())
+  expect_true(is.function(app$serverFuncSource))
+})
+
+it("available_sets reflects which slots are populated", {
+  skip_if_not_installed("shiny")
+  skip_if_not_installed("bslib")
+  skip_if_not_installed("plotly")
+  html <- make_ui_html(make_mb_train_only())
+  expect_true(grepl("train", html, fixed = TRUE))
+  expect_false(grepl("holdout", html, fixed = TRUE))
+})
+
+it("model display name appears in the page title", {
+  skip_if_not_installed("shiny")
+  skip_if_not_installed("bslib")
+  skip_if_not_installed("plotly")
+  html <- make_ui_html(make_mb())
+  expect_true(grepl("test_lm", html, fixed = TRUE))
 })

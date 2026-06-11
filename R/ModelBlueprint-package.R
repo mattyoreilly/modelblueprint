@@ -16,6 +16,7 @@
 #' @importFrom grDevices col2rgb
 #' @importFrom stats var sd predict median
 #' @importFrom stats quantile binomial gaussian poisson
+#' @importFrom stats rnorm runif rgamma
 
 # Shared S7 union types used across multiple files.
 # Defined here so they are available regardless of file load order.

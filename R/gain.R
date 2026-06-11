@@ -98,6 +98,11 @@ gain.default <- function(
 #' @param title Chart title. Defaults to `model_display_name`.
 #' @param ret   `"plot"`, `"data"`, or `"gini"`. Default `"plot"`.
 #' @param ...   Passed to the default method.
+#' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
+#'   predictions (one per row of the requested `set`). When supplied, the
+#'   internal `predict.modelblueprint()` call is skipped. Use this in loops or
+#'   dashboards where predictions have already been computed to avoid redundant
+#'   scoring.
 #'
 #' @return A plotly object, list of data.tables, or list of Gini values.
 #'
@@ -117,7 +122,8 @@ gain.modelblueprint <- function(
   set = c("train", "test", "holdout"),
   title = NULL,
   ret = c("plot", "data", "gini"),
-  ...
+  ...,
+  precomputed_preds = NULL
 ) {
   set <- match.arg(set)
   ret <- match.arg(ret)
@@ -149,7 +155,11 @@ gain.modelblueprint <- function(
   } else {
     "model_pred"
   }
-  df[[pred_col]] <- predict.modelblueprint(data, df)
+  if (!is.null(precomputed_preds)) {
+    df[[pred_col]] <- precomputed_preds
+  } else {
+    df[[pred_col]] <- predict.modelblueprint(data, df)
+  }
 
   chart_title <- title %||% pred_col
 

@@ -15,6 +15,7 @@
 \alias{mb_xgb_classification}
 \alias{mb_h2o_regression}
 \alias{mb_h2o_classification}
+\alias{mb_h2o_glm_large}
 \title{Example modelblueprint objects}
 \usage{
 mb_lm_regression()
@@ -42,6 +43,13 @@ mb_xgb_classification()
 mb_h2o_regression()
 
 mb_h2o_classification()
+
+mb_h2o_glm_large(n = 5000L)
+}
+\arguments{
+\item{n}{\verb{[integer(1)]} Number of rows to simulate. Default \code{5000L} is
+enough to see the caching benefit of the dashboard. Use \code{50000L} or more
+to stress-test prediction latency on large models.}
 }
 \value{
 A \code{modelblueprint} object.

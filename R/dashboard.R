@@ -3,6 +3,26 @@
 # Interactive Shiny dashboard for a modelblueprint object.
 # =============================================================================
 
+# Apply a height-independent horizontal legend above the plot area.
+# y = 1.02 in paper coordinates is always just above the top of the plot
+# regardless of chart height, so this works identically at 320 px and when
+# a bslib card is expanded full-screen. The embedded plotly title is cleared
+# because bslib card headers already label each chart.
+#' @keywords internal
+#' @noRd
+.val_legend <- function(p) {
+  plotly::layout(p,
+    title  = "",
+    legend = list(
+      orientation = "h",
+      x           = 0.5, xanchor = "center",
+      y           = 1.02, yanchor = "bottom"
+    ),
+    margin = list(t = 40)
+  )
+}
+
+
 #' Launch an interactive dashboard for a modelblueprint
 #'
 #' Opens a Shiny app that provides an interactive view of a fitted
@@ -105,10 +125,42 @@ mb_dashboard <- function(mb, ...) {
   # UI
   # ==========================================================================
 
+  # JS helpers injected into the page <head>.
+  #
+  # 1. shiny:value poller  \u2014 when validation_ui sends new HTML to the browser,
+  #    poll Plotly.Plots.resize() every 100 ms for 800 ms.  This catches each
+  #    chart as it renders into the updated (possibly narrower/wider) column
+  #    layout, regardless of whether it has any sidebar inputs to depend on.
+  #
+  # 2. bslib full-screen   \u2014 bslib fires 'bslib.card.fullscreen' when a card
+  #    enters or exits full-screen mode.  Resize all plots 150 ms later so the
+  #    Plotly chart fills the new viewport size.
+  resize_script <- shiny::tags$head(shiny::tags$script(shiny::HTML("
+    $(document).on('shiny:value', function(ev) {
+      if (ev.name !== 'validation_ui') return;
+      var polls = 0;
+      var timer = setInterval(function() {
+        document.querySelectorAll('.js-plotly-plot').forEach(function(el) {
+          try { Plotly.Plots.resize(el); } catch(e) {}
+        });
+        if (++polls >= 8) clearInterval(timer);
+      }, 100);
+    });
+
+    $(document).on('bslib.card.fullscreen', function() {
+      setTimeout(function() {
+        document.querySelectorAll('.js-plotly-plot').forEach(function(el) {
+          try { Plotly.Plots.resize(el); } catch(e) {}
+        });
+      }, 150);
+    });
+  ")))
+
   ui <- bslib::page_navbar(
     title    = paste0("ModelBlueprint \u2014 ", model_name),
     theme    = bslib::bs_theme(bootswatch = "flatly", version = 5L),
     fillable = FALSE,
+    header   = resize_script,
 
     # -- Summary tab ----------------------------------------------------------
     bslib::nav_panel(
@@ -268,6 +320,38 @@ mb_dashboard <- function(mb, ...) {
 
   server <- function(input, output, session) {
 
+    # -- Prediction cache -------------------------------------------------------
+    # Predictions are computed once per set on first access and reused across
+    # all plots (gain, pred_vs_obs, residuals_grouped, dist_plot, one_way).
+    # This avoids 4+ independent full-dataset predict() calls for large models.
+    .pred_env <- new.env(parent = emptyenv())
+    get_preds <- function(set) {
+      if (is.null(.pred_env[[set]])) {
+        nid <- shiny::showNotification(
+          paste0("Computing predictions for ", set, " set\u2026"),
+          duration = NULL, type = "message", id = paste0("pred_", set)
+        )
+        on.exit(shiny::removeNotification(nid), add = TRUE)
+        df <- as.data.frame(prop(mb, set))
+        .pred_env[[set]] <- tryCatch(
+          predict.modelblueprint(mb, df),
+          error = function(e) NULL
+        )
+      }
+      .pred_env[[set]]
+    }
+
+    # -- Debounced PDP inputs ---------------------------------------------------
+    # Prevents predict() from firing on every slider tick for slow models.
+    pdp_inputs <- shiny::reactive(list(
+      var      = input$pdp_var,
+      set      = input$pdp_set,
+      bins     = input$pdp_bins,
+      type_agg = input$pdp_type_agg,
+      sample   = input$pdp_sample_size
+    ))
+    pdp_inputs_d <- shiny::debounce(pdp_inputs, millis = 800L)
+
     # -- Summary: tables -------------------------------------------------------
 
     output$model_info <- shiny::renderTable({
@@ -328,7 +412,7 @@ mb_dashboard <- function(mb, ...) {
       shiny::req(input$dist_set, input$dist_bins, !is.na(mb@y_name))
       df   <- as.data.frame(prop(mb, input$dist_set))
       obs  <- df[[mb@y_name]]
-      pred <- tryCatch(predict.modelblueprint(mb, df), error = function(e) NULL)
+      pred <- get_preds(input$dist_set)
       bins <- input$dist_bins
 
       p <- plotly::plot_ly(
@@ -360,21 +444,20 @@ mb_dashboard <- function(mb, ...) {
     output$validation_ui <- shiny::renderUI({
       sets <- shiny::req(input$val_sets)
 
+      chart_card <- function(title, out_id) {
+        bslib::card(
+          full_screen = TRUE,
+          bslib::card_header(title),
+          plotly::plotlyOutput(out_id, height = "320px")
+        )
+      }
+
       cols <- lapply(sets, function(s) {
         bslib::card(
           bslib::card_header(toupper(s)),
-          bslib::card(
-            bslib::card_header("Gain"),
-            plotly::plotlyOutput(paste0("gain_", s), height = "320px")
-          ),
-          bslib::card(
-            bslib::card_header("Predicted vs Observed"),
-            plotly::plotlyOutput(paste0("pvo_", s), height = "320px")
-          ),
-          bslib::card(
-            bslib::card_header("Residuals"),
-            plotly::plotlyOutput(paste0("resid_", s), height = "320px")
-          )
+          chart_card("Gain",                  paste0("gain_",  s)),
+          chart_card("Predicted vs Observed", paste0("pvo_",   s)),
+          chart_card("Residuals",             paste0("resid_", s))
         )
       })
 
@@ -383,51 +466,66 @@ mb_dashboard <- function(mb, ...) {
       do.call(bslib::layout_columns, c(list(col_widths = widths), cols))
     })
 
-    for (s in available_sets) {
-      local({
-        set <- s
+    lapply(available_sets, function(set) {
 
-        output[[paste0("gain_", set)]] <- plotly::renderPlotly({
-          tryCatch(gain(mb, set = set),
-            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
-        })
-
-        output[[paste0("pvo_", set)]] <- plotly::renderPlotly({
-          tryCatch(pred_vs_obs(mb, set = set, bins = input$val_bins, type_agg = input$val_type_agg),
-            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
-        })
-
-        output[[paste0("resid_", set)]] <- plotly::renderPlotly({
-          tryCatch(residuals_grouped(mb, set = set, exposure_per_bin = input$exposure_per_bin),
-            error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
-        })
+      output[[paste0("gain_", set)]] <- plotly::renderPlotly({
+        input$val_sets  # re-render whenever column layout changes
+        tryCatch(
+          .val_legend(gain(mb, set = set, precomputed_preds = get_preds(set))),
+          error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
       })
-    }
+
+      output[[paste0("pvo_", set)]] <- plotly::renderPlotly({
+        input$val_sets
+        tryCatch(
+          .val_legend(pred_vs_obs(mb, set = set, bins = input$val_bins,
+                                  type_agg = input$val_type_agg,
+                                  precomputed_preds = get_preds(set))),
+          error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
+      })
+
+      output[[paste0("resid_", set)]] <- plotly::renderPlotly({
+        input$val_sets
+        tryCatch(
+          .val_legend(residuals_grouped(mb, set = set,
+                                        exposure_per_bin = input$exposure_per_bin,
+                                        precomputed_preds = get_preds(set))),
+          error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e)))
+      })
+    })
 
     # -- PDPs -----------------------------------------------------------------
 
-    output$pdp_title <- shiny::renderText(paste("PDP \u2014", input$pdp_var, "\u2014", input$pdp_set))
+    output$pdp_title <- shiny::renderText({
+      p <- pdp_inputs_d()
+      paste("PDP \u2014", p$var, "\u2014", p$set)
+    })
 
     pdp_data <- shiny::reactive({
-      shiny::req(input$pdp_var)
+      p <- pdp_inputs_d()
+      shiny::req(p$var)
       tryCatch(
-        pdp(mb, var = input$pdp_var, set = input$pdp_set, bins = input$pdp_bins,
-            type_agg = input$pdp_type_agg, sample_size = input$pdp_sample_size, ret = "data"),
+        pdp(mb, var = p$var, set = p$set, bins = p$bins,
+            type_agg = p$type_agg, sample_size = p$sample, ret = "data"),
         error = function(e) NULL
       )
     })
 
     output$pdp_plot <- plotly::renderPlotly({
-      shiny::req(input$pdp_var)
+      p <- pdp_inputs_d()
+      shiny::req(p$var)
       tryCatch(
-        pdp(mb, var = input$pdp_var, set = input$pdp_set, bins = input$pdp_bins,
-            type_agg = input$pdp_type_agg, sample_size = input$pdp_sample_size),
+        pdp(mb, var = p$var, set = p$set, bins = p$bins,
+            type_agg = p$type_agg, sample_size = p$sample),
         error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e))
       )
     })
 
     output$pdp_download <- shiny::downloadHandler(
-      filename = function() paste0("pdp_", input$pdp_var, "_", input$pdp_set, ".csv"),
+      filename = function() {
+        p <- shiny::isolate(pdp_inputs_d())
+        paste0("pdp_", p$var, "_", p$set, ".csv")
+      },
       content  = function(file) {
         d <- pdp_data()
         if (!is.null(d)) utils::write.csv(d, file, row.names = FALSE)
@@ -444,20 +542,22 @@ mb_dashboard <- function(mb, ...) {
 
     ow_data <- shiny::reactive({
       shiny::req(input$ow_var)
+      preds <- if (isTRUE(input$ow_predictions)) get_preds(input$ow_set) else NULL
       tryCatch(
         one_way(mb, var = input$ow_var, set = input$ow_set, bins = input$ow_bins,
                 type_agg = input$ow_type_agg, predictions = input$ow_predictions,
-                split = ow_split(), ret = "data"),
+                split = ow_split(), ret = "data", precomputed_preds = preds),
         error = function(e) NULL
       )
     })
 
     output$ow_plot <- plotly::renderPlotly({
       shiny::req(input$ow_var)
+      preds <- if (isTRUE(input$ow_predictions)) get_preds(input$ow_set) else NULL
       tryCatch(
         one_way(mb, var = input$ow_var, set = input$ow_set, bins = input$ow_bins,
                 type_agg = input$ow_type_agg, predictions = input$ow_predictions,
-                split = ow_split()),
+                split = ow_split(), precomputed_preds = preds),
         error = function(e) plotly::plotly_empty() |> plotly::layout(title = conditionMessage(e))
       )
     })

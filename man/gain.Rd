@@ -12,7 +12,8 @@ gain(data, ...)
   set = c("train", "test", "holdout"),
   title = NULL,
   ret = c("plot", "data", "gini"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 }
 \arguments{
@@ -25,6 +26,12 @@ gain(data, ...)
 \item{title}{Chart title. Defaults to \code{model_display_name}.}
 
 \item{ret}{\code{"plot"}, \code{"data"}, or \code{"gini"}. Default \code{"plot"}.}
+
+\item{precomputed_preds}{\verb{[numeric | NULL]} Optional vector of pre-computed
+predictions (one per row of the requested \code{set}). When supplied, the
+internal \code{predict.modelblueprint()} call is skipped. Use this in loops or
+dashboards where predictions have already been computed to avoid redundant
+scoring.}
 }
 \value{
 A plotly object, list of data.tables, or list of Gini values.

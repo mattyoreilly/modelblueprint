@@ -27,7 +27,8 @@ residuals_grouped(data, ...)
   residual_type = c("raw", "pearson"),
   title = NULL,
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 )
 }
 \arguments{
@@ -55,6 +56,10 @@ dataset is too small for meaningful grouping.}
 
 \item{set}{\verb{[character(1)]} Dataset to use: \code{"train"},
 \code{"test"}, or \code{"holdout"}. Default \code{"train"}.}
+
+\item{precomputed_preds}{\verb{[numeric | NULL]} Optional vector of pre-computed
+predictions (one per row of the requested \code{set}). When supplied, the
+internal \code{predict.modelblueprint()} call is skipped.}
 }
 \value{
 A plotly object or data.table depending on \code{ret}.

@@ -579,6 +579,10 @@ check_package <- function(pkg, context) {
 #' @param type_agg    `[character(1)]` `"equal_exposure"` or `"equal_range"`.
 #' @param ret         `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...         Further arguments passed to [one_way()].
+#' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
+#'   predictions (one per row of the requested `set`). Only used when
+#'   `predictions = TRUE`. When supplied, the internal
+#'   `predict.modelblueprint()` call is skipped.
 #' @return A plotly object or data.table depending on `ret`.
 #' @method one_way modelblueprint
 #' @export
@@ -591,7 +595,8 @@ one_way.modelblueprint <- function(
   bins = 35L,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
-  ...
+  ...,
+  precomputed_preds = NULL
 ) {
   set <- match.arg(set)
   type_agg <- match.arg(type_agg)
@@ -614,7 +619,7 @@ one_way.modelblueprint <- function(
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }
 
-  resolved <- resolve_obs(data, df, predictions)
+  resolved <- resolve_obs(data, df, predictions, precomputed_preds = precomputed_preds)
   obs <- resolved$obs
   df <- resolved$df
   exposure <- resolve_exposure(data, df)
@@ -765,7 +770,7 @@ pdp.modelblueprint <- function(
 
 #' @keywords internal
 #' @noRd
-resolve_obs <- function(object, df, predictions) {
+resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
   y <- object@y_name
   if (is.na(y)) {
     cli::cli_abort(
@@ -777,7 +782,11 @@ resolve_obs <- function(object, df, predictions) {
   }
 
   pred_col <- paste0(".pred_", object@model_display_name %||% "model")
-  df[[pred_col]] <- predict.modelblueprint(object, df)
+  if (!is.null(precomputed_preds)) {
+    df[[pred_col]] <- precomputed_preds
+  } else {
+    df[[pred_col]] <- predict.modelblueprint(object, df)
+  }
   list(obs = c(y, pred_col), df = df)
 }
 
