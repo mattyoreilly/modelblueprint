@@ -46,9 +46,9 @@ gain(
 
   `[numeric | NULL]` Optional vector of pre-computed predictions (one
   per row of the requested `set`). When supplied, the internal
-  [`predict.modelblueprint()`](predict.modelblueprint.md) call is
-  skipped. Use this in loops or dashboards where predictions have
-  already been computed to avoid redundant scoring.
+  [`predict.modelblueprint()`](https://mattyoreilly.github.io/modelblueprint/reference/predict.modelblueprint.md)
+  call is skipped. Use this in loops or dashboards where predictions
+  have already been computed to avoid redundant scoring.
 
 ## Value
 

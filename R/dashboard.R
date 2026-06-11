@@ -436,9 +436,16 @@ mb_dashboard <- function(mb, ...) {
     output$dist_plot <- plotly::renderPlotly({
       shiny::req(input$dist_set, input$dist_bins, !is.na(mb@y_name))
       df   <- as.data.frame(prop(mb, input$dist_set))
-      obs  <- df[[mb@y_name]]
       pred <- get_preds(input$dist_set)
       bins <- input$dist_bins
+
+      # Divide observed target by exposure to show the rate.
+      # Fall back to raw target if exposure is absent or all-zero.
+      expo_col <- resolve_exposure(mb, df)
+      expo     <- if (expo_col == "vec_of_ones") rep(1, nrow(df)) else df[[expo_col]]
+      obs      <- df[[mb@y_name]] / expo
+      x_title  <- if (expo_col == "vec_of_ones") mb@y_name
+                  else paste0(mb@y_name, " / ", expo_col)
 
       p <- plotly::plot_ly(
           x = obs, type = "histogram", histnorm = "probability density",
@@ -447,7 +454,7 @@ mb_dashboard <- function(mb, ...) {
         ) |>
         plotly::layout(
           barmode = "overlay",
-          xaxis   = list(title = mb@y_name),
+          xaxis   = list(title = x_title),
           yaxis   = list(title = "Density"),
           legend  = list(x = 1.05, y = 0.5),
           plot_bgcolor  = "rgba(0,0,0,0)",

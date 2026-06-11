@@ -1,4 +1,77 @@
-url: ~
+url: https://mattyoreilly.github.io/modelblueprint/
 template:
   bootstrap: 5
 
+reference:
+
+  - title: "The modelblueprint object"
+    desc: >
+      Create, predict from, persist, and manipulate a modelblueprint.
+      A modelblueprint wraps a fitted model together with its training data,
+      pipeline functions, and deployment metadata.
+    contents:
+      - modelblueprint
+      - predict.modelblueprint
+      - saveMB
+      - loadMB
+
+  - title: "Data manipulation"
+    desc: >
+      dplyr-style verbs that operate on all data splits inside a modelblueprint
+      simultaneously, returning a new modelblueprint.
+    contents:
+      - filter.modelblueprint
+      - mutate.modelblueprint
+      - left_join.modelblueprint
+
+  - title: "Model sequences"
+    desc: >
+      Chain multiple modelblueprints into a sequential pipeline where the
+      output of one model feeds the input of the next.
+    contents:
+      - mb_seq
+      - mb_layer
+      - predict.mb_seq
+
+  - title: "Validation and diagnostics"
+    desc: >
+      Quantify model performance and calibration. All functions accept either
+      a modelblueprint (uses the stored data and model) or a plain data frame
+      (bring your own predictions).
+    contents:
+      - gain
+      - gain.default
+      - pred_vs_obs
+      - residuals_grouped
+
+  - title: "Feature analysis"
+    desc: >
+      Understand how individual features relate to the target and drive model
+      predictions.
+    contents:
+      - one_way
+      - one_way_nse
+      - one_way.modelblueprint
+      - pdp
+      - pdp.modelblueprint
+      - sami
+
+  - title: "Dashboard"
+    desc: >
+      Interactive Shiny app that combines all diagnostics and feature analysis
+      tools into a single four-tab interface.
+    contents:
+      - mb_dashboard
+
+  - title: "Utilities"
+    desc: >
+      Helper functions useful in pre- and post-processing pipelines.
+    contents:
+      - unitise
+
+  - title: "Example modelblueprints"
+    desc: >
+      Ready-made modelblueprint objects built on the `mtcars` dataset. Useful
+      for exploring the package without needing your own data.
+    contents:
+      - mb_examples

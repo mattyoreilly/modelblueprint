@@ -1,8 +1,10 @@
 # One-way analysis for a modelblueprint
 
-Calls [`one_way()`](one_way.md) using the modelblueprint's target,
-exposure, and data slots. Optionally overlays the model's in-sample
-predictions to produce a lift chart (pass `predictions = TRUE`).
+Calls
+[`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)
+using the modelblueprint's target, exposure, and data slots. Optionally
+overlays the model's in-sample predictions to produce a lift chart (pass
+`predictions = TRUE`).
 
 ## Usage
 
@@ -60,15 +62,16 @@ one_way(
 
 - ...:
 
-  Further arguments passed to [`one_way()`](one_way.md).
+  Further arguments passed to
+  [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md).
 
 - precomputed_preds:
 
   `[numeric | NULL]` Optional vector of pre-computed predictions (one
   per row of the requested `set`). Only used when `predictions = TRUE`.
   When supplied, the internal
-  [`predict.modelblueprint()`](predict.modelblueprint.md) call is
-  skipped.
+  [`predict.modelblueprint()`](https://mattyoreilly.github.io/modelblueprint/reference/predict.modelblueprint.md)
+  call is skipped.
 
 ## Value
 

@@ -8,10 +8,10 @@ automatically from a `modelblueprint` object.
 
 | Function | Purpose |
 |----|----|
-| [`gain()`](../reference/gain.md) | Rank-ordering ability — Gini coefficient |
-| [`pred_vs_obs()`](../reference/pred_vs_obs.md) | Calibration — are predicted rates accurate? |
-| [`residuals_grouped()`](../reference/residuals_grouped.md) | Systematic bias across the prediction range |
-| [`sami()`](../reference/sami.md) | Where do two models disagree? |
+| [`gain()`](https://mattyoreilly.github.io/modelblueprint/reference/gain.md) | Rank-ordering ability — Gini coefficient |
+| [`pred_vs_obs()`](https://mattyoreilly.github.io/modelblueprint/reference/pred_vs_obs.md) | Calibration — are predicted rates accurate? |
+| [`residuals_grouped()`](https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.md) | Systematic bias across the prediction range |
+| [`sami()`](https://mattyoreilly.github.io/modelblueprint/reference/sami.md) | Where do two models disagree? |
 
 ------------------------------------------------------------------------
 
