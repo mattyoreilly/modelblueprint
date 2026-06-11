@@ -55,8 +55,10 @@ for the fact that earlier layers add new columns.
 
 ## See also
 
-[`mb_layer()`](mb_layer.md) to construct individual layers,
-[`predict.mb_seq()`](predict.mb_seq.md) for generating predictions.
+[`mb_layer()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_layer.md)
+to construct individual layers,
+[`predict.mb_seq()`](https://mattyoreilly.github.io/modelblueprint/reference/predict.mb_seq.md)
+for generating predictions.
 
 ## Examples
 

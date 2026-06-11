@@ -13,8 +13,10 @@ mb_dashboard(mb, ...)
 
 - mb:
 
-  A [`modelblueprint`](ModelBlueprint.md) object. Must have at least one
-  of `@train`, `@test`, or `@holdout` set.
+  A
+  [`modelblueprint`](https://mattyoreilly.github.io/modelblueprint/reference/ModelBlueprint.md)
+  object. Must have at least one of `@train`, `@test`, or `@holdout`
+  set.
 
 - ...:
 
@@ -63,10 +65,12 @@ Install `shinycssloaders` for loading spinners on slow plots:
 
 ## See also
 
-[`pdp()`](pdp.md), [`one_way()`](one_way.md),
-[`pred_vs_obs()`](pred_vs_obs.md), [`gain()`](gain.md),
-[`residuals_grouped()`](residuals_grouped.md) for the underlying
-functions used inside the dashboard.
+[`pdp()`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.md),
+[`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md),
+[`pred_vs_obs()`](https://mattyoreilly.github.io/modelblueprint/reference/pred_vs_obs.md),
+[`gain()`](https://mattyoreilly.github.io/modelblueprint/reference/gain.md),
+[`residuals_grouped()`](https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.md)
+for the underlying functions used inside the dashboard.
 
 ## Examples
 

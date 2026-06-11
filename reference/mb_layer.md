@@ -1,4 +1,4 @@
-# Construct a single layer for use in an [`mb_seq()`](mb_seq.md)
+# Construct a single layer for use in an [`mb_seq()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_seq.md)
 
 A layer holds one or more `modelblueprint` objects that run in parallel.
 Each blueprint appends its prediction (under `@yhat_name`) to the
@@ -43,7 +43,8 @@ An `mb_layer` object.
 
 ## See also
 
-[`mb_seq()`](mb_seq.md) to combine layers into a pipeline.
+[`mb_seq()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_seq.md)
+to combine layers into a pipeline.
 
 ## Examples
 

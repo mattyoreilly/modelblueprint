@@ -3,8 +3,8 @@
 You have a fitted model. You want to know whether it overfits, whether
 it is well-calibrated, and how each feature drives predictions — without
 writing twenty lines of plotting code for every diagnostic.
-[`mb_dashboard()`](../reference/mb_dashboard.md) gives you all of that
-in a single function call.
+[`mb_dashboard()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.md)
+gives you all of that in a single function call.
 
 ## Required packages
 
@@ -22,8 +22,9 @@ install.packages("shinycssloaders")
 ## Launching the dashboard
 
 Build a `modelblueprint` with at least one data split and call
-[`mb_dashboard()`](../reference/mb_dashboard.md). The app opens in your
-browser; the R session stays blocked until you close the window.
+[`mb_dashboard()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.md).
+The app opens in your browser; the R session stays blocked until you
+close the window.
 
 ``` r
 
@@ -46,8 +47,8 @@ Any model that implements
 [`predict()`](https://rdrr.io/r/stats/predict.html) works — `lm`, `glm`,
 `rpart`, `randomForest`, `xgboost`, and H2O models are all supported out
 of the box. The built-in example constructors in
-[`?mb_examples`](../reference/mb_examples.md) provide ready-made objects
-for quick experimentation:
+[`?mb_examples`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
+provide ready-made objects for quick experimentation:
 
 ``` r
 
@@ -212,11 +213,11 @@ each chart computed predictions independently. The gain,
 predicted-vs-observed, residuals, distribution, and one-way overlay
 charts would each trigger a separate full-dataset scoring pass.
 
-[`mb_dashboard()`](../reference/mb_dashboard.md) avoids this with a
-per-set prediction cache: the first chart that needs predictions for a
-given split computes them and stores the result; every subsequent chart
-in the session reads from that cache. A notification appears while the
-computation runs so the UI does not appear frozen.
+[`mb_dashboard()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.md)
+avoids this with a per-set prediction cache: the first chart that needs
+predictions for a given split computes them and stores the result; every
+subsequent chart in the session reads from that cache. A notification
+appears while the computation runs so the UI does not appear frozen.
 
 ``` r
 
@@ -243,10 +244,10 @@ one_way(mb, var = "wt", predictions = TRUE, precomputed_preds = preds)
 
 ## Deploying the dashboard
 
-[`mb_dashboard()`](../reference/mb_dashboard.md) returns a
-`shiny.appobj`. To deploy it, save the blueprint to disk with
-[`saveMB()`](../reference/saveMB.md) and create a self-contained `app.R`
-that loads it:
+[`mb_dashboard()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.md)
+returns a `shiny.appobj`. To deploy it, save the blueprint to disk with
+[`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
+and create a self-contained `app.R` that loads it:
 
 ``` r
 
@@ -286,13 +287,17 @@ renv::snapshot()   # captures modelblueprint and all dependencies
 
 ## See also
 
-- [`?mb_dashboard`](../reference/mb_dashboard.md) — full function
-  reference
-- [`vignette("getting-started")`](../articles/getting-started.md) —
-  building your first `modelblueprint`
-- [`vignette("model-diagnostics")`](../articles/model-diagnostics.md) —
-  using gain, pred_vs_obs, and residuals_grouped outside the dashboard
-- [`vignette("partial-dependence-plots")`](../articles/partial-dependence-plots.md)
-  — the [`pdp()`](../reference/pdp.md) function in depth
-- [`vignette("one-way-plots")`](../articles/one-way-plots.md) — the
-  [`one_way()`](../reference/one_way.md) function in depth
+- [`?mb_dashboard`](https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.md)
+  — full function reference
+- [`vignette("getting-started")`](https://mattyoreilly.github.io/modelblueprint/articles/getting-started.md)
+  — building your first `modelblueprint`
+- [`vignette("model-diagnostics")`](https://mattyoreilly.github.io/modelblueprint/articles/model-diagnostics.md)
+  — using gain, pred_vs_obs, and residuals_grouped outside the dashboard
+- [`vignette("partial-dependence-plots")`](https://mattyoreilly.github.io/modelblueprint/articles/partial-dependence-plots.md)
+  — the
+  [`pdp()`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.md)
+  function in depth
+- [`vignette("one-way-plots")`](https://mattyoreilly.github.io/modelblueprint/articles/one-way-plots.md)
+  — the
+  [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)
+  function in depth

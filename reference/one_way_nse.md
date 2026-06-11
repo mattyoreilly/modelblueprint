@@ -1,7 +1,9 @@
 # NSE wrapper for one_way
 
 Allows bare (unquoted) column names to be passed instead of strings.
-Delegates to [`one_way()`](one_way.md) after resolving names.
+Delegates to
+[`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)
+after resolving names.
 
 ## Usage
 
@@ -57,11 +59,13 @@ one_way_nse(
 
 - ...:
 
-  Additional arguments passed to [`one_way()`](one_way.md).
+  Additional arguments passed to
+  [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md).
 
 ## Value
 
-See [`one_way()`](one_way.md).
+See
+[`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md).
 
 ## Examples
 

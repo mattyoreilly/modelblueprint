@@ -38,9 +38,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="the-modelblueprint-object">The modelblueprint object<a class="anchor" aria-label="anchor" href="#the-modelblueprint-object"></a></h2>
 
-
+      <div class="section-desc"><p>Create, predict from, persist, and manipulate a modelblueprint. A modelblueprint wraps a fitted model together with its training data, pipeline functions, and deployment metadata.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -56,12 +56,95 @@
 
         <dt>
 
+          <code><a href="predict.ModelBlueprint.html">predict(<i>&lt;modelblueprint&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Generate predictions from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="saveMB.html">saveMB()</a></code>
+
+        </dt>
+        <dd>Save a modelblueprint to disk</dd>
+
+        <dt>
+
+          <code><a href="loadMB.html">loadMB()</a></code>
+
+        </dt>
+        <dd>Load a modelblueprint from disk</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data-manipulation">Data manipulation<a class="anchor" aria-label="anchor" href="#data-manipulation"></a></h2>
+
+      <div class="section-desc"><p>dplyr-style verbs that operate on all data splits inside a modelblueprint simultaneously, returning a new modelblueprint.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="filter.ModelBlueprint.html">filter(<i>&lt;modelblueprint&gt;</i>)</a></code>
 
         </dt>
         <dd>Filter rows in a modelblueprint's datasets</dd>
 
         <dt>
+
+          <code><a href="mutate.ModelBlueprint.html">mutate(<i>&lt;modelblueprint&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Mutate columns in a modelblueprint's datasets</dd>
+
+        <dt>
+
+          <code><a href="left_join.ModelBlueprint.html">left_join(<i>&lt;modelblueprint&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Left-join into a modelblueprint's datasets</dd>
+      </dl></div><div class="section level2">
+      <h2 id="model-sequences">Model sequences<a class="anchor" aria-label="anchor" href="#model-sequences"></a></h2>
+
+      <div class="section-desc"><p>Chain multiple modelblueprints into a sequential pipeline where the output of one model feeds the input of the next.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="mb_seq.html">mb_seq()</a></code>
+
+        </dt>
+        <dd>A sequential pipeline of model layers</dd>
+
+        <dt>
+
+          <code><a href="mb_layer.html">mb_layer()</a></code>
+
+        </dt>
+        <dd>Construct a single layer for use in an <code><a href="../reference/mb_seq.html">mb_seq()</a></code></dd>
+
+        <dt>
+
+          <code><a href="predict.mb_seq.html">predict(<i>&lt;mb_seq&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Generate predictions from an mb_seq</dd>
+      </dl></div><div class="section level2">
+      <h2 id="validation-and-diagnostics">Validation and diagnostics<a class="anchor" aria-label="anchor" href="#validation-and-diagnostics"></a></h2>
+
+      <div class="section-desc"><p>Quantify model performance and calibration. All functions accept either a modelblueprint (uses the stored data and model) or a plain data frame (bring your own predictions).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="gain.html">gain()</a></code>
 
@@ -77,61 +160,28 @@
 
         <dt>
 
-          <code><a href="left_join.ModelBlueprint.html">left_join(<i>&lt;modelblueprint&gt;</i>)</a></code>
+          <code><a href="pred_vs_obs.html">pred_vs_obs()</a></code>
 
         </dt>
-        <dd>Left-join into a modelblueprint's datasets</dd>
+        <dd>Predicted vs Observed Calibration Plot</dd>
 
         <dt>
 
-          <code><a href="loadMB.html">loadMB()</a></code>
+          <code><a href="residuals_grouped.html">residuals_grouped()</a></code>
 
         </dt>
-        <dd>Load a modelblueprint from disk</dd>
+        <dd>Grouped Residuals vs Predicted Plot</dd>
+      </dl></div><div class="section level2">
+      <h2 id="feature-analysis">Feature analysis<a class="anchor" aria-label="anchor" href="#feature-analysis"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Understand how individual features relate to the target and drive model predictions.</p></div>
 
-          <code><a href="mb_dashboard.html">mb_dashboard()</a></code>
+      <dl></dl></div><div class="section level2">
 
-        </dt>
-        <dd>Launch an interactive dashboard for a modelblueprint</dd>
 
-        <dt>
 
-          <code><a href="mb_examples.html">mb_lm_regression()</a></code> <code><a href="mb_examples.html">mb_lm_classification()</a></code> <code><a href="mb_examples.html">mb_glm_regression()</a></code> <code><a href="mb_examples.html">mb_glm_binomial()</a></code> <code><a href="mb_examples.html">mb_glm_poisson()</a></code> <code><a href="mb_examples.html">mb_rpart_regression()</a></code> <code><a href="mb_examples.html">mb_rpart_classification()</a></code> <code><a href="mb_examples.html">mb_rf_regression()</a></code> <code><a href="mb_examples.html">mb_rf_classification()</a></code> <code><a href="mb_examples.html">mb_xgb_regression()</a></code> <code><a href="mb_examples.html">mb_xgb_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_regression()</a></code> <code><a href="mb_examples.html">mb_h2o_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_glm_large()</a></code>
 
-        </dt>
-        <dd>Example modelblueprint objects</dd>
-
-        <dt>
-
-          <code><a href="mb_layer.html">mb_layer()</a></code>
-
-        </dt>
-        <dd>Construct a single layer for use in an <code><a href="../reference/mb_seq.html">mb_seq()</a></code></dd>
-
-        <dt>
-
-          <code><a href="mb_seq.html">mb_seq()</a></code>
-
-        </dt>
-        <dd>A sequential pipeline of model layers</dd>
-
-        <dt>
-
-          <code><a href="mutate.ModelBlueprint.html">mutate(<i>&lt;modelblueprint&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Mutate columns in a modelblueprint's datasets</dd>
-
-        <dt>
-
-          <code><a href="one_way.ModelBlueprint.html">one_way(<i>&lt;modelblueprint&gt;</i>)</a></code>
-
-        </dt>
-        <dd>One-way analysis for a modelblueprint</dd>
-
-        <dt>
+      <dl><dt>
 
           <code><a href="one_way.html">one_way()</a></code>
 
@@ -147,10 +197,10 @@
 
         <dt>
 
-          <code><a href="pdp.ModelBlueprint.html">pdp(<i>&lt;modelblueprint&gt;</i>)</a></code>
+          <code><a href="one_way.ModelBlueprint.html">one_way(<i>&lt;modelblueprint&gt;</i>)</a></code>
 
         </dt>
-        <dd>Partial dependence plot for a modelblueprint</dd>
+        <dd>One-way analysis for a modelblueprint</dd>
 
         <dt>
 
@@ -161,31 +211,10 @@
 
         <dt>
 
-          <code><a href="pred_vs_obs.html">pred_vs_obs()</a></code>
+          <code><a href="pdp.ModelBlueprint.html">pdp(<i>&lt;modelblueprint&gt;</i>)</a></code>
 
         </dt>
-        <dd>Predicted vs Observed Calibration Plot</dd>
-
-        <dt>
-
-          <code><a href="predict.ModelBlueprint.html">predict(<i>&lt;modelblueprint&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Generate predictions from a modelblueprint</dd>
-
-        <dt>
-
-          <code><a href="predict.mb_seq.html">predict(<i>&lt;mb_seq&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Generate predictions from an mb_seq</dd>
-
-        <dt>
-
-          <code><a href="residuals_grouped.html">residuals_grouped()</a></code>
-
-        </dt>
-        <dd>Grouped Residuals vs Predicted Plot</dd>
+        <dd>Partial dependence plot for a modelblueprint</dd>
 
         <dt>
 
@@ -193,22 +222,57 @@
 
         </dt>
         <dd>SAMI Double Lift Chart</dd>
+      </dl></div><div class="section level2">
+      <h2 id="dashboard">Dashboard<a class="anchor" aria-label="anchor" href="#dashboard"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Interactive Shiny app that combines all diagnostics and feature analysis tools into a single four-tab interface.</p></div>
 
-          <code><a href="saveMB.html">saveMB()</a></code>
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="mb_dashboard.html">mb_dashboard()</a></code>
 
         </dt>
-        <dd>Save a modelblueprint to disk</dd>
+        <dd>Launch an interactive dashboard for a modelblueprint</dd>
+      </dl></div><div class="section level2">
+      <h2 id="utilities">Utilities<a class="anchor" aria-label="anchor" href="#utilities"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Helper functions useful in pre- and post-processing pipelines.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="unitise.html">unitise()</a></code>
 
         </dt>
         <dd>unitise a numeric variable to the range 0 to 1</dd>
+      </dl></div><div class="section level2">
+      <h2 id="example-modelblueprints">Example modelblueprints<a class="anchor" aria-label="anchor" href="#example-modelblueprints"></a></h2>
+
+      <div class="section-desc"><p>Ready-made modelblueprint objects built on the <code>mtcars</code> dataset. Useful for exploring the package without needing your own data.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="mb_examples.html">mb_lm_regression()</a></code> <code><a href="mb_examples.html">mb_lm_classification()</a></code> <code><a href="mb_examples.html">mb_glm_regression()</a></code> <code><a href="mb_examples.html">mb_glm_binomial()</a></code> <code><a href="mb_examples.html">mb_glm_poisson()</a></code> <code><a href="mb_examples.html">mb_rpart_regression()</a></code> <code><a href="mb_examples.html">mb_rpart_classification()</a></code> <code><a href="mb_examples.html">mb_rf_regression()</a></code> <code><a href="mb_examples.html">mb_rf_classification()</a></code> <code><a href="mb_examples.html">mb_xgb_regression()</a></code> <code><a href="mb_examples.html">mb_xgb_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_regression()</a></code> <code><a href="mb_examples.html">mb_h2o_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_glm_large()</a></code>
+
+        </dt>
+        <dd>Example modelblueprint objects</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
