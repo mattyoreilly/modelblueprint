@@ -194,10 +194,6 @@ pdp.default <- function(
   )
 
   # -- Merge one-way + PDP -------------------------------------------------------
-  # Exclude the "NA" bin before merging: it has no sensible PDP value (can't fix
-  # a feature at NA) and smart_level_order always sorts it last, making the PDP
-  # line appear to stop one bar early.
-  agg <- agg[agg$.bin != "NA"]
   result <- merge(agg, pdp_agg, by = ".bin", all.x = TRUE)
 
   # -- Order x-axis --------------------------------------------------------------
@@ -525,6 +521,10 @@ compute_pdp <- function(
 #'
 #' @keywords internal
 plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
+  # Drop the "NA" bin from the plot: it has no PDP value (can't fix a feature
+  # at NA) and smart_level_order puts it last, making the PDP line appear to
+  # stop one bar early. The "NA" bin is still present in ret = "data" output.
+  result <- result[result$.bin != "NA"]
   x_levels <- smart_level_order(unique(result$.bin))
   df <- as.data.frame(result)
 
