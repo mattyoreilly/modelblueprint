@@ -194,6 +194,10 @@ pdp.default <- function(
   )
 
   # -- Merge one-way + PDP -------------------------------------------------------
+  # Exclude the "NA" bin before merging: it has no sensible PDP value (can't fix
+  # a feature at NA) and smart_level_order always sorts it last, making the PDP
+  # line appear to stop one bar early.
+  agg <- agg[agg$.bin != "NA"]
   result <- merge(agg, pdp_agg, by = ".bin", all.x = TRUE)
 
   # -- Order x-axis --------------------------------------------------------------
@@ -480,6 +484,8 @@ compute_pdp <- function(
     big[[var]] <- switch(
       cls,
       factor  = factor(bin_vals, levels = levels(rep_set[[var]])),
+      ordered = ordered(bin_vals, levels = levels(rep_set[[var]])),
+      logical = as.logical(bin_vals),
       integer = suppressWarnings(as.integer(bin_vals)),
       numeric = suppressWarnings(as.numeric(bin_vals)),
       double  = suppressWarnings(as.numeric(bin_vals)),
