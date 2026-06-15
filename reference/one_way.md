@@ -36,22 +36,23 @@ one_way(
 
 - var:
 
-  `[character(1)]` Column to plot on the x-axis.
+  Column to plot on the x-axis. Bare name or string.
 
 - obs:
 
-  `[character()]` One or more column names to summarise on the y-axis
-  (right axis). Default `"target"`.
+  One or more columns to summarise on the y-axis (right axis). Bare
+  name, `c(a, b)`, or character vector. Default `"target"`.
 
 - exposure:
 
-  `[character(1)]` Column of exposure weights. If the column does not
-  exist in `data`, every row is given weight 1. Default `"exposure"`.
+  Column of exposure weights. If the column does not exist in `data`,
+  every row is given weight 1. Bare name or string. Default
+  `"exposure"`.
 
 - split:
 
-  `[character(1) | NA]` Optional column to split lines by. `NA`
-  (default) produces a single set of lines.
+  Optional column to split lines by. Bare name, string, or `NA` / `NULL`
+  for no split. Default `NA`.
 
 - bins:
 
@@ -73,10 +74,21 @@ one_way(
 A plotly object, or a data.table when `ret = "data"`, or `NULL` with a
 warning if the plot cannot be produced.
 
+## Details
+
+Column name arguments (`var`, `obs`, `exposure`, `split`) accept both
+bare (unquoted) names and strings, so `one_way(df, wt, mpg)` and
+`one_way(df, "wt", "mpg")` are equivalent.
+
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
+# bare names
+one_way(mtcars, wt, mpg, bins = 10)
+one_way(mtcars, cyl, c(mpg, hp), split = am)
+
+# strings (equivalent)
 one_way(mtcars, var = "wt", obs = "mpg", bins = 10)
 one_way(mtcars, var = "cyl", obs = c("mpg", "hp"), split = "am")
 } # }

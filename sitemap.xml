@@ -15,7 +15,6 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/apply_binning.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/bin_equal_exposure.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/bin_equal_range.html</loc></url>
-<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/coerce_to_original.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_pdp.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/filter.ModelBlueprint.html</loc></url>
@@ -34,7 +33,6 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mutate.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.html</loc></url>
-<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way_nse.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pdp.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pdp.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/plot_pdp.html</loc></url>

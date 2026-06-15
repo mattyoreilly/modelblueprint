@@ -80,23 +80,24 @@ exposure, lines = weighted means). Optionally splits by a second variable.</p>
 
 
 <dt id="arg-var">var<a class="anchor" aria-label="anchor" href="#arg-var"></a></dt>
-<dd><p><code>[character(1)]</code> Column to plot on the x-axis.</p></dd>
+<dd><p>Column to plot on the x-axis. Bare name or string.</p></dd>
 
 
 <dt id="arg-obs">obs<a class="anchor" aria-label="anchor" href="#arg-obs"></a></dt>
-<dd><p><code>[character()]</code> One or more column names to summarise on
-the y-axis (right axis). Default <code>"target"</code>.</p></dd>
+<dd><p>One or more columns to summarise on the y-axis (right
+axis). Bare name, <code>c(a, b)</code>, or character vector.
+Default <code>"target"</code>.</p></dd>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p><code>[character(1)]</code> Column of exposure weights. If the column
-does not exist in <code>data</code>, every row is given weight 1.
-Default <code>"exposure"</code>.</p></dd>
+<dd><p>Column of exposure weights. If the column does not exist
+in <code>data</code>, every row is given weight 1. Bare name or
+string. Default <code>"exposure"</code>.</p></dd>
 
 
 <dt id="arg-split">split<a class="anchor" aria-label="anchor" href="#arg-split"></a></dt>
-<dd><p><code>[character(1) | NA]</code> Optional column to split lines by.
-<code>NA</code> (default) produces a single set of lines.</p></dd>
+<dd><p>Optional column to split lines by. Bare name, string, or
+<code>NA</code> / <code>NULL</code> for no split. Default <code>NA</code>.</p></dd>
 
 
 <dt id="arg-bins">bins<a class="anchor" aria-label="anchor" href="#arg-bins"></a></dt>
@@ -119,10 +120,21 @@ object; <code>"data"</code> returns the aggregated data.table.</p></dd>
     <p>A plotly object, or a data.table when <code>ret = "data"</code>, or <code>NULL</code>
 with a warning if the plot cannot be produced.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Column name arguments (<code>var</code>, <code>obs</code>, <code>exposure</code>, <code>split</code>) accept both bare
+(unquoted) names and strings, so <code>one_way(df, wt, mpg)</code> and
+<code>one_way(df, "wt", "mpg")</code> are equivalent.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># bare names</span></span></span>
+<span class="r-in"><span><span class="fu">one_way</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">wt</span>, <span class="va">mpg</span>, bins <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">one_way</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">cyl</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="va">hp</span><span class="op">)</span>, split <span class="op">=</span> <span class="va">am</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># strings (equivalent)</span></span></span>
 <span class="r-in"><span><span class="fu">one_way</span><span class="op">(</span><span class="va">mtcars</span>, var <span class="op">=</span> <span class="st">"wt"</span>, obs <span class="op">=</span> <span class="st">"mpg"</span>, bins <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">one_way</span><span class="op">(</span><span class="va">mtcars</span>, var <span class="op">=</span> <span class="st">"cyl"</span>, obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mpg"</span>, <span class="st">"hp"</span><span class="op">)</span>, split <span class="op">=</span> <span class="st">"am"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

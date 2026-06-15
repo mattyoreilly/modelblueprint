@@ -145,8 +145,6 @@ predictions.
 
 - [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)
   : Create a one-way analysis plot
-- [`one_way_nse()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way_nse.md)
-  : NSE wrapper for one_way
 - [`one_way(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.ModelBlueprint.md)
   : One-way analysis for a modelblueprint
 - [`pdp()`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.md)
