@@ -80,12 +80,14 @@ sami.default <- function(
   # Defensive copy — never mutate caller data
   dt <- data.table::copy(data.table::as.data.table(data))
 
-  # Optional recalibration — scale each pred to match obs mean
+  # Optional recalibration — scale each pred to match obs mean.
+  # Use data.table::set() rather than [[<- to avoid the shallow-copy warning
+  # that [[<- triggers when modifying a data.table column by reference.
   if (recalib) {
     obs_mean <- mean(dt[[obs]], na.rm = TRUE)
     for (p in pred) {
       scale <- obs_mean / mean(dt[[p]], na.rm = TRUE)
-      dt[[p]] <- dt[[p]] * scale
+      data.table::set(dt, j = p, value = dt[[p]] * scale)
     }
   }
 

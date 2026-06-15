@@ -1067,3 +1067,60 @@ describe("one_way — scale", {
     expect_lt(t[["elapsed"]], 10)
   })
 })
+
+# =============================================================================
+# one_way — NSE (bare names)
+# =============================================================================
+# one_way() now accepts bare (unquoted) column names as well as strings.
+# These tests verify parity: bare-name and string calls must return identical
+# output, and combinations (bare var + string obs, etc.) must also work.
+
+describe("one_way — bare name arguments (NSE)", {
+  df <- make_df()  # cols: x_num, x_cat, x_int, obs, obs2, expo, grp
+
+  it("bare var produces same result as string var", {
+    d_bare <- one_way(df, x_num, obs = "obs", exposure = "expo", ret = "data")
+    d_str  <- one_way(df, var = "x_num", obs = "obs", exposure = "expo",
+                      ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("bare obs produces same result as string obs", {
+    d_bare <- one_way(df, var = "x_num", obs, exposure = "expo", ret = "data")
+    d_str  <- one_way(df, var = "x_num", obs = "obs", exposure = "expo",
+                      ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("c(bare, bare) obs produces same result as c(str, str)", {
+    d_bare <- one_way(df, x_num, c(obs, obs2), exposure = "expo", ret = "data")
+    d_str  <- one_way(df, var = "x_num", obs = c("obs", "obs2"),
+                      exposure = "expo", ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("bare split produces same result as string split", {
+    d_bare <- one_way(df, x_num, "obs", exposure = "expo", split = grp,
+                      ret = "data")
+    d_str  <- one_way(df, var = "x_num", obs = "obs", exposure = "expo",
+                      split = "grp", ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("NULL split is equivalent to NA split", {
+    d_null <- one_way(df, "x_num", "obs", exposure = "expo", split = NULL,
+                      ret = "data")
+    d_na   <- one_way(df, "x_num", "obs", exposure = "expo", split = NA,
+                      ret = "data")
+    expect_equal(d_null, d_na)
+  })
+
+  it("programmatic string variable still works (no NSE confusion)", {
+    col <- "x_num"
+    d_prog <- one_way(df, var = col, obs = "obs", exposure = "expo",
+                      ret = "data")
+    d_str  <- one_way(df, var = "x_num", obs = "obs", exposure = "expo",
+                      ret = "data")
+    expect_equal(d_prog, d_str)
+  })
+})

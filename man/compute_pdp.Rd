@@ -2,12 +2,13 @@
 % Please edit documentation in R/pdp.R
 \name{compute_pdp}
 \alias{compute_pdp}
-\title{Compute PDP values for each bin}
+\title{Compute PDP values for each bin (batch approach)}
 \usage{
 compute_pdp(
   rep_set,
   var,
   bin_info,
+  all_bins,
   expo_col,
   model,
   pre_process_fun,
@@ -19,8 +20,16 @@ compute_pdp(
 data.table with columns: .bin, pdp_mean
 }
 \description{
-For each bin, fixes the feature at its midpoint (numeric) or label
-(categorical), runs predictions across the full sample, and returns the
-mean prediction.
+Replicates the sample once per bin into a single large data.table, stamps
+each block with the corresponding bin value, then calls predict() exactly
+once. Group-averaging over blocks gives the PDP mean per bin.
+}
+\details{
+For models with per-call overhead (H2O HTTP round-trips, remote endpoints,
+XGBoost DMatrix construction) this is typically 5-20x faster than calling
+predict() once per bin in a loop.
+
+Memory cost: sample_size * n_bins rows. At 10,000 rows x 15 bins that is
+150,000 rows — well within reason for a typical dataset.
 }
 \keyword{internal}

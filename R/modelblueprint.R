@@ -624,12 +624,18 @@ one_way.modelblueprint <- function(
   df <- resolved$df
   exposure <- resolve_exposure(data, df)
 
-  # Resolve variables: NA means all columns except target and exposure
+  # Resolve variables: NA means all columns except:
+  #   - obs columns (target + prediction overlay when predictions = TRUE)
+  #   - the exposure column
+  #   - expo_name from the MB slot (handles edge cases where the column name
+  #     differs from what resolve_exposure returns)
   vars <- if (length(var) == 1L && is.na(var)) {
-    exclude <- c(
-      data@y_name,
-      if (exposure %in% names(df)) exposure else NULL
-    )
+    exclude <- unique(c(
+      obs,
+      if (exposure %in% names(df)) exposure else NULL,
+      if (!is.na(data@expo_name) && data@expo_name %in% names(df))
+        data@expo_name else NULL
+    ))
     setdiff(names(df), exclude)
   } else {
     var

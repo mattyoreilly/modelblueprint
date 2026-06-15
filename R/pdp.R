@@ -19,7 +19,9 @@ utils::globalVariables(c(
   ".var",
   ".x_bin",
   ".split",
-  "."
+  ".",
+  ".bin_group",
+  ".pdp_pred"
 ))
 
 
@@ -174,10 +176,16 @@ pdp.default <- function(
   agg <- aggregate_pdp_oneway(dt, obs, expo_col)
 
   # -- Compute PDP ---------------------------------------------------------------
+  # Pass all bins from the full-data agg so the PDP is computed for every bin
+  # that has exposure, not just those that happened to land in rep_set.
+  # Without this, low-exposure bins missing from the sample get NA pdp_mean
+  # after the merge and the PDP line disappears at those points.
+  all_bins <- unique(agg$.bin[agg$.bin != "NA"])
   pdp_agg <- compute_pdp(
     rep_set,
     var,
     bin_info,
+    all_bins,
     expo_col,
     model,
     pre_process_fun,
@@ -402,11 +410,18 @@ aggregate_pdp_oneway <- function(dt, obs, expo_col) {
   ]
 }
 
-#' Compute PDP values for each bin
+#' Compute PDP values for each bin (batch approach)
 #'
-#' For each bin, fixes the feature at its midpoint (numeric) or label
-#' (categorical), runs predictions across the full sample, and returns the
-#' mean prediction.
+#' Replicates the sample once per bin into a single large data.table, stamps
+#' each block with the corresponding bin value, then calls predict() exactly
+#' once. Group-averaging over blocks gives the PDP mean per bin.
+#'
+#' For models with per-call overhead (H2O HTTP round-trips, remote endpoints,
+#' XGBoost DMatrix construction) this is typically 5-20x faster than calling
+#' predict() once per bin in a loop.
+#'
+#' Memory cost: sample_size * n_bins rows. At 10,000 rows x 15 bins that is
+#' 150,000 rows — well within reason for a typical dataset.
 #'
 #' @return data.table with columns: .bin, pdp_mean
 #' @keywords internal
@@ -414,80 +429,85 @@ compute_pdp <- function(
   rep_set,
   var,
   bin_info,
+  all_bins,
   expo_col,
   model,
   pre_process_fun,
   feat_eng_fun,
   post_process_fun
 ) {
-  # Build bins_to_use from the OBSERVED .bin labels in rep_set - these are
-  # guaranteed to match agg$.bin exactly because both come from bin_info$labels.
-  # Using names(bin_info$midpoints) instead caused subtle label mismatches
-  # (spacing, rounding) that left pdp_mean as NA after the merge.
-  observed_bins <- unique(rep_set$.bin[rep_set$.bin != "NA"])
+  # all_bins comes from the full-dataset agg, so every bin with exposure is
+  # covered even if some bins were not sampled into rep_set.
 
   bins_to_use <- if (bin_info$is_numeric) {
-    # Look up the midpoint for each observed label via the midpoints lookup.
-    # The lookup keys are cut() level labels; observed labels are the same
-    # strings so the match is exact.
-    midpoints_matched <- bin_info$midpoints[observed_bins]
-    valid <- observed_bins[!is.na(midpoints_matched)]
+    # Look up midpoints for every bin from the full dataset.
+    # all_bins labels are the same cut() strings as names(bin_info$midpoints),
+    # so the named lookup is exact.
+    midpoints_matched <- bin_info$midpoints[all_bins]
+    valid <- all_bins[!is.na(midpoints_matched)]
     data.table::data.table(
       .bin = valid,
       .val = bin_info$midpoints[valid]
     )
   } else {
     data.table::data.table(
-      .bin = observed_bins,
+      .bin = all_bins,
       .val = NA_real_
     )
   }
 
-  # Pre-allocate result - avoids growing a list in a loop
   n_bins <- nrow(bins_to_use)
-  results <- vector("list", n_bins)
+  if (n_bins == 0L) {
+    return(data.table::data.table(.bin = character(0L), pdp_mean = numeric(0L)))
+  }
 
-  for (i in seq_len(n_bins)) {
-    bin_label <- bins_to_use$.bin[i]
-    bin_val <- bins_to_use$.val[i]
+  n_samp <- nrow(rep_set)
 
-    # Copy the sample and fix the feature - data.table copy is shallow + COW
-    nd <- data.table::copy(rep_set)
-    nd[[var]] <- if (bin_info$is_numeric) {
-      rep(bin_val, nrow(nd))
-    } else {
-      # Preserve original column type (factor, character, integer)
-      coerce_to_original(rep_set[[var]], bin_label)
-    }
+  # --- Batch replication -------------------------------------------------------
+  # Stack n_bins copies of rep_set into one frame. data.table's integer
+  # subsetting with rep() is the cheapest path — no list allocation needed.
+  big <- rep_set[rep(seq_len(.N), times = n_bins)]
 
-    nd_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(nd))))
-    preds <- model_predict(model, nd_eng)
-    preds <- post_process_fun(preds, as.data.frame(nd))
-    results[[i]] <- data.table::data.table(
-      .bin = bin_label,
-      pdp_mean = mean(preds, na.rm = TRUE)
+  # Overwrite the feature column: each block of n_samp rows gets the value for
+  # its corresponding bin (midpoint for numeric; label cast to original type
+  # for categorical).
+  if (bin_info$is_numeric) {
+    big[[var]] <- rep(bins_to_use$.val, each = n_samp)
+  } else {
+    bin_vals <- rep(bins_to_use$.bin, each = n_samp)
+    # Preserve the column's original class so feat_eng_fun sees the same type
+    cls <- class(rep_set[[var]])[1L]
+    big[[var]] <- switch(
+      cls,
+      factor  = factor(bin_vals, levels = levels(rep_set[[var]])),
+      integer = suppressWarnings(as.integer(bin_vals)),
+      numeric = suppressWarnings(as.numeric(bin_vals)),
+      double  = suppressWarnings(as.numeric(bin_vals)),
+      bin_vals  # character / default
     )
   }
 
-  if (length(results) == 0L) {
-    return(data.table::data.table(.bin = character(0L), pdp_mean = numeric(0L)))
-  }
-  data.table::rbindlist(results)
-}
+  # --- Single predict() call ---------------------------------------------------
+  # big intentionally contains no extra tracking columns — feat_eng_fun and
+  # pre_process_fun see exactly the same column layout as in the sequential
+  # path, just over a taller frame.
+  big_df  <- as.data.frame(big)
+  big_eng <- as.data.frame(feat_eng_fun(pre_process_fun(big_df)))
+  preds   <- model_predict(model, big_eng)
+  preds   <- post_process_fun(preds, big_df)
 
-#' Coerce a bin label back to the original column type
-#' @keywords internal
-coerce_to_original <- function(original_vec, label) {
-  cls <- class(original_vec)[1L]
-  val <- switch(
-    cls,
-    factor = factor(label, levels = levels(original_vec)),
-    integer = suppressWarnings(as.integer(label)),
-    numeric = suppressWarnings(as.numeric(label)),
-    double = suppressWarnings(as.numeric(label)),
-    label
-  )
-  rep(val, length(original_vec))
+  # --- Group-average by bin block ---------------------------------------------
+  # Build a lightweight tracking table rather than adding a column to `big`
+  # (avoids mutating the frame that was just passed to the pipeline).
+  bin_groups <- rep(seq_len(n_bins), each = n_samp)
+  out <- data.table::data.table(.bin_group = bin_groups, .pdp_pred = preds)[
+    ,
+    .(pdp_mean = mean(.pdp_pred, na.rm = TRUE)),
+    by = .bin_group
+  ]
+  out[, .bin      := bins_to_use$.bin[.bin_group]]
+  out[, .bin_group := NULL]
+  out[]
 }
 
 #' Render the PDP chart

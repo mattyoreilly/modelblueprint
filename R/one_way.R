@@ -11,16 +11,21 @@ utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
 #' observed variables per bin, and returns a dual-axis plotly chart (bars =
 #' exposure, lines = weighted means). Optionally splits by a second variable.
 #'
+#' Column name arguments (`var`, `obs`, `exposure`, `split`) accept both bare
+#' (unquoted) names and strings, so `one_way(df, wt, mpg)` and
+#' `one_way(df, "wt", "mpg")` are equivalent.
+#'
 #' @param data       A data frame or data.table. Must contain all columns
 #'                   referenced by other arguments.
-#' @param var        `[character(1)]` Column to plot on the x-axis.
-#' @param obs        `[character()]` One or more column names to summarise on
-#'                   the y-axis (right axis). Default `"target"`.
-#' @param exposure   `[character(1)]` Column of exposure weights. If the column
-#'                   does not exist in `data`, every row is given weight 1.
-#'                   Default `"exposure"`.
-#' @param split      `[character(1) | NA]` Optional column to split lines by.
-#'                   `NA` (default) produces a single set of lines.
+#' @param var        Column to plot on the x-axis. Bare name or string.
+#' @param obs        One or more columns to summarise on the y-axis (right
+#'                   axis). Bare name, `c(a, b)`, or character vector.
+#'                   Default `"target"`.
+#' @param exposure   Column of exposure weights. If the column does not exist
+#'                   in `data`, every row is given weight 1. Bare name or
+#'                   string. Default `"exposure"`.
+#' @param split      Optional column to split lines by. Bare name, string, or
+#'                   `NA` / `NULL` for no split. Default `NA`.
 #' @param bins       `[integer(1)]` Number of equal-exposure bins for numeric
 #'                   variables with more than `bins` unique values. Default 35.
 #' @param type_agg   `[character(1)]` Binning strategy for numeric variables:
@@ -33,6 +38,11 @@ utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
 #'
 #' @examples
 #' \dontrun{
+#' # bare names
+#' one_way(mtcars, wt, mpg, bins = 10)
+#' one_way(mtcars, cyl, c(mpg, hp), split = am)
+#'
+#' # strings (equivalent)
 #' one_way(mtcars, var = "wt", obs = "mpg", bins = 10)
 #' one_way(mtcars, var = "cyl", obs = c("mpg", "hp"), split = "am")
 #' }
@@ -56,6 +66,73 @@ one_way.default <- function(
   ret = c("plot", "data"),
   ...
 ) {
+  # --- NSE: accept bare names or strings for column arguments ----------------
+  # enexpr() captures the expression before the promise is forced.
+  # * Bare name:    one_way(df, wt)         -> "wt"
+  # * String:       one_way(df, "wt")       -> "wt"
+  # * Variable:     one_way(df, var = col)  -> forces promise -> character
+  # * c(a, b):      one_way(df, c(mpg, hp)) -> c("mpg", "hp")
+  # * NULL/NA split coerced to NA_character_.
+  # If a bare-name symbol is not a column in data, the promise is forced so
+  # programmatic callers (e.g. one_way(df, var = col_vec[j])) still work.
+
+  var_expr <- rlang::enexpr(var)
+  var <- if (is.character(var_expr)) {
+    var_expr
+  } else if (is.symbol(var_expr)) {
+    sym <- rlang::as_name(var_expr)
+    if (sym %in% names(data)) sym else var
+  } else {
+    var  # complex expr (e.g. vars[[j]]) — force promise
+  }
+
+  obs_expr <- rlang::enexpr(obs)
+  obs <- if (is.character(obs_expr)) {
+    obs_expr
+  } else if (rlang::is_call(obs_expr) &&
+               identical(rlang::call_name(obs_expr), "c")) {
+    # Resolve each arg of c(): string literal -> kept; bare name -> column
+    # lookup. If ANY arg is a symbol that isn't a column (i.e. it's a local
+    # variable holding a string), fall back to forcing the promise so that
+    # programmatic callers like sami() still work.
+    args <- rlang::call_args(obs_expr)
+    resolved <- vapply(args, function(a) {
+      if (is.character(a)) return(a)
+      if (is.symbol(a)) {
+        nm <- rlang::as_name(a)
+        if (nm %in% names(data)) return(nm)
+      }
+      NA_character_
+    }, character(1L))
+    if (anyNA(resolved)) obs else resolved  # force promise if any non-column
+  } else if (is.symbol(obs_expr)) {
+    sym <- rlang::as_name(obs_expr)
+    if (sym %in% names(data)) sym else obs
+  } else {
+    obs
+  }
+
+  exposure_expr <- rlang::enexpr(exposure)
+  exposure <- if (is.character(exposure_expr)) {
+    exposure_expr
+  } else if (is.symbol(exposure_expr)) {
+    sym <- rlang::as_name(exposure_expr)
+    if (sym %in% names(data)) sym else exposure
+  } else {
+    exposure
+  }
+
+  split_expr <- rlang::enexpr(split)
+  split <- if (is.null(split_expr) || identical(split_expr, quote(NULL))) {
+    NA_character_
+  } else if (is.symbol(split_expr)) {
+    sym <- rlang::as_name(split_expr)
+    if (sym %in% names(data)) sym else split
+  } else {
+    split  # NA_character_, string, or complex expr
+  }
+  # ---------------------------------------------------------------------------
+
   type_agg <- match.arg(type_agg)
   ret <- match.arg(ret)
 

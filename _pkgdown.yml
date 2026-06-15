@@ -50,7 +50,6 @@ reference:
       predictions.
     contents:
       - one_way
-      - one_way_nse
       - one_way.modelblueprint
       - pdp
       - pdp.modelblueprint

@@ -24,17 +24,18 @@ one_way(data, ...)
 
 \item{...}{Arguments passed to methods.}
 
-\item{var}{\verb{[character(1)]} Column to plot on the x-axis.}
+\item{var}{Column to plot on the x-axis. Bare name or string.}
 
-\item{obs}{\verb{[character()]} One or more column names to summarise on
-the y-axis (right axis). Default \code{"target"}.}
+\item{obs}{One or more columns to summarise on the y-axis (right
+axis). Bare name, \code{c(a, b)}, or character vector.
+Default \code{"target"}.}
 
-\item{exposure}{\verb{[character(1)]} Column of exposure weights. If the column
-does not exist in \code{data}, every row is given weight 1.
-Default \code{"exposure"}.}
+\item{exposure}{Column of exposure weights. If the column does not exist
+in \code{data}, every row is given weight 1. Bare name or
+string. Default \code{"exposure"}.}
 
-\item{split}{\verb{[character(1) | NA]} Optional column to split lines by.
-\code{NA} (default) produces a single set of lines.}
+\item{split}{Optional column to split lines by. Bare name, string, or
+\code{NA} / \code{NULL} for no split. Default \code{NA}.}
 
 \item{bins}{\verb{[integer(1)]} Number of equal-exposure bins for numeric
 variables with more than \code{bins} unique values. Default 35.}
@@ -54,8 +55,18 @@ Bins a feature variable, computes exposure-weighted means of one or more
 observed variables per bin, and returns a dual-axis plotly chart (bars =
 exposure, lines = weighted means). Optionally splits by a second variable.
 }
+\details{
+Column name arguments (\code{var}, \code{obs}, \code{exposure}, \code{split}) accept both bare
+(unquoted) names and strings, so \code{one_way(df, wt, mpg)} and
+\code{one_way(df, "wt", "mpg")} are equivalent.
+}
 \examples{
 \dontrun{
+# bare names
+one_way(mtcars, wt, mpg, bins = 10)
+one_way(mtcars, cyl, c(mpg, hp), split = am)
+
+# strings (equivalent)
 one_way(mtcars, var = "wt", obs = "mpg", bins = 10)
 one_way(mtcars, var = "cyl", obs = c("mpg", "hp"), split = "am")
 }

@@ -928,26 +928,30 @@ describe("compute_pdp", {
   df[, .bin := bin_info$labels]
   df[, .pred := predict(m, newdata = df)]
   df[, .expo := 1L]
+  # all_bins mirrors what pdp.default passes: every non-NA bin in the full data
+  all_bins <- unique(df$.bin[df$.bin != "NA"])
+
+  pdp_call <- function() {
+    modelblueprint:::compute_pdp(
+      df, "x_num", bin_info, all_bins, ".expo",
+      m, function(x) x, function(x) x, function(p, d) p
+    )
+  }
 
   it("returns a data.table", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
-    expect_true(data.table::is.data.table(out))
+    expect_true(data.table::is.data.table(pdp_call()))
   })
 
   it("has columns .bin and pdp_mean", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
-    expect_true(all(c(".bin", "pdp_mean") %in% names(out)))
+    expect_true(all(c(".bin", "pdp_mean") %in% names(pdp_call())))
   })
 
   it("has one row per bin", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
-    n_bins <- length(unique(bin_info$labels[bin_info$labels != "NA"]))
-    expect_equal(nrow(out), n_bins)
+    expect_equal(nrow(pdp_call()), length(all_bins))
   })
 
   it("pdp_mean values are numeric and finite", {
-    out <- modelblueprint:::compute_pdp(df, "x_num", bin_info, ".expo", m, function(x) x, function(x) x, function(p, d) p)
-    expect_true(all(is.finite(out$pdp_mean)))
+    expect_true(all(is.finite(pdp_call()$pdp_mean)))
   })
 })
 
