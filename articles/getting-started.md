@@ -272,7 +272,7 @@ restores it exactly.
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> modelblueprint saved: /tmp/Rtmp6qYNWr/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/RtmpHdEcwu/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical
