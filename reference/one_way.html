@@ -61,6 +61,7 @@ exposure, lines = weighted means). Optionally splits by a second variable.</p>
 <span>  exposure <span class="op">=</span> <span class="st">"exposure"</span>,</span>
 <span>  split <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  bins <span class="op">=</span> <span class="fl">35L</span>,</span>
+<span>  time_unit <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  type_agg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"equal_exposure"</span>, <span class="st">"equal_range"</span><span class="op">)</span>,</span>
 <span>  ret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plot"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -103,6 +104,15 @@ string. Default <code>"exposure"</code>.</p></dd>
 <dt id="arg-bins">bins<a class="anchor" aria-label="anchor" href="#arg-bins"></a></dt>
 <dd><p><code>[integer(1)]</code> Number of equal-exposure bins for numeric
 variables with more than <code>bins</code> unique values. Default 35.</p></dd>
+
+
+<dt id="arg-time-unit">time_unit<a class="anchor" aria-label="anchor" href="#arg-time-unit"></a></dt>
+<dd><p><code>[character(1)]</code> For Date / POSIXct variables, the width
+of each bin. Passed directly to <code><a href="https://rdrr.io/r/base/cut.POSIXt.html" class="external-link">base::cut.POSIXt()</a></code>, so
+any string it accepts works: <code>"month"</code>, <code>"week"</code>,
+<code>"2 weeks"</code>, <code>"12 hours"</code>, <code>"quarter"</code>, <code>"year"</code>, etc.
+Ignored for non-date columns. Default <code>NA</code> (no date
+binning — dates are shown as individual values).</p></dd>
 
 
 <dt id="arg-type-agg">type_agg<a class="anchor" aria-label="anchor" href="#arg-type-agg"></a></dt>

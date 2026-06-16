@@ -18,6 +18,7 @@ one_way(
   exposure = "exposure",
   split = NA_character_,
   bins = 35L,
+  time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
   ...
@@ -58,6 +59,16 @@ one_way(
 
   `[integer(1)]` Number of equal-exposure bins for numeric variables
   with more than `bins` unique values. Default 35.
+
+- time_unit:
+
+  `[character(1)]` For Date / POSIXct variables, the width of each bin.
+  Passed directly to
+  [`base::cut.POSIXt()`](https://rdrr.io/r/base/cut.POSIXt.html), so any
+  string it accepts works: `"month"`, `"week"`, `"2 weeks"`,
+  `"12 hours"`, `"quarter"`, `"year"`, etc. Ignored for non-date
+  columns. Default `NA` (no date binning — dates are shown as individual
+  values).
 
 - type_agg:
 

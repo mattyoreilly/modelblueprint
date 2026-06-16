@@ -1,7 +1,7 @@
-# Sort x-axis labels: numerics / intervals first, then categoricals, NA last
+# Sort x-axis labels: numeric intervals first, dates chronologically, then categoricals alphabetically, NA last.
 
-Sort x-axis labels: numerics / intervals first, then categoricals, NA
-last
+Sort x-axis labels: numeric intervals first, dates chronologically, then
+categoricals alphabetically, NA last.
 
 ## Usage
 
