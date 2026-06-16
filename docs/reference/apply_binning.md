@@ -6,5 +6,5 @@ low-cardinality.
 ## Usage
 
 ``` r
-apply_binning(dt, bins, type_agg)
+apply_binning(dt, bins, type_agg, time_unit = NA_character_)
 ```

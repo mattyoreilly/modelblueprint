@@ -39,7 +39,7 @@ output of one model feeds the input of the next.
   :
 
   Construct a single layer for use in an
-  [`mb_seq()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_seq.md)
+  [`mb_seq()`](https://rdrr.io/pkg/modelblueprint/man/mb_seq.html)
 
 - [`predict(`*`<mb_seq>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/predict.mb_seq.md)
   : Generate predictions from an mb_seq
@@ -66,8 +66,6 @@ predictions.
 
 - [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)
   : Create a one-way analysis plot
-- [`one_way_nse()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way_nse.md)
-  : NSE wrapper for one_way
 - [`one_way(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.modelblueprint.md)
   : One-way analysis for a modelblueprint
 - [`pdp()`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.md)

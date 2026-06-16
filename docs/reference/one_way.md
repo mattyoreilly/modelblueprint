@@ -18,6 +18,7 @@ one_way(
   exposure = "exposure",
   split = NA_character_,
   bins = 35L,
+  time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
   ...
@@ -36,27 +37,38 @@ one_way(
 
 - var:
 
-  `[character(1)]` Column to plot on the x-axis.
+  Column to plot on the x-axis. Bare name or string.
 
 - obs:
 
-  `[character()]` One or more column names to summarise on the y-axis
-  (right axis). Default `"target"`.
+  One or more columns to summarise on the y-axis (right axis). Bare
+  name, `c(a, b)`, or character vector. Default `"target"`.
 
 - exposure:
 
-  `[character(1)]` Column of exposure weights. If the column does not
-  exist in `data`, every row is given weight 1. Default `"exposure"`.
+  Column of exposure weights. If the column does not exist in `data`,
+  every row is given weight 1. Bare name or string. Default
+  `"exposure"`.
 
 - split:
 
-  `[character(1) | NA]` Optional column to split lines by. `NA`
-  (default) produces a single set of lines.
+  Optional column to split lines by. Bare name, string, or `NA` / `NULL`
+  for no split. Default `NA`.
 
 - bins:
 
   `[integer(1)]` Number of equal-exposure bins for numeric variables
   with more than `bins` unique values. Default 35.
+
+- time_unit:
+
+  `[character(1)]` For Date / POSIXct variables, the width of each bin.
+  Passed directly to
+  [`base::cut.POSIXt()`](https://rdrr.io/r/base/cut.POSIXt.html), so any
+  string it accepts works: `"month"`, `"week"`, `"2 weeks"`,
+  `"12 hours"`, `"quarter"`, `"year"`, etc. Ignored for non-date
+  columns. Default `NA` (no date binning — dates are shown as individual
+  values).
 
 - type_agg:
 
@@ -73,10 +85,21 @@ one_way(
 A plotly object, or a data.table when `ret = "data"`, or `NULL` with a
 warning if the plot cannot be produced.
 
+## Details
+
+Column name arguments (`var`, `obs`, `exposure`, `split`) accept both
+bare (unquoted) names and strings, so `one_way(df, wt, mpg)` and
+`one_way(df, "wt", "mpg")` are equivalent.
+
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
+# bare names
+one_way(mtcars, wt, mpg, bins = 10)
+one_way(mtcars, cyl, c(mpg, hp), split = am)
+
+# strings (equivalent)
 one_way(mtcars, var = "wt", obs = "mpg", bins = 10)
 one_way(mtcars, var = "cyl", obs = c("mpg", "hp"), split = "am")
 } # }

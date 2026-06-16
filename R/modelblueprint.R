@@ -139,9 +139,8 @@ predict.modelblueprint <- function(object, newdata, ...) {
 # print method
 # =============================================================================
 
-#' @keywords internal
-#' @noRd
-method(print, modelblueprint) <- function(x, ...) {
+# Shared implementation — called by both dispatch paths below.
+.print_modelblueprint <- function(x) {
   rule <- function(ch = "-", n = 60L) paste(rep(ch, n), collapse = "")
   cat(rule("="), "\n")
   cat("modelblueprint\n")
@@ -164,6 +163,19 @@ method(print, modelblueprint) <- function(x, ...) {
     cat(sprintf("  Notes: %s\n", x@deploy_notes))
   }
   cat(rule("="), "\n")
+}
+
+# S3 path: standard R dispatch (installed package, library(), etc.)
+#' @keywords internal
+#' @exportS3Method print modelblueprint
+print.modelblueprint <- function(x, ...) {
+  .print_modelblueprint(x)
+  invisible(x)
+}
+
+# S7 path: pkgload::load_all() routes through print.S7_object -> S7_dispatch()
+method(print, modelblueprint) <- function(x, ...) {
+  .print_modelblueprint(x)
   invisible(x)
 }
 
