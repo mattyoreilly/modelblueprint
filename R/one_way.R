@@ -28,6 +28,12 @@ utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
 #'                   `NA` / `NULL` for no split. Default `NA`.
 #' @param bins       `[integer(1)]` Number of equal-exposure bins for numeric
 #'                   variables with more than `bins` unique values. Default 35.
+#' @param time_unit  `[character(1)]` For Date / POSIXct variables, the width
+#'                   of each bin. Passed directly to [base::cut.POSIXt()], so
+#'                   any string it accepts works: `"month"`, `"week"`,
+#'                   `"2 weeks"`, `"12 hours"`, `"quarter"`, `"year"`, etc.
+#'                   Ignored for non-date columns. Default `NA` (no date
+#'                   binning — dates are shown as individual values).
 #' @param type_agg   `[character(1)]` Binning strategy for numeric variables:
 #'                   `"equal_exposure"` (default) or `"equal_range"`.
 #' @param ret        `[character(1)]` `"plot"` (default) returns a plotly
@@ -62,6 +68,7 @@ one_way.default <- function(
   exposure = "exposure",
   split = NA_character_,
   bins = 35L,
+  time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
   ...
@@ -151,8 +158,13 @@ one_way.default <- function(
   }
 
   # -- Guard: too many levels for a non-numeric column -------------------------
+  # Bypass the guard for Date/datetime columns when time_unit is set — the
+  # binning step will reduce arbitrarily many unique dates to a manageable
+  # number of labelled groups.
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
-  if (n_unique > 2000L && !is.numeric(dt[[var]])) {
+  is_date_col <- inherits(dt[[var]], c("Date", "POSIXct", "POSIXlt"))
+  has_time_unit <- !is.na(time_unit) && nzchar(time_unit)
+  if (n_unique > 2000L && !is.numeric(dt[[var]]) && !(is_date_col && has_time_unit)) {
     cli::cli_warn(
       "{.arg {var}} has {n_unique} unique values (max 2,000 for non-numeric). Skipping."
     )
@@ -160,7 +172,7 @@ one_way.default <- function(
   }
 
   # -- Aggregate ---------------------------------------------------------------
-  agg <- aggregate_one_way(dt, var, obs, expo_col, split, bins, type_agg)
+  agg <- aggregate_one_way(dt, var, obs, expo_col, split, bins, type_agg, time_unit)
 
   if (ret == "data") {
     # Rename internal .x_bin back to the original variable name for the user
@@ -253,8 +265,26 @@ bin_equal_range <- function(x, bins) {
 #'
 #' Returns the data.table unchanged if `var` is categorical or low-cardinality.
 #' @keywords internal
-apply_binning <- function(dt, bins, type_agg) {
+apply_binning <- function(dt, bins, type_agg, time_unit = NA_character_) {
   v <- dt$var
+
+  # --- Date / datetime with explicit time_unit --------------------------------
+  # Use cut.POSIXt for date-aware binning. Convert Date -> POSIXct so the same
+  # code path handles both and all time_unit strings (including "12 hours") work.
+  is_date     <- inherits(v, "Date")
+  is_datetime <- inherits(v, c("POSIXct", "POSIXlt"))
+  if ((is_date || is_datetime) && !is.na(time_unit) && nzchar(time_unit)) {
+    v_posix <- if (is_datetime) as.POSIXct(v) else as.POSIXct(v)
+    binned_chr <- as.character(cut(v_posix, breaks = time_unit))
+    # Strip the redundant " 00:00:00" suffix when all labels fall at midnight
+    # (e.g. monthly or daily cuts of Date data).
+    non_na_lbl <- binned_chr[!is.na(binned_chr)]
+    if (length(non_na_lbl) > 0L && all(endsWith(non_na_lbl, " 00:00:00"))) {
+      binned_chr <- sub(" 00:00:00$", "", binned_chr)
+    }
+    dt[, var := binned_chr]
+    return(dt)
+  }
 
   # Skip binning for categoricals or low-cardinality numerics
   is_categorical <- inherits(
@@ -300,10 +330,31 @@ apply_binning <- function(dt, bins, type_agg) {
 #'
 #' @return data.table with columns: x, split, <obs columns>, exposure
 #' @keywords internal
-aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg) {
+aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg, time_unit = NA_character_) {
   # Select only the columns we need - critical for large datasets
   keep <- unique(c(var, obs, expo_col, if (!is.na(split)) split))
   dt <- dt[, .SD, .SDcols = keep]
+
+  # Date / datetime: convert to character strings immediately, while the class
+  # is still intact. data.table's subsequent setnames / subsetting can silently
+  # drop class attributes, causing as.character() later to emit raw epoch-day
+  # numbers instead of "YYYY-MM-DD" labels.
+  if (inherits(dt[[var]], c("Date", "POSIXct", "POSIXlt"))) {
+    has_time_unit <- !is.na(time_unit) && nzchar(time_unit)
+    if (has_time_unit) {
+      # Bin into calendar periods via cut.POSIXt
+      v_posix    <- as.POSIXct(dt[[var]])
+      binned_chr <- as.character(cut(v_posix, breaks = time_unit))
+      non_na_lbl <- binned_chr[!is.na(binned_chr)]
+      if (length(non_na_lbl) > 0L && all(endsWith(non_na_lbl, " 00:00:00"))) {
+        binned_chr <- sub(" 00:00:00$", "", binned_chr)
+      }
+      dt[, (var) := binned_chr]
+    } else {
+      # No time_unit: just lock in the human-readable string now
+      dt[, (var) := as.character(dt[[var]])]
+    }
+  }
 
   # Rename var/exposure/split to dot-prefixed internal names.
   # Dot-prefixed names cannot collide with any obs column the user would
@@ -351,7 +402,7 @@ aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg) {
   # Force to character immediately after binning so cut()'s factor output
   # never survives into rbindlist as a type that produces NA_character_.
   data.table::setnames(dt_clean, ".var", "var")
-  dt_clean <- apply_binning(dt_clean, bins, type_agg)
+  dt_clean <- apply_binning(dt_clean, bins, type_agg, time_unit)
   dt_clean[, var := as.character(var)]
   data.table::setnames(dt_clean, "var", ".var")
 
@@ -620,20 +671,31 @@ plot_one_way_split <- function(agg, var, obs, split) {
 # Utilities
 # -----------------------------------------------------------------------------
 
-#' Sort x-axis labels: numerics / intervals first, then categoricals, NA last
+#' Sort x-axis labels: numeric intervals first, dates chronologically, then
+#' categoricals alphabetically, NA last.
 #' @keywords internal
 smart_level_order <- function(x) {
   if (length(x) == 0L) {
     return(x)
   }
-  leading <- suppressWarnings(as.numeric(
-    sub("^[\\[\\(]?(-?[0-9]*\\.?[0-9]+).*", "\\1", trimws(x), perl = TRUE)
-  ))
-  is_num <- !is.na(leading)
   na_label <- x[x == "NA"]
+  non_na   <- x[x != "NA"]
+
+  # Date-like strings start with YYYY-MM-DD. ISO format is lexicographically
+  # identical to chronological order, so plain sort() is correct and fast.
+  is_date_str <- grepl("^\\d{4}-\\d{2}-\\d{2}", non_na)
+
+  # Extract leading number from interval/numeric labels (e.g. "(1.5,3.2]" -> 1.5).
+  # Exclude date-like strings so "2023-01-15" isn't mistaken for the number 2023.
+  leading <- suppressWarnings(as.numeric(
+    sub("^[\\[\\(]?(-?[0-9]*\\.?[0-9]+).*", "\\1", trimws(non_na), perl = TRUE)
+  ))
+  is_num <- !is.na(leading) & !is_date_str
+
   c(
-    x[is_num][order(leading[is_num])],
-    sort(x[!is_num & x != "NA"]),
+    non_na[is_num][order(leading[is_num])],   # numeric/interval bins
+    sort(non_na[is_date_str]),                  # date strings: alpha == chrono
+    sort(non_na[!is_num & !is_date_str]),       # other categoricals
     na_label
   )
 }

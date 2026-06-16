@@ -1124,3 +1124,188 @@ describe("one_way — bare name arguments (NSE)", {
     expect_equal(d_prog, d_str)
   })
 })
+
+# =============================================================================
+# one_way — date / datetime handling
+# =============================================================================
+
+describe("one_way — date / datetime handling", {
+
+  # 60 daily observations spanning January–February 2023
+  make_date_df <- function(n = 60L, seed = 42L) {
+    set.seed(seed)
+    data.frame(
+      date = seq(as.Date("2023-01-01"), by = "day", length.out = n),
+      obs  = runif(n),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  it("returns a plotly for a Date var (no time_unit)", {
+    df <- make_date_df()
+    expect_true(is_plotly(one_way(df, "date", "obs")))
+  })
+
+  it("Date labels are in chronological order without time_unit", {
+    # 5 dates well below bins threshold — no binning, so smart_level_order
+    # must sort them correctly
+    df <- data.frame(
+      date = as.Date(c("2023-03-01", "2023-01-01", "2023-02-01")),
+      obs  = c(1, 2, 3)
+    )
+    d <- one_way(df, "date", "obs", ret = "data")
+    expect_equal(d$date, c("2023-01-01", "2023-02-01", "2023-03-01"))
+  })
+
+  it("time_unit = 'month' collapses 59 daily rows to 2 monthly bins", {
+    df <- make_date_df(n = 59L)   # Jan (31 days) + Feb (28 days) = 59 exactly
+    d  <- one_way(df, "date", "obs", time_unit = "month", ret = "data")
+    expect_equal(nrow(d), 2L)
+  })
+
+  it("monthly bin labels are plain dates with no time suffix", {
+    df <- make_date_df()
+    d  <- one_way(df, "date", "obs", time_unit = "month", ret = "data")
+    expect_true(all(grepl("^\\d{4}-\\d{2}-\\d{2}$", d$date)))
+  })
+
+  it("monthly bins are in chronological order", {
+    df <- make_date_df()
+    d  <- one_way(df, "date", "obs", time_unit = "month", ret = "data")
+    expect_equal(d$date, sort(d$date))
+  })
+
+  it("time_unit = 'week' produces the right number of weekly bins", {
+    # Start on a Monday (2023-01-02) so all 4 × 7 = 28 days fall cleanly in
+    # 4 ISO weeks. cut.POSIXt uses Monday as the week start, so a Sunday start
+    # would push day 1 into the prior week and produce 5 bins.
+    df <- data.frame(
+      date = seq(as.Date("2023-01-02"), by = "day", length.out = 28L),
+      obs  = seq_len(28L),
+      stringsAsFactors = FALSE
+    )
+    d  <- one_way(df, "date", "obs", time_unit = "week", ret = "data")
+    expect_equal(nrow(d), 4L)
+  })
+
+  it("time_unit = '12 hours' on POSIXct groups within the same 12-hour window", {
+    # 48 hourly observations => 48h total => 4 twelve-hour bins
+    df <- data.frame(
+      ts  = seq(as.POSIXct("2023-01-01 00:00:00", tz = "UTC"),
+                by = "1 hour", length.out = 48L),
+      obs = runif(48L)
+    )
+    d <- one_way(df, "ts", "obs", time_unit = "12 hours", ret = "data")
+    expect_equal(nrow(d), 4L)
+  })
+
+  it("time_unit = '12 hours' returns a plotly", {
+    df <- data.frame(
+      ts  = seq(as.POSIXct("2023-01-01", tz = "UTC"), by = "1 hour",
+                length.out = 24L),
+      obs = runif(24L)
+    )
+    expect_true(is_plotly(one_way(df, "ts", "obs", time_unit = "12 hours")))
+  })
+
+  it("cardinality guard is bypassed for Date + time_unit", {
+    # 10 years of daily data => 3652 unique dates, well above the 2000 guard
+    df <- data.frame(
+      date = seq(as.Date("2013-01-01"), by = "day", length.out = 3652L),
+      obs  = runif(3652L)
+    )
+    d <- expect_no_warning(
+      one_way(df, "date", "obs", time_unit = "year", ret = "data")
+    )
+    expect_false(is.null(d))
+    expect_equal(nrow(d), 10L)
+  })
+})
+
+# =============================================================================
+# smart_level_order — date string sorting
+# =============================================================================
+
+describe("smart_level_order — date strings", {
+
+  it("sorts ISO date strings chronologically, not lexicographically by year", {
+    labels <- c("2023-12-31", "2023-01-01", "2023-06-15")
+    expect_equal(
+      modelblueprint:::smart_level_order(labels),
+      c("2023-01-01", "2023-06-15", "2023-12-31")
+    )
+  })
+
+  it("sorts dates across years correctly", {
+    labels <- c("2024-01-01", "2022-06-01", "2023-03-15")
+    expect_equal(
+      modelblueprint:::smart_level_order(labels),
+      c("2022-06-01", "2023-03-15", "2024-01-01")
+    )
+  })
+
+  it("sorts datetime strings (with time component) chronologically", {
+    labels <- c("2023-01-15 12:00:00", "2023-01-15 00:00:00", "2023-01-16 00:00:00")
+    expect_equal(
+      modelblueprint:::smart_level_order(labels),
+      c("2023-01-15 00:00:00", "2023-01-15 12:00:00", "2023-01-16 00:00:00")
+    )
+  })
+
+  it("places NA last when date strings are present", {
+    labels <- c("2023-06-01", "NA", "2023-01-01")
+    result  <- modelblueprint:::smart_level_order(labels)
+    expect_equal(result[1L],         "2023-01-01")
+    expect_equal(tail(result, 1L),   "NA")
+  })
+
+  it("puts numeric interval bins before date strings", {
+    labels <- c("2023-01-01", "[1,5)")
+    result  <- modelblueprint:::smart_level_order(labels)
+    expect_equal(result, c("[1,5)", "2023-01-01"))
+  })
+
+  it("puts date strings before plain categorical labels", {
+    labels <- c("Banana", "2023-01-01")
+    result  <- modelblueprint:::smart_level_order(labels)
+    expect_equal(result, c("2023-01-01", "Banana"))
+  })
+})
+
+# =============================================================================
+# apply_binning — date / datetime
+# =============================================================================
+
+describe("apply_binning — date / datetime", {
+
+  it("time_unit = 'month' bins a Date column into monthly labels", {
+    # 59 days: Jan (31) + Feb (28) = exactly 2 months, no March overflow
+    dt <- data.table::data.table(
+      var = seq(as.Date("2023-01-01"), by = "day", length.out = 59L),
+      .w  = 1L
+    )
+    out <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure",
+                                          time_unit = "month")
+    expect_equal(length(unique(out$var)), 2L)         # Jan + Feb
+    expect_true(all(grepl("^\\d{4}-\\d{2}-\\d{2}$", out$var)))  # no time suffix
+  })
+
+  it("time_unit = '12 hours' bins POSIXct into 12-hour blocks", {
+    # 24 hourly timestamps => 2 twelve-hour blocks
+    dt <- data.table::data.table(
+      var = seq(as.POSIXct("2023-01-01", tz = "UTC"), by = "1 hour",
+                length.out = 24L),
+      .w  = 1L
+    )
+    out <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure",
+                                          time_unit = "12 hours")
+    expect_equal(length(unique(out$var)), 2L)
+  })
+
+  it("without time_unit, a Date column is returned unchanged", {
+    dates <- as.Date(c("2023-01-01", "2023-02-01", "2023-03-01"))
+    dt    <- data.table::data.table(var = dates, .w = 1L)
+    out   <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure")
+    expect_equal(out$var, dates)   # class and values preserved
+  })
+})

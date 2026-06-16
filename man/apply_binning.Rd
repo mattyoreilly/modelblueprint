@@ -4,7 +4,7 @@
 \alias{apply_binning}
 \title{Apply binning to the \code{var} column of a data.table (in-place)}
 \usage{
-apply_binning(dt, bins, type_agg)
+apply_binning(dt, bins, type_agg, time_unit = NA_character_)
 }
 \description{
 Returns the data.table unchanged if \code{var} is categorical or low-cardinality.

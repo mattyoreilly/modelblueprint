@@ -14,6 +14,7 @@ one_way(data, ...)
   exposure = "exposure",
   split = NA_character_,
   bins = 35L,
+  time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
   ...
@@ -39,6 +40,13 @@ string. Default \code{"exposure"}.}
 
 \item{bins}{\verb{[integer(1)]} Number of equal-exposure bins for numeric
 variables with more than \code{bins} unique values. Default 35.}
+
+\item{time_unit}{\verb{[character(1)]} For Date / POSIXct variables, the width
+of each bin. Passed directly to \code{\link[base:cut.POSIXt]{base::cut.POSIXt()}}, so
+any string it accepts works: \code{"month"}, \code{"week"},
+\code{"2 weeks"}, \code{"12 hours"}, \code{"quarter"}, \code{"year"}, etc.
+Ignored for non-date columns. Default \code{NA} (no date
+binning — dates are shown as individual values).}
 
 \item{type_agg}{\verb{[character(1)]} Binning strategy for numeric variables:
 \code{"equal_exposure"} (default) or \code{"equal_range"}.}

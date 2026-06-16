@@ -2,11 +2,13 @@
 % Please edit documentation in R/one_way.R
 \name{smart_level_order}
 \alias{smart_level_order}
-\title{Sort x-axis labels: numerics / intervals first, then categoricals, NA last}
+\title{Sort x-axis labels: numeric intervals first, dates chronologically, then
+categoricals alphabetically, NA last.}
 \usage{
 smart_level_order(x)
 }
 \description{
-Sort x-axis labels: numerics / intervals first, then categoricals, NA last
+Sort x-axis labels: numeric intervals first, dates chronologically, then
+categoricals alphabetically, NA last.
 }
 \keyword{internal}
