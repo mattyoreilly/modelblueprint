@@ -40,3 +40,12 @@ A plotly object or data.table depending on \code{ret}.
 Calls \code{\link[=pdp]{pdp()}} using the modelblueprint's model, target, exposure, and
 data slots.
 }
+\section{Performance}{
+
+When \verb{@x_original_inputs} is set, the working dataset is narrowed to those
+columns (plus the target and exposure) before scoring, which avoids copying
+unused columns on wide frames. This assumes \code{feat_eng_fun} only consumes the
+declared \verb{@x_original_inputs}; if your feature engineering reads other
+columns, leave \verb{@x_original_inputs} unset so the full frame is used.
+}
+

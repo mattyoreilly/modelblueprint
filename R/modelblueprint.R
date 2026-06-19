@@ -740,6 +740,14 @@ one_way.modelblueprint <- function(
 #' @param ret         `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...         Further arguments passed to [pdp()].
 #' @return A plotly object or data.table depending on `ret`.
+#'
+#' @section Performance:
+#' When `@x_original_inputs` is set, the working dataset is narrowed to those
+#' columns (plus the target and exposure) before scoring, which avoids copying
+#' unused columns on wide frames. This assumes `feat_eng_fun` only consumes the
+#' declared `@x_original_inputs`; if your feature engineering reads other
+#' columns, leave `@x_original_inputs` unset so the full frame is used.
+#'
 #' @method pdp modelblueprint
 #' @export
 pdp.modelblueprint <- function(
@@ -783,6 +791,28 @@ pdp.modelblueprint <- function(
     x
   } else {
     var
+  }
+
+  # Narrow the working frame to the columns pdp() actually needs before scoring.
+  # pdp.default copies every column of the data it is handed, so on a wide frame
+  # this avoids duplicating dozens of unused columns. It relies on the contract
+  # that feat_eng_fun only consumes the declared @x_original_inputs (plus the
+  # target and exposure). When @x_original_inputs is not set we cannot know which
+  # columns the pipeline needs, so the full frame is passed through unchanged.
+  declared <- as.character(stats::na.omit(data@x_original_inputs))
+  if (length(declared) > 0L) {
+    keep <- unique(c(
+      declared,
+      data@y_name,
+      if (exposure %in% names(df)) exposure,
+      vars
+    ))
+    keep <- keep[keep %in% names(df)]
+    df <- if (data.table::is.data.table(df)) {
+      df[, keep, with = FALSE]
+    } else {
+      df[keep]
+    }
   }
 
   # Drop `var` from ... so it cannot conflict with the explicit var = v below.

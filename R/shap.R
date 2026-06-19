@@ -157,25 +157,34 @@ shap.default <- function(
     )
   }
 
-  # -- Resolve exposure ----------------------------------------------------------
-  dt_full <- data.table::as.data.table(data)
-  expo_col <- if (exposure %in% names(dt_full)) exposure else ".expo"
-  if (expo_col == ".expo") {
-    dt_full[, .expo := 1L]
-  }
-
   # -- Sample rows to explain ----------------------------------------------------
+  # Sample the row indices *before* coercing, then materialise only the sampled
+  # rows. SHAP only ever explains `sample_size` rows, so coercing the whole
+  # frame first would allocate the entire dataset just to discard most of it.
   # withr::with_seed() draws with a fixed seed and restores the caller's RNG
   # state afterwards, so the sample is reproducible without disturbing the
   # global stream.
-  n <- nrow(dt_full)
+  n <- nrow(data)
   idx_sample <- withr::with_seed(
     seed,
     sample(n, min(as.integer(sample_size), n))
   )
 
-  dt_sample <- dt_full[idx_sample]
-  # Pass the full data frame  - the model may need columns outside `vars`
+  dt_sample <- data.table::as.data.table(
+    if (data.table::is.data.table(data)) {
+      data[idx_sample]
+    } else {
+      data[idx_sample, , drop = FALSE]
+    }
+  )
+
+  # -- Resolve exposure (on the sample) ------------------------------------------
+  expo_col <- if (exposure %in% names(dt_sample)) exposure else ".expo"
+  if (expo_col == ".expo") {
+    dt_sample[, .expo := 1L]
+  }
+
+  # Pass the full set of columns  - the model may need columns outside `vars`
   # (e.g. an lm trained on x_num + x_int when vars = "x_num"). compute_shap
   # only permutes the `vars` columns; all other columns keep their actual values.
   X_full    <- as.data.frame(dt_sample)

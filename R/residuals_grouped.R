@@ -82,11 +82,19 @@ residuals_grouped.default <- function(
   residual_type <- match.arg(residual_type)
   ret <- match.arg(ret)
 
-  # Defensive copy -- never mutate caller data
-  dt <- data.table::as.data.table(data)
+  # Select only the three columns we need *before* coercing, so a wide frame
+  # isn't duplicated to use obs/pred/exposure. The list() step builds an
+  # independent working table, so the caller's data is never mutated.
+  keep <- c(obs, pred, exposure)
+  narrow <- if (data.table::is.data.table(data)) {
+    data[, keep, with = FALSE]
+  } else {
+    data[keep]
+  }
+  dt <- data.table::as.data.table(narrow)
   dt <- dt[,
     list(.obs = .SD[[1L]], .pred = .SD[[2L]], .expo = .SD[[3L]]),
-    .SDcols = c(obs, pred, exposure)
+    .SDcols = keep
   ]
 
   # Determine number of bins from target exposure per bin

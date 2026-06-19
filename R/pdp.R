@@ -491,9 +491,14 @@ compute_pdp <- function(
   # big intentionally contains no extra tracking columns — feat_eng_fun and
   # pre_process_fun see exactly the same column layout as in the sequential
   # path, just over a taller frame.
-  big_df  <- as.data.frame(big)
+  #
+  # setDF() converts the (internal, soon-discarded) data.table to a data.frame
+  # *by reference* — no copy of the tall frame, unlike as.data.frame(). The
+  # as.data.frame() wrap around feat_eng_fun's output is dropped because
+  # model_predict() already coerces non-data.frame input (e.g. a matrix).
+  big_df  <- data.table::setDF(big)
   big_pp  <- call_pipeline_fun(pre_process_fun, "pre_process_fun", big_df)
-  big_eng <- as.data.frame(call_pipeline_fun(feat_eng_fun, "feat_eng_fun", big_pp))
+  big_eng <- call_pipeline_fun(feat_eng_fun, "feat_eng_fun", big_pp)
   preds   <- model_predict(model, big_eng)
   preds   <- call_pipeline_fun(post_process_fun, "post_process_fun", preds, big_df)
 

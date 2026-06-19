@@ -65,20 +65,26 @@ gain.default <- function(
   assert_col_exists(data, obs, "`obs`")
   assert_col_exists(data, pred, "`pred`")
 
-  # Defensive copy — never mutate caller data
-  # data.table::copy() ensures a deep copy so := never modifies the original
-  dt <- data.table::copy(data.table::as.data.table(data))
+  # Keep only the columns we need *before* copying, so a wide frame isn't
+  # duplicated to use three columns. copy() guarantees independence from the
+  # caller (selecting columns from a data.table shares the underlying vectors).
+  keep <- unique(c(obs, pred, if (exposure %in% names(data)) exposure))
+  narrow <- if (data.table::is.data.table(data)) {
+    data[, keep, with = FALSE]
+  } else {
+    data[keep]
+  }
+  dt <- data.table::copy(data.table::as.data.table(narrow))
 
   # Fall back to unit weights if exposure column doesn't exist
   if (!exposure %in% names(dt)) {
     dt[[exposure]] <- 1L
   }
 
-  # Perfect model baseline — add before column selection so it's available
+  # Perfect model baseline — dt already holds only obs/pred/exposure, so adding
+  # perfect_model leaves exactly the columns compute_cumulative() needs.
   dt[, perfect_model := .SD[[1L]], .SDcols = obs]
 
-  # Keep only needed columns (including perfect_model)
-  dt <- dt[, c(obs, pred, exposure, "perfect_model"), with = FALSE]
   perfect <- compute_cumulative(dt, "perfect_model", obs, exposure)
   list_sets <- list(perfect$data)
   list_gini <- list(perfect$gini)
@@ -194,39 +200,33 @@ gain.modelblueprint <- function(
 #' @keywords internal
 #' @noRd
 compute_cumulative <- function(dt, variable, obs, exposure) {
-  set <- data.table::copy(dt)
+  # Work on plain vectors and a single ordering index — no per-score copy or
+  # reorder of the whole data.table. The cumulative gains curve only needs the
+  # cumulative exposure fraction (x) and cumulative observed fraction (y); the
+  # score's own cumulative was computed and then discarded in the old code, so
+  # it is dropped here entirely.
+  v_var  <- dt[[variable]]
+  v_obs  <- dt[[obs]]
+  v_expo <- dt[[exposure]]
 
   # Sort descending by score per unit exposure
-  ord <- order(-(set[[variable]] / set[[exposure]]))
-  set <- set[ord]
+  ord <- order(-(v_var / v_expo))
 
-  cum_obs <- paste0("cum_", obs)
-  cum_variable <- paste0("cum_", variable)
-  cum_exposure <- paste0("cum_", exposure)
+  cum_exposure_frac <- cumsum(v_expo[ord]) / sum(v_expo, na.rm = TRUE)
+  cum_obs_frac      <- cumsum(v_obs[ord]) / sum(v_obs, na.rm = TRUE)
 
-  set[, (cum_obs) := cumsum(.SD[[1L]]), .SDcols = obs]
-  set[, (cum_variable) := cumsum(.SD[[1L]]), .SDcols = variable]
-  set[, (cum_exposure) := cumsum(.SD[[1L]]), .SDcols = exposure]
-
-  # Compute totals outside data.table j-expressions to avoid scope issues
-  total_obs <- sum(dt[[obs]], na.rm = TRUE)
-  total_variable <- sum(dt[[variable]], na.rm = TRUE)
-  total_exposure <- sum(dt[[exposure]], na.rm = TRUE)
-
-  # Normalise to [0, 1]
-  set[, (cum_obs) := .SD[[1L]] / total_obs, .SDcols = cum_obs]
-  set[, (cum_variable) := .SD[[1L]] / total_variable, .SDcols = cum_variable]
-  set[, (cum_exposure) := .SD[[1L]] / total_exposure, .SDcols = cum_exposure]
-
-  # Gini via trapezoidal integration
-  auc <- trapz(as.numeric(set[[cum_exposure]]), as.numeric(set[[cum_obs]]))
+  # Gini via trapezoidal integration of the observed curve against exposure
+  auc  <- trapz(as.numeric(cum_exposure_frac), as.numeric(cum_obs_frac))
   gini <- (auc - 0.5) * 2
 
-  # Align cum_variable to the obs curve for plotting
-  set[, (cum_variable) := .SD[[1L]], .SDcols = cum_obs]
-
-  keep <- c(cum_exposure, cum_variable)
-  list(data = set[, .SD, .SDcols = keep], gini = gini, auc = auc)
+  # Two-column result: column 1 = cumulative exposure (x), column 2 = cumulative
+  # observed (y). Names match the previous output so plot_gain() and ret="data"
+  # are unchanged.
+  data <- data.table::setnames(
+    data.table::data.table(cum_exposure_frac, cum_obs_frac),
+    c(paste0("cum_", exposure), paste0("cum_", variable))
+  )
+  list(data = data, gini = gini, auc = auc)
 }
 
 
