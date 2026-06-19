@@ -275,7 +275,7 @@ saveMB(mb, path = tempdir(), filename = "logistic_vs")
 #> Warning in saveMB(mb, path = tempdir(), filename = "logistic_vs"): 'saveMB' is deprecated.
 #> Use 'savemb' instead.
 #> See help("Deprecated") and help("modelblueprint-deprecated").
-#> modelblueprint saved: /tmp/RtmpZrKOWE/logistic_vs.tar.gz
+#> modelblueprint saved: /tmp/RtmpFq9znA/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
 #> Warning in loadMB(file.path(tempdir(), "logistic_vs.tar.gz")): 'loadMB' is deprecated.
 #> Use 'loadmb' instead.
