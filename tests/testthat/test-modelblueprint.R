@@ -1,6 +1,6 @@
 # =============================================================================
 # test-modelblueprint.R
-# Tests for modelblueprint: saveMB/loadMB, predict, one_way, pdp methods.
+# Tests for modelblueprint: savemb/loadmb, predict, one_way, pdp methods.
 # =============================================================================
 
 library(testthat)
@@ -104,22 +104,22 @@ is_plotly <- function(x) inherits(x, "plotly")
 
 
 # =============================================================================
-# saveMB / loadMB — native R model
+# savemb / loadmb — native R model
 # =============================================================================
 
-describe("saveMB / loadMB — native R model (lm)", {
+describe("savemb / loadmb — native R model (lm)", {
   it("saves without error", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    expect_no_error(saveMB(mb, path = tmp, filename = "test_mb"))
+    expect_no_error(savemb(mb, path = tmp, filename = "test_mb"))
   })
 
   it("produces a .tar.gz file", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
+    savemb(mb, path = tmp, filename = "test_mb")
     expect_true(file.exists(file.path(tmp, "test_mb.tar.gz")))
   })
 
@@ -127,16 +127,16 @@ describe("saveMB / loadMB — native R model (lm)", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    expect_no_error(loadMB(file.path(tmp, "test_mb.tar.gz")))
+    savemb(mb, path = tmp, filename = "test_mb")
+    expect_no_error(loadmb(file.path(tmp, "test_mb.tar.gz")))
   })
 
   it("loaded object is a modelblueprint", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_true(S7_inherits(loaded, modelblueprint))
   })
 
@@ -144,8 +144,8 @@ describe("saveMB / loadMB — native R model (lm)", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_no_error(predict(loaded, iris))
   })
 
@@ -154,8 +154,8 @@ describe("saveMB / loadMB — native R model (lm)", {
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     orig_pred <- predict(mb, iris)
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     loaded_pred <- predict(loaded, iris)
     expect_equal(orig_pred, loaded_pred, tolerance = 1e-6)
   })
@@ -164,8 +164,8 @@ describe("saveMB / loadMB — native R model (lm)", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_identical(loaded@y_name, mb@y_name)
     expect_identical(loaded@x_names, mb@x_names)
     expect_identical(loaded@x_original_inputs, mb@x_original_inputs)
@@ -177,8 +177,8 @@ describe("saveMB / loadMB — native R model (lm)", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_equal(dim(loaded@train), dim(mb@train))
     expect_equal(dim(loaded@test), dim(mb@test))
     expect_equal(dim(loaded@holdout), dim(mb@holdout))
@@ -189,8 +189,8 @@ describe("saveMB / loadMB — native R model (lm)", {
     df <- iris # Species is a factor
     mb <- make_lm_mb(train = df)
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
 
     factor_cols <- names(Filter(is.factor, df))
     for (col in factor_cols) {
@@ -209,7 +209,7 @@ describe("saveMB / loadMB — native R model (lm)", {
   it("errors informatively when archive path does not exist", {
     skip_on_cran()
     expect_error(
-      loadMB("/not/a/real/path/model.tar.gz"),
+      loadmb("/not/a/real/path/model.tar.gz"),
       "Archive not found",
       fixed = TRUE
     )
@@ -219,17 +219,17 @@ describe("saveMB / loadMB — native R model (lm)", {
     skip_on_cran()
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
-    saveMB(mb, path = tmp)
+    savemb(mb, path = tmp)
     expect_true(file.exists(file.path(tmp, "lm_test.tar.gz")))
   })
 })
 
 
 # =============================================================================
-# saveMB / loadMB — H2O model
+# savemb / loadmb — H2O model
 # =============================================================================
 
-describe("saveMB / loadMB — H2O model (h2o.glm)", {
+describe("savemb / loadmb — H2O model (h2o.glm)", {
   it("saves, shuts down H2O, reloads and predicts correctly", {
     skip_on_cran()
     skip_if_not_installed("h2o")
@@ -261,7 +261,7 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
 
     tmp <- withr::local_tempdir()
 
-    expect_no_error(saveMB(mb, path = tmp, filename = "test_h2o_mb"))
+    expect_no_error(savemb(mb, path = tmp, filename = "test_h2o_mb"))
     expect_true(file.exists(file.path(tmp, "test_h2o_mb.tar.gz")))
 
     # Shut down and wait long enough for the JVM to release the port
@@ -282,7 +282,7 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
     loaded <- NULL
     expect_no_error(
       suppressWarnings(suppressMessages(
-        loaded <- loadMB(file.path(tmp, "test_h2o_mb.tar.gz"))
+        loaded <- loadmb(file.path(tmp, "test_h2o_mb.tar.gz"))
       ))
     )
     expect_true(S7_inherits(loaded, modelblueprint))
@@ -970,7 +970,7 @@ describe("resolve_exposure", {
 
 
 # =============================================================================
-# saveMB / loadMB — bundle round-trip helpers
+# savemb / loadmb — bundle round-trip helpers
 # =============================================================================
 
 # Shared assertion: save mb to a temp dir, load it back, check predictions
@@ -979,10 +979,10 @@ expect_bundle_roundtrip <- function(mb, newdata, tolerance = 1e-5) {
   orig_preds <- predict(mb, newdata)
   tmp        <- withr::local_tempdir()
 
-  saveMB(mb, path = tmp, filename = "test_mb")
+  savemb(mb, path = tmp, filename = "test_mb")
   expect_true(file.exists(file.path(tmp, "test_mb.tar.gz")))
 
-  loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+  loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
 
   expect_true(S7_inherits(loaded, modelblueprint))
   expect_no_error(predict(loaded, newdata))
@@ -997,10 +997,10 @@ expect_bundle_roundtrip <- function(mb, newdata, tolerance = 1e-5) {
 
 
 # =============================================================================
-# saveMB / loadMB — XGBoost
+# savemb / loadmb — XGBoost
 # =============================================================================
 
-describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
+describe("savemb / loadmb — XGBoost regression (bundle round-trip)", {
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
 
   make_xgb_reg_mb <- function() {
@@ -1033,7 +1033,7 @@ describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
     skip_if_not_installed("xgboost")
     mb  <- make_xgb_reg_mb()
     tmp <- withr::local_tempdir()
-    expect_no_error(saveMB(mb, path = tmp, filename = "test_mb"))
+    expect_no_error(savemb(mb, path = tmp, filename = "test_mb"))
   })
 
   it("loaded object is a modelblueprint", {
@@ -1041,8 +1041,8 @@ describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
     skip_if_not_installed("xgboost")
     mb  <- make_xgb_reg_mb()
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_true(S7_inherits(loaded, modelblueprint))
   })
 
@@ -1060,8 +1060,8 @@ describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
     skip_if_not_installed("xgboost")
     mb  <- make_xgb_reg_mb()
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_identical(loaded@y_name,             mb@y_name)
     expect_identical(loaded@model_display_name, mb@model_display_name)
     expect_identical(loaded@x_original_inputs,  mb@x_original_inputs)
@@ -1071,7 +1071,7 @@ describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
 })
 
 
-describe("saveMB / loadMB — XGBoost classification (bundle round-trip)", {
+describe("savemb / loadmb — XGBoost classification (bundle round-trip)", {
   features <- c("wt", "hp", "cyl", "am", "gear", "carb")
 
   make_xgb_cls_mb <- function() {
@@ -1109,8 +1109,8 @@ describe("saveMB / loadMB — XGBoost classification (bundle round-trip)", {
     skip_if_not_installed("xgboost")
     mb  <- make_xgb_cls_mb()
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     preds  <- predict(loaded, mtcars)
     expect_true(all(preds >= 0 & preds <= 1))
   })
@@ -1118,7 +1118,7 @@ describe("saveMB / loadMB — XGBoost classification (bundle round-trip)", {
 
 
 # =============================================================================
-# saveMB / loadMB — H2O (bundle round-trip)
+# savemb / loadmb — H2O (bundle round-trip)
 # =============================================================================
 
 h2o_init_safe <- function() {
@@ -1131,7 +1131,7 @@ h2o_init_safe <- function() {
   }
 }
 
-describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
+describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
   it("saves, shuts down H2O cluster, reloads and predicts correctly", {
     skip_on_cran()
     skip_if_not_installed("h2o")
@@ -1161,7 +1161,7 @@ describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
     )
     tmp <- withr::local_tempdir()
 
-    expect_no_error(saveMB(mb, path = tmp, filename = "test_h2o_mb"))
+    expect_no_error(savemb(mb, path = tmp, filename = "test_h2o_mb"))
     expect_true(file.exists(file.path(tmp, "test_h2o_mb.tar.gz")))
 
     # Fully shut down the cluster — bundle must carry everything needed to
@@ -1178,7 +1178,7 @@ describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
     loaded <- NULL
     expect_no_error(
       suppressWarnings(suppressMessages(
-        loaded <- loadMB(file.path(tmp, "test_h2o_mb.tar.gz"))
+        loaded <- loadmb(file.path(tmp, "test_h2o_mb.tar.gz"))
       ))
     )
     expect_true(S7_inherits(loaded, modelblueprint))
@@ -1224,7 +1224,7 @@ describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
       as.data.frame(h2o::h2o.predict(h2o_gbm, h2o::as.h2o(mtcars)))[[1L]]
     )
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
+    savemb(mb, path = tmp, filename = "test_mb")
     tryCatch(
       suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
       error = function(e) NULL
@@ -1235,7 +1235,7 @@ describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
     h2o_init_safe()
 
     loaded <- suppressWarnings(suppressMessages(
-      loadMB(file.path(tmp, "test_mb.tar.gz"))
+      loadmb(file.path(tmp, "test_mb.tar.gz"))
     ))
     expect_true(S7_inherits(loaded, modelblueprint))
 
@@ -1251,10 +1251,10 @@ describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
 
 
 # =============================================================================
-# saveMB / loadMB — randomForest
+# savemb / loadmb — randomForest
 # =============================================================================
 
-describe("saveMB / loadMB — randomForest (bundle round-trip)", {
+describe("savemb / loadmb — randomForest (bundle round-trip)", {
   make_rf_mb <- function() {
     skip_if_not_installed("randomForest")
     set.seed(42L)
@@ -1284,8 +1284,8 @@ describe("saveMB / loadMB — randomForest (bundle round-trip)", {
     skip_if_not_installed("randomForest")
     mb  <- make_rf_mb()
     tmp <- withr::local_tempdir()
-    saveMB(mb, path = tmp, filename = "test_mb")
-    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    savemb(mb, path = tmp, filename = "test_mb")
+    loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_true(inherits(loaded@model, "randomForest"))
   })
 })

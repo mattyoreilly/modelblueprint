@@ -12,6 +12,8 @@ reference:
     contents:
       - modelblueprint
       - predict.modelblueprint
+      - savemb
+      - loadmb
       - saveMB
       - loadMB
 
@@ -53,6 +55,8 @@ reference:
       - one_way.modelblueprint
       - pdp
       - pdp.modelblueprint
+      - shap
+      - shap.modelblueprint
       - sami
 
   - title: "Dashboard"

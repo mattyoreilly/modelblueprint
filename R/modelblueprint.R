@@ -254,7 +254,7 @@ left_join.modelblueprint <- function(
 
 
 # =============================================================================
-# saveMB
+# savemb
 # =============================================================================
 
 #' Save a modelblueprint to disk
@@ -268,15 +268,15 @@ left_join.modelblueprint <- function(
 #' @param filename Optional filename. When `NULL`, `model_display_name` is used.
 #' @param ...      Currently unused. Reserved for future subclass methods.
 #' @return Invisibly returns the full normalised path to the saved archive.
-#' @seealso [loadMB()]
+#' @seealso [loadmb()]
 #' @export
-saveMB <- new_generic(
-  "saveMB",
+savemb <- new_generic(
+  "savemb",
   "object",
   function(object, path = getwd(), filename = NULL, ...) S7_dispatch()
 )
 
-method(saveMB, modelblueprint) <- function(
+method(savemb, modelblueprint) <- function(
   object,
   path = getwd(),
   filename = NULL
@@ -296,12 +296,12 @@ method(saveMB, modelblueprint) <- function(
     dir.create(path, recursive = TRUE)
   }
 
-  tmp <- file.path(tempdir(), paste0("saveMB_", as.integer(Sys.time())))
+  tmp <- file.path(tempdir(), paste0("savemb_", as.integer(Sys.time())))
   dir.create(tmp, showWarnings = FALSE)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
 
-  # Save class metadata so loadMB() can reconstruct the right class.
-  # This is what allows loadMB() to be a plain function that works for both
+  # Save class metadata so loadmb() can reconstruct the right class.
+  # This is what allows loadmb() to be a plain function that works for both
   # modelblueprint and any future subclass (modelblueprintSequence etc.)
   saveRDS(
     list(
@@ -345,24 +345,34 @@ method(saveMB, modelblueprint) <- function(
 }
 
 
+#' @rdname savemb
+#' @description
+#' `saveMB()` is deprecated; use [savemb()] instead.
+#' @export
+saveMB <- function(object, path = getwd(), filename = NULL, ...) {
+  .Deprecated("savemb", package = "modelblueprint")
+  savemb(object, path = path, filename = filename, ...)
+}
+
+
 # =============================================================================
-# loadMB
+# loadmb
 # =============================================================================
 
 #' Load a modelblueprint from disk
 #'
-#' Reconstructs a `modelblueprint` from a `.tar.gz` archive created by [saveMB()].
+#' Reconstructs a `modelblueprint` from a `.tar.gz` archive created by [savemb()].
 #'
-#' @param path Path to the `.tar.gz` archive created by [saveMB()].
+#' @param path Path to the `.tar.gz` archive created by [savemb()].
 #' @return A fully reconstructed `modelblueprint` object.
-#' @seealso [saveMB()]
+#' @seealso [savemb()]
 #' @export
-loadMB <- function(path) {
+loadmb <- function(path) {
   if (!file.exists(path)) {
     cli::cli_abort("Archive not found: {.path {path}}")
   }
 
-  tmp <- file.path(tempdir(), paste0("loadMB_", as.integer(Sys.time())))
+  tmp <- file.path(tempdir(), paste0("loadmb_", as.integer(Sys.time())))
   dir.create(tmp, showWarnings = FALSE)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
   utils::untar(path, exdir = tmp)
@@ -387,6 +397,16 @@ loadMB <- function(path) {
       "Don't know how to load class {.val {bare_class}}. Is the right package version installed?"
     )
   )
+}
+
+
+#' @rdname loadmb
+#' @description
+#' `loadMB()` is deprecated; use [loadmb()] instead.
+#' @export
+loadMB <- function(path) {
+  .Deprecated("loadmb", package = "modelblueprint")
+  loadmb(path)
 }
 
 

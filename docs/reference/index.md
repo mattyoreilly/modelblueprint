@@ -72,6 +72,10 @@ predictions.
   : Partial dependence plot for any predict()-compatible model
 - [`pdp(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.modelblueprint.md)
   : Partial dependence plot for a modelblueprint
+- [`shap()`](https://mattyoreilly.github.io/modelblueprint/reference/shap.md)
+  : SHAP Feature Importance and Dependence Plots
+- [`shap(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/shap.modelblueprint.md)
+  : SHAP plots for a modelblueprint
 - [`sami()`](https://mattyoreilly.github.io/modelblueprint/reference/sami.md)
   : SAMI Double Lift Chart
 
