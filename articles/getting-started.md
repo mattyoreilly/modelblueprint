@@ -263,23 +263,17 @@ head(predict(mb_fe, mtcars))
 
 ## Saving and loading
 
-[`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
+[`savemb()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
 serialises the complete blueprint — model, data, and pipeline functions
 — to a `.tar.gz` archive.
-[`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
+[`loadmb()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
 restores it exactly.
 
 ``` r
 
-saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> Warning in saveMB(mb, path = tempdir(), filename = "logistic_vs"): 'saveMB' is deprecated.
-#> Use 'savemb' instead.
-#> See help("Deprecated") and help("modelblueprint-deprecated").
-#> modelblueprint saved: /tmp/Rtmp4QNYJA/logistic_vs.tar.gz
-mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
-#> Warning in loadMB(file.path(tempdir(), "logistic_vs.tar.gz")): 'loadMB' is deprecated.
-#> Use 'loadmb' instead.
-#> See help("Deprecated") and help("modelblueprint-deprecated").
+savemb(mb, path = tempdir(), filename = "logistic_vs")
+#> modelblueprint saved: /tmp/RtmpiC4o44/logistic_vs.tar.gz
+mb2 <- loadmb(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical
 all.equal(predict(mb, mtcars), predict(mb2, mtcars))
