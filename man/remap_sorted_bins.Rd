@@ -2,23 +2,28 @@
 % Please edit documentation in R/binning.R
 \name{remap_sorted_bins}
 \alias{remap_sorted_bins}
-\title{Map bin labels computed over sorted, non-NA values back to original row order}
+\title{Place sorted-order bin labels back into the original row positions}
 \usage{
-remap_sorted_bins(x, binned_sorted)
+remap_sorted_bins(binned_sorted, ord, n)
 }
 \arguments{
-\item{x}{The original (unsorted, possibly NA-containing) vector.}
+\item{binned_sorted}{A factor/character vector of labels, one per non-NA
+value in ascending order.}
 
-\item{binned_sorted}{A factor/character vector of labels, one per element of
-\code{sort(x[!is.na(x)])}, in sorted order.}
+\item{ord}{Integer positions of the non-NA values, ordered
+ascending by value (i.e. \code{which(!is.na(x))} reordered by
+\code{order(x[...])}).}
+
+\item{n}{\verb{[integer(1)]} Length of the original vector.}
 }
 \value{
-A character vector the same length as \code{x}.
+A character vector of length \code{n}.
 }
 \description{
 \code{bin_equal_exposure()} and \code{bin_equal_range()} operate on the sorted, non-NA
-values of a vector. This helper places the resulting labels back in the
-original positions of \code{x}, leaving \code{NA} entries as \code{NA_character_}. Callers
-decide how to label missing values (e.g. a trailing "NA" category).
+values of a vector. Given the labels in sorted order plus the precomputed
+ordering of the non-NA positions, this writes each label back to its original
+row, leaving \code{NA} entries as \code{NA_character_}. Callers decide how to label
+missing values (e.g. a trailing "NA" category).
 }
 \keyword{internal}

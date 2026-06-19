@@ -66,33 +66,36 @@ bin_equal_range <- function(x, bins) {
 # Sorted-index remapping
 # -----------------------------------------------------------------------------
 
-#' Map bin labels computed over sorted, non-NA values back to original row order
+#' Place sorted-order bin labels back into the original row positions
 #'
 #' `bin_equal_exposure()` and `bin_equal_range()` operate on the sorted, non-NA
-#' values of a vector. This helper places the resulting labels back in the
-#' original positions of `x`, leaving `NA` entries as `NA_character_`. Callers
-#' decide how to label missing values (e.g. a trailing "NA" category).
+#' values of a vector. Given the labels in sorted order plus the precomputed
+#' ordering of the non-NA positions, this writes each label back to its original
+#' row, leaving `NA` entries as `NA_character_`. Callers decide how to label
+#' missing values (e.g. a trailing "NA" category).
 #'
-#' @param x             The original (unsorted, possibly NA-containing) vector.
-#' @param binned_sorted A factor/character vector of labels, one per element of
-#'                      `sort(x[!is.na(x)])`, in sorted order.
-#' @return A character vector the same length as `x`.
+#' @param binned_sorted A factor/character vector of labels, one per non-NA
+#'                      value in ascending order.
+#' @param ord           Integer positions of the non-NA values, ordered
+#'                      ascending by value (i.e. `which(!is.na(x))` reordered by
+#'                      `order(x[...])`).
+#' @param n             `[integer(1)]` Length of the original vector.
+#' @return A character vector of length `n`.
 #' @keywords internal
-remap_sorted_bins <- function(x, binned_sorted) {
-  labels <- rep(NA_character_, length(x))
-  non_na_idx <- which(!is.na(x))
-  sorted_non_na_idx <- non_na_idx[order(x[non_na_idx])]
-  labels[sorted_non_na_idx] <- as.character(binned_sorted)
+remap_sorted_bins <- function(binned_sorted, ord, n) {
+  labels <- rep(NA_character_, n)
+  labels[ord] <- as.character(binned_sorted)
   labels
 }
 
 #' Bin a numeric vector and return labels aligned to original row order
 #'
-#' Thin wrapper that picks the binning strategy, applies it to the sorted,
-#' non-NA values, and remaps the labels onto the original positions of `x` via
-#' [remap_sorted_bins()]. Returns both the aligned labels and the underlying
-#' `cut()` factor so callers that need the interval levels (e.g. to compute
-#' midpoints) can reuse them.
+#' Picks the binning strategy and applies it to the sorted, non-NA values, then
+#' remaps the labels onto the original positions of `x`. The ordering of the
+#' non-NA values is computed once (via a single `order()`) and reused for both
+#' the sort and the remap, avoiding a redundant second pass over the data.
+#' Returns both the aligned labels and the underlying `cut()` factor so callers
+#' that need the interval levels (e.g. to compute midpoints) can reuse them.
 #'
 #' @param x        Numeric vector to bin.
 #' @param bins     `[integer(1)]` Number of bins.
@@ -102,10 +105,11 @@ remap_sorted_bins <- function(x, binned_sorted) {
 #' @keywords internal
 bin_numeric <- function(x, bins, type_agg) {
   bin_fn <- if (type_agg == "equal_range") bin_equal_range else bin_equal_exposure
-  x_sorted <- sort(x[!is.na(x)])
-  cut_result <- suppressWarnings(bin_fn(x_sorted, bins))
+  non_na_idx <- which(!is.na(x))
+  ord <- non_na_idx[order(x[non_na_idx])] # non-NA positions, ascending by value
+  cut_result <- suppressWarnings(bin_fn(x[ord], bins))
   list(
-    labels = remap_sorted_bins(x, cut_result),
+    labels = remap_sorted_bins(cut_result, ord, length(x)),
     cut    = cut_result
   )
 }

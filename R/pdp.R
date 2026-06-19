@@ -21,7 +21,12 @@ utils::globalVariables(c(
   ".split",
   ".",
   ".bin_group",
-  ".pdp_pred"
+  ".pdp_pred",
+  ".wobs",
+  ".wpred",
+  "obs_mean",
+  "pred_mean",
+  "exposure"
 ))
 
 
@@ -67,6 +72,9 @@ utils::globalVariables(c(
 #'   function.
 #' @param post_process_fun `function(preds, df_raw) -> numeric` applied to raw
 #'   model predictions. Default is the identity function.
+#' @param seed        `[integer(1)]` Seed for the PDP row sample, applied via
+#'                    [withr::with_seed()] so the global RNG stream is left
+#'                    undisturbed. Default `2024L`.
 #'
 #' @return A plotly object, or a data.table when `ret = "data"`, or `NULL`
 #'         with a warning when the variable cannot be plotted.
@@ -109,6 +117,7 @@ pdp.default <- function(
   pre_process_fun = function(df) df,
   feat_eng_fun = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
+  seed = 2024L,
   ...
 ) {
   type_agg <- match.arg(type_agg)
@@ -153,14 +162,10 @@ pdp.default <- function(
   # cleanly per bin. Sampling happens after binning so .bin labels are present.
   n <- nrow(dt)
   samp_idx <- if (sample_size < n) {
-    if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-      sample.int(1L)  # initialise RNG so .Random.seed exists
-    }
-    old_seed <- .Random.seed
-    set.seed(2024L)
-    idx <- sample(n, sample_size)
-    .Random.seed <<- old_seed
-    idx
+    # withr::with_seed() runs the draw with a fixed seed and restores the
+    # caller's RNG state afterwards, so results are reproducible without
+    # disturbing the global stream.
+    withr::with_seed(seed, sample(n, sample_size))
   } else {
     seq_len(n)
   }
@@ -258,7 +263,15 @@ pdp_validate <- function(data, var, obs, exposure, bins, sample_size) {
 #' @return        A numeric vector of predictions, one per row of newdata.
 #' @keywords internal
 model_predict <- function(model, newdata) {
-  nd <- as.data.frame(newdata)
+  # A plain data.frame is passed straight through; only coerce when needed
+  # (e.g. a data.table, which some predict() methods mishandle). Callers in the
+  # PDP/SHAP batch paths already hand us a plain data.frame, so this avoids
+  # re-copying a large frame on every prediction.
+  nd <- if (is.data.frame(newdata) && !data.table::is.data.table(newdata)) {
+    newdata
+  } else {
+    as.data.frame(newdata)
+  }
 
   if (
     inherits(
@@ -368,29 +381,29 @@ compute_bins <- function(x, bins, type_agg) {
 #' @return data.table with columns: .bin, obs_mean, pred_mean, exposure
 #' @keywords internal
 aggregate_pdp_oneway <- function(dt, obs, expo_col) {
-  # Capture column name strings in dot-prefixed locals so they are resolved
-  # as strings in the enclosing function scope, not as column lookups inside
-  # the data.table j expression. Without this, if obs = "obs" and there is a
-  # column named "obs", data.table resolves `obs` to that column vector and
-  # .SD[[obs]] receives a vector instead of a string, causing an error.
-  .obs_col <- obs
-  .expo_col <- expo_col
+  # Pre-weight obs and prediction by exposure, then take plain grouped sums so
+  # data.table's GForce optimisation applies (a per-group division inside j
+  # would disable it). Divide by the grouped weight afterwards. The weighted
+  # columns are computed in plain R and added with set() — referencing dynamic
+  # column names via dt[[...]] inside a := expression misresolves under
+  # data.table's NSE. Dot-prefixed names cannot collide with a user column.
+  w <- dt[[expo_col]]
+  data.table::set(dt, j = ".wobs", value = dt[[obs]] * w)
+  data.table::set(dt, j = ".wpred", value = dt[[".pred"]] * w)
 
-  dt[,
-    {
-      w <- .SD[[.expo_col]]
-      w_total <- sum(w, na.rm = TRUE)
-      obs_mean <- sum(.SD[[.obs_col]] * w, na.rm = TRUE) / w_total
-      prd_mean <- sum(.SD[[".pred"]] * w, na.rm = TRUE) / w_total
-      list(
-        obs_mean = obs_mean,
-        pred_mean = prd_mean,
-        exposure = w_total
-      )
-    },
+  agg <- dt[,
+    lapply(.SD, sum, na.rm = TRUE),
     by = .bin,
-    .SDcols = c(.obs_col, .expo_col, ".pred")
+    .SDcols = c(".wobs", ".wpred", expo_col)
   ]
+  data.table::setnames(
+    agg,
+    c(".wobs", ".wpred", expo_col),
+    c("obs_mean", "pred_mean", "exposure")
+  )
+  agg[, obs_mean := obs_mean / exposure]
+  agg[, pred_mean := pred_mean / exposure]
+  agg[]
 }
 
 #' Compute PDP values for each bin (batch approach)
@@ -453,14 +466,15 @@ compute_pdp <- function(
 
   # Overwrite the feature column: each block of n_samp rows gets the value for
   # its corresponding bin (midpoint for numeric; label cast to original type
-  # for categorical).
-  if (bin_info$is_numeric) {
-    big[[var]] <- rep(bins_to_use$.val, each = n_samp)
+  # for categorical). Use data.table::set() rather than `big[[var]] <- ...`,
+  # which would shallow-copy the whole (tall) frame on assignment.
+  new_vals <- if (bin_info$is_numeric) {
+    rep(bins_to_use$.val, each = n_samp)
   } else {
     bin_vals <- rep(bins_to_use$.bin, each = n_samp)
     # Preserve the column's original class so feat_eng_fun sees the same type
     cls <- class(rep_set[[var]])[1L]
-    big[[var]] <- switch(
+    switch(
       cls,
       factor  = factor(bin_vals, levels = levels(rep_set[[var]])),
       ordered = ordered(bin_vals, levels = levels(rep_set[[var]])),
@@ -471,6 +485,7 @@ compute_pdp <- function(
       bin_vals  # character / default
     )
   }
+  data.table::set(big, j = var, value = new_vals)
 
   # --- Single predict() call ---------------------------------------------------
   # big intentionally contains no extra tracking columns — feat_eng_fun and

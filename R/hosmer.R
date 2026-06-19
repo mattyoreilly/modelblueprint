@@ -3,7 +3,10 @@
 # Hosmer-style predicted vs observed calibration plot.
 # =============================================================================
 
-utils::globalVariables(c("left", "right", ".expo", ".pred", ".obs", ".bin"))
+utils::globalVariables(c(
+  "left", "right", ".expo", ".pred", ".obs", ".bin",
+  "obs_sum", "pred_sum", "obs_mean", "pred_mean", "exposure"
+))
 
 
 # =============================================================================
@@ -67,15 +70,21 @@ pred_vs_obs.default <- function(
   dt[, .bin := binned$idx]
   bin_labels <- make_interval_labels(binned$breaks)
 
-  # Aggregate by integer bin — order is numerically correct
+  # Aggregate by integer bin — order is numerically correct.
+  # Take plain grouped sums (GForce-eligible) then divide; a per-group division
+  # inside j would disable GForce.
   agg <- dt[,
     list(
-      obs_mean = sum(.obs) / sum(.expo),
-      pred_mean = sum(.pred) / sum(.expo),
+      obs_sum  = sum(.obs),
+      pred_sum = sum(.pred),
       exposure = sum(.expo)
     ),
     by = .bin
   ]
+  agg[, obs_mean := obs_sum / exposure]
+  agg[, pred_mean := pred_sum / exposure]
+  agg[, c("obs_sum", "pred_sum") := NULL]
+  data.table::setcolorder(agg, c(".bin", "obs_mean", "pred_mean", "exposure"))
 
   # Sort by bin integer then convert to readable labels
   agg <- agg[order(.bin)]
@@ -167,7 +176,15 @@ pred_vs_obs.modelblueprint <- function(
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {
-    df[[pred_col]] <- predict.modelblueprint(data, df)
+    # Reuse the engineered frame to score instead of predict.modelblueprint(),
+    # which would re-run pre_process_fun + feat_eng_fun a second time.
+    raw_preds <- model_predict(data@model, df_eng)
+    df[[pred_col]] <- call_pipeline_fun(
+      data@post_process_fun,
+      "post_process_fun",
+      raw_preds,
+      df
+    )
   }
 
   chart_title <- title %||%

@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Suppress R CMD check NOTEs for data.table's non-standard evaluation.
-utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "."))
+utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", ".", "exposure"))
 
 #' Create a one-way analysis plot
 #'
@@ -155,7 +155,23 @@ one_way.default <- function(
   validate_inputs(data, var, obs, exposure, split, bins)
 
   # -- Coerce to data.table (copy - never mutate caller's data) ----------------
-  dt <- data.table::as.data.table(data)
+  # Keep only the columns we need *before* copying. On a wide, multi-million-row
+  # frame this avoids duplicating dozens of unused columns just to plot a few.
+  # copy() guarantees independence: selecting columns from a data.table shares
+  # the underlying vectors, so a subsequent := could otherwise reach back into
+  # the caller's object.
+  keep <- unique(c(
+    var,
+    obs,
+    if (exposure %in% names(data)) exposure,
+    if (!is.na(split)) split
+  ))
+  narrow <- if (data.table::is.data.table(data)) {
+    data[, keep, with = FALSE]
+  } else {
+    data[keep]
+  }
+  dt <- data.table::copy(data.table::as.data.table(narrow))
 
   # -- Resolve exposure --------------------------------------------------------
   # If the exposure column doesn't exist, add a unit-weight column so all
@@ -404,20 +420,22 @@ aggregate_one_way <- function(
     dt_clean
   }
 
-  # Exposure-weighted mean per (x-bin, split group).
-  # Group by ".x_bin" (dot-prefix) so the grouping key cannot shadow any
-  # obs column; rename to public "x" only after aggregation is complete.
+  # Exposure-weighted mean per (x-bin, split group), written so data.table's
+  # GForce optimisation applies. A custom j that divides per group disables
+  # GForce, so instead: (1) pre-weight each obs column by the exposure, (2) take
+  # plain grouped sums via lapply(.SD, sum), (3) divide by the grouped weight.
+  # ".x_bin" is dot-prefixed so the grouping key cannot shadow an obs column.
+  dt_all[, .x_bin := as.character(.var)]
+  w_obs <- paste0(".wobs_", seq_along(obs))
+  dt_all[, (w_obs) := lapply(.SD, function(col) col * .w), .SDcols = obs]
+
   agg <- dt_all[,
-    {
-      w_total <- sum(.w, na.rm = TRUE)
-      obs_means <- lapply(.SD, function(col) {
-        sum(col * .w, na.rm = TRUE) / w_total
-      })
-      c(obs_means, list(exposure = w_total))
-    },
-    by = .(.x_bin = as.character(.var), .split),
-    .SDcols = obs
+    lapply(.SD, sum, na.rm = TRUE),
+    by = .(.x_bin, .split),
+    .SDcols = c(w_obs, ".w")
   ]
+  data.table::setnames(agg, c(w_obs, ".w"), c(obs, "exposure"))
+  agg[, (obs) := lapply(.SD, function(col) col / exposure), .SDcols = obs]
 
   # Rename .split -> split for the public output; keep .x_bin as-is so it
   # never collides with an obs column named "x".

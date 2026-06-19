@@ -18,10 +18,11 @@ A list with \code{labels} (character, length of \code{x}, \code{NA} preserved) a
 \code{cut} (the \code{cut()} factor over the sorted non-NA values).
 }
 \description{
-Thin wrapper that picks the binning strategy, applies it to the sorted,
-non-NA values, and remaps the labels onto the original positions of \code{x} via
-\code{\link[=remap_sorted_bins]{remap_sorted_bins()}}. Returns both the aligned labels and the underlying
-\code{cut()} factor so callers that need the interval levels (e.g. to compute
-midpoints) can reuse them.
+Picks the binning strategy and applies it to the sorted, non-NA values, then
+remaps the labels onto the original positions of \code{x}. The ordering of the
+non-NA values is computed once (via a single \code{order()}) and reused for both
+the sort and the remap, avoiding a redundant second pass over the data.
+Returns both the aligned labels and the underlying \code{cut()} factor so callers
+that need the interval levels (e.g. to compute midpoints) can reuse them.
 }
 \keyword{internal}

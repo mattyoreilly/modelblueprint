@@ -245,7 +245,15 @@ residuals_grouped.modelblueprint <- function(
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {
-    df[[pred_col]] <- predict.modelblueprint(data, df)
+    # Reuse the engineered frame to score instead of predict.modelblueprint(),
+    # which would re-run pre_process_fun + feat_eng_fun a second time.
+    raw_preds <- model_predict(data@model, df_eng)
+    df[[pred_col]] <- call_pipeline_fun(
+      data@post_process_fun,
+      "post_process_fun",
+      raw_preds,
+      df
+    )
   }
 
   # Guard: ensure at least 3 bins are possible

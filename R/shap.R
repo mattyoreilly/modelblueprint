@@ -99,6 +99,11 @@ shap <- function(data, ...) UseMethod("shap")
 #'                         model input. Default is the identity function.
 #' @param post_process_fun `function(preds, df_raw) -> numeric` applied to raw
 #'                         model predictions. Default is the identity function.
+#' @param seed             `[integer(1)]` Seed for the row sample and the
+#'                         internal SHAP permutations, applied via
+#'                         [withr::with_seed()] so the global RNG stream is left
+#'                         undisturbed and results are reproducible. Default
+#'                         `2024L`.
 #' @param ...              Unused.
 #'
 #' @examples
@@ -130,6 +135,7 @@ shap.default <- function(
   pre_process_fun  = function(df) df,
   feat_eng_fun     = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
+  seed             = 2024L,
   ...
 ) {
   type     <- match.arg(type)
@@ -159,14 +165,14 @@ shap.default <- function(
   }
 
   # -- Sample rows to explain ----------------------------------------------------
+  # withr::with_seed() draws with a fixed seed and restores the caller's RNG
+  # state afterwards, so the sample is reproducible without disturbing the
+  # global stream.
   n <- nrow(dt_full)
-  if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-    sample.int(1L)  # initialise RNG so .Random.seed exists
-  }
-  old_seed    <- .Random.seed
-  set.seed(2024L)
-  idx_sample  <- sample(n, min(as.integer(sample_size), n))
-  .Random.seed <<- old_seed
+  idx_sample <- withr::with_seed(
+    seed,
+    sample(n, min(as.integer(sample_size), n))
+  )
 
   dt_sample <- dt_full[idx_sample]
   # Pass the full data frame  - the model may need columns outside `vars`
@@ -181,14 +187,19 @@ shap.default <- function(
     {nrow(X_full)} row(s), {nsim} permutation(s) each."
   )
 
-  shap_df <- compute_shap(
-    X_full           = X_full,
-    model            = model,
-    vars             = vars,
-    nsim             = as.integer(nsim),
-    pre_process_fun  = pre_process_fun,
-    feat_eng_fun     = feat_eng_fun,
-    post_process_fun = post_process_fun
+  # compute_shap() draws random permutations and background rows internally, so
+  # run it under the same seed to make the SHAP values fully reproducible.
+  shap_df <- withr::with_seed(
+    seed,
+    compute_shap(
+      X_full           = X_full,
+      model            = model,
+      vars             = vars,
+      nsim             = as.integer(nsim),
+      pre_process_fun  = pre_process_fun,
+      feat_eng_fun     = feat_eng_fun,
+      post_process_fun = post_process_fun
+    )
   )
 
   # -- Return data ---------------------------------------------------------------

@@ -21,6 +21,7 @@ pdp(data, ...)
   pre_process_fun = function(df) df,
   feat_eng_fun = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
+  seed = 2024L,
   ...
 )
 }
@@ -66,6 +67,10 @@ function.}
 
 \item{post_process_fun}{\verb{function(preds, df_raw) -> numeric} applied to raw
 model predictions. Default is the identity function.}
+
+\item{seed}{\verb{[integer(1)]} Seed for the PDP row sample, applied via
+\code{\link[withr:with_seed]{withr::with_seed()}} so the global RNG stream is left
+undisturbed. Default \code{2024L}.}
 }
 \value{
 A plotly object, or a data.table when \code{ret = "data"}, or \code{NULL}

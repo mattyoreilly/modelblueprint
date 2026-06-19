@@ -643,9 +643,22 @@ one_way.modelblueprint <- function(
     "feat_eng_fun",
     df_pp
   ))
+  df <- as.data.frame(df)
   if (data@y_name %in% names(df_eng)) {
-    df <- as.data.frame(df)
     df[[data@y_name]] <- df_eng[[data@y_name]]
+  }
+
+  # Reuse the already-engineered frame to score, rather than letting
+  # resolve_obs() call predict.modelblueprint() — which would re-run
+  # pre_process_fun + feat_eng_fun a second time over the whole dataset.
+  if (isTRUE(predictions) && is.null(precomputed_preds)) {
+    raw_preds <- model_predict(data@model, df_eng)
+    precomputed_preds <- call_pipeline_fun(
+      data@post_process_fun,
+      "post_process_fun",
+      raw_preds,
+      df
+    )
   }
 
   resolved <- resolve_obs(

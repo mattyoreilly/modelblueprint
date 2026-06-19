@@ -22,6 +22,7 @@ shap(data, ...)
   pre_process_fun = function(df) df,
   feat_eng_fun = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
+  seed = 2024L,
   ...
 )
 }
@@ -80,6 +81,12 @@ model input. Default is the identity function.}
 
 \item{post_process_fun}{\verb{function(preds, df_raw) -> numeric} applied to raw
 model predictions. Default is the identity function.}
+
+\item{seed}{\verb{[integer(1)]} Seed for the row sample and the
+internal SHAP permutations, applied via
+\code{\link[withr:with_seed]{withr::with_seed()}} so the global RNG stream is left
+undisturbed and results are reproducible. Default
+\code{2024L}.}
 }
 \value{
 A plotly object, a data.table (when \code{ret = "data"}), or a named
