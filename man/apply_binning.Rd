@@ -2,11 +2,25 @@
 % Please edit documentation in R/one_way.R
 \name{apply_binning}
 \alias{apply_binning}
-\title{Apply binning to the \code{var} column of a data.table (in-place)}
+\title{Bin the named column of a data.table in place}
 \usage{
-apply_binning(dt, bins, type_agg, time_unit = NA_character_)
+apply_binning(dt, col, bins, type_agg, time_unit = NA_character_)
+}
+\arguments{
+\item{dt}{A data.table.}
+
+\item{col}{\verb{[character(1)]} Name of the column to bin in place.}
+
+\item{bins}{\verb{[integer(1)]} Number of bins.}
+
+\item{type_agg}{\verb{[character(1)]} \code{"equal_exposure"} or \code{"equal_range"}.}
+
+\item{time_unit}{\verb{[character(1)]} Optional date bin width for Date/POSIXct
+columns (passed to \code{\link[base:cut.POSIXt]{base::cut.POSIXt()}}).}
 }
 \description{
-Returns the data.table unchanged if \code{var} is categorical or low-cardinality.
+Replaces \code{dt[[col]]} with character bin labels. Returns the data.table
+unchanged when the column is categorical or low-cardinality. Handles
+Date/datetime columns when \code{time_unit} is supplied.
 }
 \keyword{internal}

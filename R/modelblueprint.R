@@ -128,10 +128,15 @@ predict.modelblueprint <- function(object, newdata, ...) {
     as.data.frame(newdata)
   }
 
-  tmp       <- call_pipeline_fun(object@pre_process_fun,  "pre_process_fun",  tmp)
-  tmp       <- call_pipeline_fun(object@feat_eng_fun,     "feat_eng_fun",     tmp)
+  tmp <- call_pipeline_fun(object@pre_process_fun, "pre_process_fun", tmp)
+  tmp <- call_pipeline_fun(object@feat_eng_fun, "feat_eng_fun", tmp)
   raw_preds <- model_predict(object@model, tmp)
-  call_pipeline_fun(object@post_process_fun, "post_process_fun", raw_preds, newdata)
+  call_pipeline_fun(
+    object@post_process_fun,
+    "post_process_fun",
+    raw_preds,
+    newdata
+  )
 }
 
 
@@ -467,7 +472,7 @@ save_model_slot <- function(model, tmp) {
   )
   saveRDS(
     if (is.null(bundled)) model else bundled,
-    file     = file.path(tmp, "r_model.rds"),
+    file = file.path(tmp, "r_model.rds"),
     compress = FALSE
   )
 }
@@ -628,14 +633,27 @@ one_way.modelblueprint <- function(
 
   # Align obs scale with predictions — if feat_eng_fun transforms the response,
   # update the obs column in df so obs and predictions are on the same scale.
-  df_pp  <- call_pipeline_fun(data@pre_process_fun, "pre_process_fun", as.data.frame(df))
-  df_eng <- as.data.frame(call_pipeline_fun(data@feat_eng_fun, "feat_eng_fun", df_pp))
+  df_pp <- call_pipeline_fun(
+    data@pre_process_fun,
+    "pre_process_fun",
+    as.data.frame(df)
+  )
+  df_eng <- as.data.frame(call_pipeline_fun(
+    data@feat_eng_fun,
+    "feat_eng_fun",
+    df_pp
+  ))
   if (data@y_name %in% names(df_eng)) {
     df <- as.data.frame(df)
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }
 
-  resolved <- resolve_obs(data, df, predictions, precomputed_preds = precomputed_preds)
+  resolved <- resolve_obs(
+    data,
+    df,
+    predictions,
+    precomputed_preds = precomputed_preds
+  )
   obs <- resolved$obs
   df <- resolved$df
   exposure <- resolve_exposure(data, df)
@@ -649,8 +667,11 @@ one_way.modelblueprint <- function(
     exclude <- unique(c(
       obs,
       if (exposure %in% names(df)) exposure else NULL,
-      if (!is.na(data@expo_name) && data@expo_name %in% names(df))
-        data@expo_name else NULL
+      if (!is.na(data@expo_name) && data@expo_name %in% names(df)) {
+        data@expo_name
+      } else {
+        NULL
+      }
     ))
     setdiff(names(df), exclude)
   } else {
@@ -820,20 +841,20 @@ pdp.modelblueprint <- function(
 #' @export
 shap.modelblueprint <- function(
   data,
-  vars        = NA,
-  set         = c("train", "test", "holdout"),
-  type        = c("importance", "dependence"),
-  nsim        = 50L,
+  vars = NA,
+  set = c("train", "test", "holdout"),
+  type = c("importance", "dependence"),
+  nsim = 50L,
   sample_size = 500L,
-  bins        = 10L,
-  type_agg    = c("equal_exposure", "equal_range"),
-  ret         = c("plot", "data"),
+  bins = 10L,
+  type_agg = c("equal_exposure", "equal_range"),
+  ret = c("plot", "data"),
   ...
 ) {
-  set      <- match.arg(set)
-  type     <- match.arg(type)
+  set <- match.arg(set)
+  type <- match.arg(type)
   type_agg <- match.arg(type_agg)
-  ret      <- match.arg(ret)
+  ret <- match.arg(ret)
 
   df <- prop(data, set)
   if (is.null(df)) {
@@ -855,22 +876,22 @@ shap.modelblueprint <- function(
   }
 
   model_name <- data@model_display_name %||% "model"
-  exposure   <- resolve_exposure(data, df)
+  exposure <- resolve_exposure(data, df)
 
   shap(
-    data             = as.data.frame(df),
-    model            = data@model,
-    vars             = vars_resolved,
-    exposure         = exposure,
-    type             = type,
-    nsim             = nsim,
-    sample_size      = sample_size,
-    bins             = bins,
-    type_agg         = type_agg,
-    ret              = ret,
-    model_name       = model_name,
-    pre_process_fun  = data@pre_process_fun,
-    feat_eng_fun     = data@feat_eng_fun,
+    data = as.data.frame(df),
+    model = data@model,
+    vars = vars_resolved,
+    exposure = exposure,
+    type = type,
+    nsim = nsim,
+    sample_size = sample_size,
+    bins = bins,
+    type_agg = type_agg,
+    ret = ret,
+    model_name = model_name,
+    pre_process_fun = data@pre_process_fun,
+    feat_eng_fun = data@feat_eng_fun,
     post_process_fun = data@post_process_fun,
     ...
   )
@@ -961,12 +982,6 @@ resolve_exposure <- function(object, df) {
     envir = ns
   )
   registerS3method(
-    "gain",
-    "modelblueprint::modelblueprint",
-    gain.modelblueprint,
-    envir = ns
-  )
-  registerS3method(
     "pred_vs_obs",
     "modelblueprint::modelblueprint",
     pred_vs_obs.modelblueprint,
@@ -998,13 +1013,4 @@ resolve_exposure <- function(object, df) {
     predict.mb_seq,
     envir = ns
   )
-}
-
-
-# =============================================================================
-# Utilities
-# =============================================================================
-
-`%||%` <- function(a, b) {
-  if (is.null(a) || (length(a) == 1L && is.na(a))) b else a
 }

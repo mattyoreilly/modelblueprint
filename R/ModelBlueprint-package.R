@@ -13,7 +13,6 @@
 
 # Selective imports
 #' @importFrom dplyr filter mutate left_join
-#' @importFrom grDevices col2rgb
 #' @importFrom stats var sd predict median
 #' @importFrom stats quantile binomial gaussian poisson
 #' @importFrom stats rnorm runif rgamma

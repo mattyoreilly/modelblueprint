@@ -56,6 +56,15 @@ gain.default <- function(
 ) {
   ret <- match.arg(ret)
 
+  # -- Validate ----------------------------------------------------------------
+  if (length(obs) != 1L || is.na(obs)) {
+    cli::cli_abort(
+      "{.arg obs} must be a single column name (the observed target)."
+    )
+  }
+  assert_col_exists(data, obs, "`obs`")
+  assert_col_exists(data, pred, "`pred`")
+
   # Defensive copy — never mutate caller data
   # data.table::copy() ensures a deep copy so := never modifies the original
   dt <- data.table::copy(data.table::as.data.table(data))
@@ -174,8 +183,8 @@ gain.modelblueprint <- function(
   )
 }
 
-# Register package-qualified S7 class name so UseMethod() dispatches correctly
-`gain.modelblueprint::modelblueprint` <- gain.modelblueprint
+# The package-qualified S7 class method ("modelblueprint::modelblueprint") is
+# registered in .onLoad() via registerS3method(); see modelblueprint.R.
 
 
 # =============================================================================

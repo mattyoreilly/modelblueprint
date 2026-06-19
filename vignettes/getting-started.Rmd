@@ -111,12 +111,12 @@ head(predict(mb_fe, mtcars))
 
 ## Saving and loading
 
-`saveMB()` serialises the complete blueprint — model, data, and pipeline
-functions — to a `.tar.gz` archive. `loadMB()` restores it exactly.
+`savemb()` serialises the complete blueprint — model, data, and pipeline
+functions — to a `.tar.gz` archive. `loadmb()` restores it exactly.
 
 ```{r save-load}
-saveMB(mb, path = tempdir(), filename = "logistic_vs")
-mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
+savemb(mb, path = tempdir(), filename = "logistic_vs")
+mb2 <- loadmb(file.path(tempdir(), "logistic_vs.tar.gz"))
 
 # Predictions are identical
 all.equal(predict(mb, mtcars), predict(mb2, mtcars))

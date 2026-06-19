@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Suppress R CMD check NOTEs for data.table's non-standard evaluation.
-utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "var", "."))
+utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", "."))
 
 #' Create a one-way analysis plot
 #'
@@ -90,28 +90,36 @@ one_way.default <- function(
     sym <- rlang::as_name(var_expr)
     if (sym %in% names(data)) sym else var
   } else {
-    var  # complex expr (e.g. vars[[j]]) — force promise
+    var # complex expr (e.g. vars[[j]]) — force promise
   }
 
   obs_expr <- rlang::enexpr(obs)
   obs <- if (is.character(obs_expr)) {
     obs_expr
-  } else if (rlang::is_call(obs_expr) &&
-               identical(rlang::call_name(obs_expr), "c")) {
+  } else if (
+    rlang::is_call(obs_expr) &&
+      identical(rlang::call_name(obs_expr), "c")
+  ) {
     # Resolve each arg of c(): string literal -> kept; bare name -> column
     # lookup. If ANY arg is a symbol that isn't a column (i.e. it's a local
     # variable holding a string), fall back to forcing the promise so that
     # programmatic callers like sami() still work.
     args <- rlang::call_args(obs_expr)
-    resolved <- vapply(args, function(a) {
-      if (is.character(a)) return(a)
-      if (is.symbol(a)) {
-        nm <- rlang::as_name(a)
-        if (nm %in% names(data)) return(nm)
-      }
-      NA_character_
-    }, character(1L))
-    if (anyNA(resolved)) obs else resolved  # force promise if any non-column
+    resolved <- vapply(
+      args,
+      function(a) {
+        if (is.character(a)) {
+          return(a)
+        }
+        if (is.symbol(a)) {
+          nm <- rlang::as_name(a)
+          if (nm %in% names(data)) return(nm)
+        }
+        NA_character_
+      },
+      character(1L)
+    )
+    if (anyNA(resolved)) obs else resolved # force promise if any non-column
   } else if (is.symbol(obs_expr)) {
     sym <- rlang::as_name(obs_expr)
     if (sym %in% names(data)) sym else obs
@@ -136,7 +144,7 @@ one_way.default <- function(
     sym <- rlang::as_name(split_expr)
     if (sym %in% names(data)) sym else split
   } else {
-    split  # NA_character_, string, or complex expr
+    split # NA_character_, string, or complex expr
   }
   # ---------------------------------------------------------------------------
 
@@ -164,7 +172,11 @@ one_way.default <- function(
   n_unique <- data.table::uniqueN(dt[[var]], na.rm = TRUE)
   is_date_col <- inherits(dt[[var]], c("Date", "POSIXct", "POSIXlt"))
   has_time_unit <- !is.na(time_unit) && nzchar(time_unit)
-  if (n_unique > 2000L && !is.numeric(dt[[var]]) && !(is_date_col && has_time_unit)) {
+  if (
+    n_unique > 2000L &&
+      !is.numeric(dt[[var]]) &&
+      !(is_date_col && has_time_unit)
+  ) {
     cli::cli_warn(
       "{.arg {var}} has {n_unique} unique values (max 2,000 for non-numeric). Skipping."
     )
@@ -172,7 +184,16 @@ one_way.default <- function(
   }
 
   # -- Aggregate ---------------------------------------------------------------
-  agg <- aggregate_one_way(dt, var, obs, expo_col, split, bins, type_agg, time_unit)
+  agg <- aggregate_one_way(
+    dt,
+    var,
+    obs,
+    expo_col,
+    split,
+    bins,
+    type_agg,
+    time_unit
+  )
 
   if (ret == "data") {
     # Rename internal .x_bin back to the original variable name for the user
@@ -212,69 +233,37 @@ validate_inputs <- function(data, var, obs, exposure, split, bins) {
   }
 }
 
-assert_col_exists <- function(data, cols, arg_name) {
-  missing_cols <- setdiff(cols, names(data))
-  if (length(missing_cols) > 0L) {
-    cli::cli_abort(
-      "{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}"
-    )
-  }
-}
-
 
 # -----------------------------------------------------------------------------
-# Binning helpers
+# Binning
 # -----------------------------------------------------------------------------
+# The numeric binning primitives (bin_equal_exposure, bin_equal_range,
+# bin_numeric, remap_sorted_bins) and assert_col_exists live in binning.R so
+# they can be shared with pdp() and shap().
 
-#' Bin a sorted numeric vector into n equal-exposure groups
-#' @keywords internal
-bin_equal_exposure <- function(x_sorted, bins) {
-  n <- length(x_sorted)
-  idx <- unique(as.integer(seq(n / bins, n, length.out = bins)))
-  breaks <- signif(c(x_sorted[1L], x_sorted[idx]), 7L)
-  # unique() AFTER signif() - rounding can re-introduce duplicates if applied before
-  breaks <- unique(breaks)
-  # Clamp endpoints to actual data range - signif() can push the max break
-  # below max(x_sorted), leaving the last element outside the range -> NA
-  breaks[1L] <- min(x_sorted)
-  breaks[length(breaks)] <- max(x_sorted)
-  cut(x_sorted, breaks = breaks, include.lowest = TRUE, dig.lab = 7L)
-}
-
-#' Bin a numeric vector into n equal-range groups
-#' @keywords internal
-bin_equal_range <- function(x, bins) {
-  rng <- range(x, na.rm = TRUE)
-  spread <- diff(rng)
-  mag <- if (is.finite(spread) && spread > 0) {
-    floor(log10(spread / bins))
-  } else {
-    0L
-  }
-  decimals <- if (mag < 0L) 2L - mag else 0L
-  breaks <- round(seq(rng[1L], rng[2L], length.out = bins + 1L), decimals)
-  cut(
-    x,
-    breaks = unique(breaks),
-    include.lowest = TRUE,
-    dig.lab = max(7L, decimals + 3L)
-  )
-}
-
-#' Apply binning to the `var` column of a data.table (in-place)
+#' Bin the named column of a data.table in place
 #'
-#' Returns the data.table unchanged if `var` is categorical or low-cardinality.
+#' Replaces `dt[[col]]` with character bin labels. Returns the data.table
+#' unchanged when the column is categorical or low-cardinality. Handles
+#' Date/datetime columns when `time_unit` is supplied.
+#'
+#' @param dt        A data.table.
+#' @param col       `[character(1)]` Name of the column to bin in place.
+#' @param bins      `[integer(1)]` Number of bins.
+#' @param type_agg  `[character(1)]` `"equal_exposure"` or `"equal_range"`.
+#' @param time_unit `[character(1)]` Optional date bin width for Date/POSIXct
+#'                  columns (passed to [base::cut.POSIXt()]).
 #' @keywords internal
-apply_binning <- function(dt, bins, type_agg, time_unit = NA_character_) {
-  v <- dt$var
+apply_binning <- function(dt, col, bins, type_agg, time_unit = NA_character_) {
+  v <- dt[[col]]
 
   # --- Date / datetime with explicit time_unit --------------------------------
   # Use cut.POSIXt for date-aware binning. Convert Date -> POSIXct so the same
   # code path handles both and all time_unit strings (including "12 hours") work.
-  is_date     <- inherits(v, "Date")
+  is_date <- inherits(v, "Date")
   is_datetime <- inherits(v, c("POSIXct", "POSIXlt"))
   if ((is_date || is_datetime) && !is.na(time_unit) && nzchar(time_unit)) {
-    v_posix <- if (is_datetime) as.POSIXct(v) else as.POSIXct(v)
+    v_posix <- as.POSIXct(v)
     binned_chr <- as.character(cut(v_posix, breaks = time_unit))
     # Strip the redundant " 00:00:00" suffix when all labels fall at midnight
     # (e.g. monthly or daily cuts of Date data).
@@ -282,7 +271,7 @@ apply_binning <- function(dt, bins, type_agg, time_unit = NA_character_) {
     if (length(non_na_lbl) > 0L && all(endsWith(non_na_lbl, " 00:00:00"))) {
       binned_chr <- sub(" 00:00:00$", "", binned_chr)
     }
-    dt[, var := binned_chr]
+    data.table::set(dt, j = col, value = binned_chr)
     return(dt)
   }
 
@@ -300,24 +289,11 @@ apply_binning <- function(dt, bins, type_agg, time_unit = NA_character_) {
     return(dt)
   }
 
-  v_nonmissing <- sort(v[!is.na(v)])
+  # bin_numeric() handles strategy selection and remaps labels back onto the
+  # original (unsorted, NA-preserving) row order.
+  bin_labels <- bin_numeric(v, bins, type_agg)$labels
 
-  binned <- suppressWarnings(
-    if (type_agg == "equal_range") {
-      bin_equal_range(v_nonmissing, bins)
-    } else {
-      bin_equal_exposure(v_nonmissing, bins)
-    }
-  )
-
-  # Map bin labels back onto original row order
-  # Build a lookup: original value -> bin label (using sorted non-NA positions)
-  bin_labels <- rep(NA_character_, length(v))
-  non_na_idx <- which(!is.na(v))
-  sorted_non_na_idx <- non_na_idx[order(v[non_na_idx])]
-  bin_labels[sorted_non_na_idx] <- as.character(binned)
-
-  dt[, var := bin_labels]
+  data.table::set(dt, j = col, value = bin_labels)
   dt
 }
 
@@ -330,7 +306,16 @@ apply_binning <- function(dt, bins, type_agg, time_unit = NA_character_) {
 #'
 #' @return data.table with columns: x, split, <obs columns>, exposure
 #' @keywords internal
-aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg, time_unit = NA_character_) {
+aggregate_one_way <- function(
+  dt,
+  var,
+  obs,
+  expo_col,
+  split,
+  bins,
+  type_agg,
+  time_unit = NA_character_
+) {
   # Select only the columns we need - critical for large datasets
   keep <- unique(c(var, obs, expo_col, if (!is.na(split)) split))
   dt <- dt[, .SD, .SDcols = keep]
@@ -343,7 +328,7 @@ aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg, tim
     has_time_unit <- !is.na(time_unit) && nzchar(time_unit)
     if (has_time_unit) {
       # Bin into calendar periods via cut.POSIXt
-      v_posix    <- as.POSIXct(dt[[var]])
+      v_posix <- as.POSIXct(dt[[var]])
       binned_chr <- as.character(cut(v_posix, breaks = time_unit))
       non_na_lbl <- binned_chr[!is.na(binned_chr)]
       if (length(non_na_lbl) > 0L && all(endsWith(non_na_lbl, " 00:00:00"))) {
@@ -398,13 +383,11 @@ aggregate_one_way <- function(dt, var, obs, expo_col, split, bins, type_agg, tim
     ))
   }
 
-  # apply_binning expects a column named "var" - rename temporarily.
-  # Force to character immediately after binning so cut()'s factor output
-  # never survives into rbindlist as a type that produces NA_character_.
-  data.table::setnames(dt_clean, ".var", "var")
-  dt_clean <- apply_binning(dt_clean, bins, type_agg, time_unit)
-  dt_clean[, var := as.character(var)]
-  data.table::setnames(dt_clean, "var", ".var")
+  # Bin the internal ".var" column directly. Force to character immediately
+  # after binning so cut()'s factor output never survives into rbindlist as a
+  # type that produces NA_character_.
+  dt_clean <- apply_binning(dt_clean, ".var", bins, type_agg, time_unit)
+  dt_clean[, .var := as.character(.var)]
 
   # Recombine - assign sentinel string AFTER rbindlist using a logical mask
   # so there is no factor vs character type conflict across the two tables.
@@ -679,7 +662,7 @@ smart_level_order <- function(x) {
     return(x)
   }
   na_label <- x[x == "NA"]
-  non_na   <- x[x != "NA"]
+  non_na <- x[x != "NA"]
 
   # Date-like strings start with YYYY-MM-DD. ISO format is lexicographically
   # identical to chronological order, so plain sort() is correct and fast.
@@ -693,27 +676,11 @@ smart_level_order <- function(x) {
   is_num <- !is.na(leading) & !is_date_str
 
   c(
-    non_na[is_num][order(leading[is_num])],   # numeric/interval bins
-    sort(non_na[is_date_str]),                  # date strings: alpha == chrono
-    sort(non_na[!is_num & !is_date_str]),       # other categoricals
+    non_na[is_num][order(leading[is_num])], # numeric/interval bins
+    sort(non_na[is_date_str]), # date strings: alpha == chrono
+    sort(non_na[!is_num & !is_date_str]), # other categoricals
     na_label
   )
-}
-
-#' Make a colour palette of length n, handling n < 3 gracefully
-#' @keywords internal
-make_palette <- function(n, palette = "Paired") {
-  if (n <= 1L) {
-    return("#2563eb")
-  }
-  RColorBrewer::brewer.pal(max(3L, n), palette)[seq_len(n)]
-}
-
-#' Convert a hex colour to an rgba() CSS string
-#' @keywords internal
-hex_to_rgba <- function(hex, alpha = 1) {
-  rgb <- grDevices::col2rgb(hex)
-  sprintf("rgba(%d,%d,%d,%.2f)", rgb[1L], rgb[2L], rgb[3L], alpha)
 }
 
 #' Format numbers to n significant digits
@@ -721,6 +688,3 @@ hex_to_rgba <- function(hex, alpha = 1) {
 sig_dig <- function(x, n = 7L) {
   formatC(signif(x, digits = n), digits = n, format = "fg", flag = "#")
 }
-
-# Null-coalescing operator (unexported)
-`%||%` <- function(a, b) if (!is.null(a)) a else b

@@ -245,18 +245,6 @@ pdp_validate <- function(data, var, obs, exposure, bins, sample_size) {
   }
 }
 
-# Reuse assert_col_exists from one_way.R (same environment when both sourced)
-if (!exists("assert_col_exists")) {
-  assert_col_exists <- function(data, cols, arg_name) {
-    missing_cols <- setdiff(cols, names(data))
-    if (length(missing_cols) > 0L) {
-      cli::cli_abort(
-        "{arg_name} column(s) not found in {.arg data}: {.val {missing_cols}}"
-      )
-    }
-  }
-}
-
 #' Dispatch prediction to the correct backend
 #'
 #' Detects the model class and calls the appropriate prediction function:
@@ -345,20 +333,11 @@ compute_bins <- function(x, bins, type_agg) {
     return(list(labels = labels, midpoints = NULL, is_numeric = FALSE))
   }
 
-  # Numeric binning - reuse bin_equal_exposure / bin_equal_range from one_way.R
-  v_sorted <- sort(x[!is.na(x)])
-  bin_fn <- if (type_agg == "equal_range") {
-    bin_equal_range
-  } else {
-    bin_equal_exposure
-  }
-  cut_result <- suppressWarnings(bin_fn(v_sorted, bins))
-
-  # Map cut labels back to original row positions (identical to apply_binning)
-  raw_labels <- rep(NA_character_, length(x))
-  non_na_idx <- which(!is.na(x))
-  sorted_non_na_idx <- non_na_idx[order(x[non_na_idx])]
-  raw_labels[sorted_non_na_idx] <- as.character(cut_result)
+  # Numeric binning - shared binning module (binning.R) handles strategy
+  # selection and remapping labels back onto the original row order.
+  binned <- bin_numeric(x, bins, type_agg)
+  cut_result <- binned$cut
+  raw_labels <- binned$labels
   raw_labels[is.na(x)] <- "NA"
 
   # Compute midpoints from interval labels - used to fix the feature for PDP.

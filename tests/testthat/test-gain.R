@@ -145,6 +145,30 @@ describe("gain.default — return type", {
       fixed = TRUE
     )
   })
+
+  it("missing obs (default NA) errors clearly", {
+    expect_error(
+      gain(df, pred = "pred", exposure = "exposure"),
+      "obs",
+      fixed = TRUE
+    )
+  })
+
+  it("obs column not in data errors clearly", {
+    expect_error(
+      gain(df, pred = "pred", obs = "not_a_column", exposure = "exposure"),
+      "not found",
+      fixed = TRUE
+    )
+  })
+
+  it("pred column not in data errors clearly", {
+    expect_error(
+      gain(df, pred = "not_a_column", obs = "obs", exposure = "exposure"),
+      "not found",
+      fixed = TRUE
+    )
+  })
 })
 
 

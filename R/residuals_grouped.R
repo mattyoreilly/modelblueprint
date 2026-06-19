@@ -267,8 +267,8 @@ residuals_grouped.modelblueprint <- function(
   )
 }
 
-# Register package-qualified S7 class name for UseMethod dispatch
-`residuals_grouped.modelblueprint::modelblueprint` <- residuals_grouped.modelblueprint
+# The package-qualified S7 class method ("modelblueprint::modelblueprint") is
+# registered in .onLoad() via registerS3method(); see modelblueprint.R.
 
 
 # =============================================================================

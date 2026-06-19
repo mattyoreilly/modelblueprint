@@ -802,6 +802,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = c("A", "B", "A", "C"), .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 2L,
       type_agg = "equal_exposure"
     )
@@ -813,6 +814,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = rep(1:5, 10L), .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 10L,
       type_agg = "equal_exposure"
     )
@@ -825,6 +827,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = seq(1, 100, length.out = 32L), .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 5L,
       type_agg = "equal_exposure"
     )
@@ -836,6 +839,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = rnorm(500L), .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 10L,
       type_agg = "equal_exposure"
     )
@@ -849,6 +853,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = v, .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 10L,
       type_agg = "equal_exposure"
     )
@@ -860,6 +865,7 @@ describe("apply_binning", {
     dt <- data.table::data.table(var = runif(500L, 0, 100), .w = 1L)
     out <- modelblueprint:::apply_binning(
       dt,
+      col = "var",
       bins = 5L,
       type_agg = "equal_range"
     )
@@ -966,58 +972,6 @@ describe("smart_level_order", {
       modelblueprint:::smart_level_order(labels),
       c("High", "Low", "Medium")
     )
-  })
-})
-
-# =============================================================================
-# hex_to_rgba — unit tests
-# =============================================================================
-
-describe("hex_to_rgba", {
-  it("converts a hex colour to rgba string", {
-    result <- modelblueprint:::hex_to_rgba("#2563eb", 0.5)
-    expect_true(grepl("^rgba\\(", result))
-  })
-
-  it("alpha = 1 produces fully opaque rgba", {
-    result <- modelblueprint:::hex_to_rgba("#000000", 1)
-    expect_equal(result, "rgba(0,0,0,1.00)")
-  })
-
-  it("alpha = 0 produces fully transparent rgba", {
-    result <- modelblueprint:::hex_to_rgba("#ffffff", 0)
-    expect_equal(result, "rgba(255,255,255,0.00)")
-  })
-
-  it("handles shorthand and named colours", {
-    expect_no_error(modelblueprint:::hex_to_rgba("red", 0.5))
-    expect_no_error(modelblueprint:::hex_to_rgba("blue", 0.3))
-  })
-})
-
-# =============================================================================
-# make_palette — unit tests
-# =============================================================================
-
-describe("make_palette", {
-  it("returns a single colour for n = 1", {
-    result <- modelblueprint:::make_palette(1L)
-    expect_length(result, 1L)
-  })
-
-  it("returns n colours for n >= 3", {
-    for (n in 3:12) {
-      expect_length(modelblueprint:::make_palette(n), n)
-    }
-  })
-
-  it("returns 2 colours for n = 2", {
-    expect_length(modelblueprint:::make_palette(2L), 2L)
-  })
-
-  it("all returned values are valid hex colours", {
-    cols <- modelblueprint:::make_palette(6L)
-    expect_true(all(grepl("^#[0-9A-Fa-f]{6}$", cols)))
   })
 })
 
@@ -1284,7 +1238,7 @@ describe("apply_binning — date / datetime", {
       var = seq(as.Date("2023-01-01"), by = "day", length.out = 59L),
       .w  = 1L
     )
-    out <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure",
+    out <- modelblueprint:::apply_binning(dt, "var", 10L, "equal_exposure",
                                           time_unit = "month")
     expect_equal(length(unique(out$var)), 2L)         # Jan + Feb
     expect_true(all(grepl("^\\d{4}-\\d{2}-\\d{2}$", out$var)))  # no time suffix
@@ -1297,7 +1251,7 @@ describe("apply_binning — date / datetime", {
                 length.out = 24L),
       .w  = 1L
     )
-    out <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure",
+    out <- modelblueprint:::apply_binning(dt, "var", 10L, "equal_exposure",
                                           time_unit = "12 hours")
     expect_equal(length(unique(out$var)), 2L)
   })
@@ -1305,7 +1259,7 @@ describe("apply_binning — date / datetime", {
   it("without time_unit, a Date column is returned unchanged", {
     dates <- as.Date(c("2023-01-01", "2023-02-01", "2023-03-01"))
     dt    <- data.table::data.table(var = dates, .w = 1L)
-    out   <- modelblueprint:::apply_binning(dt, 10L, "equal_exposure")
+    out   <- modelblueprint:::apply_binning(dt, "var", 10L, "equal_exposure")
     expect_equal(out$var, dates)   # class and values preserved
   })
 })
