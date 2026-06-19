@@ -124,9 +124,10 @@ pdp.default <- function(
   cli::cli_alert_info("Calculating pdp for {.var {var}}")
 
   # -- Apply pipeline for in-sample predictions --------------------------------
-  df_eng <- as.data.frame(feat_eng_fun(pre_process_fun(as.data.frame(dt))))
-  preds <- model_predict(model, df_eng)
-  dt[, .pred := post_process_fun(preds, as.data.frame(dt))]
+  df_pp  <- call_pipeline_fun(pre_process_fun, "pre_process_fun", as.data.frame(dt))
+  df_eng <- as.data.frame(call_pipeline_fun(feat_eng_fun, "feat_eng_fun", df_pp))
+  preds  <- model_predict(model, df_eng)
+  dt[, .pred := call_pipeline_fun(post_process_fun, "post_process_fun", preds, as.data.frame(dt))]
 
   # -- Resolve exposure ---------------------------------------------------------
   expo_col <- if (exposure %in% names(dt)) exposure else ".expo"
@@ -152,6 +153,9 @@ pdp.default <- function(
   # cleanly per bin. Sampling happens after binning so .bin labels are present.
   n <- nrow(dt)
   samp_idx <- if (sample_size < n) {
+    if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+      sample.int(1L)  # initialise RNG so .Random.seed exists
+    }
     old_seed <- .Random.seed
     set.seed(2024L)
     idx <- sample(n, sample_size)
@@ -494,9 +498,10 @@ compute_pdp <- function(
   # pre_process_fun see exactly the same column layout as in the sequential
   # path, just over a taller frame.
   big_df  <- as.data.frame(big)
-  big_eng <- as.data.frame(feat_eng_fun(pre_process_fun(big_df)))
+  big_pp  <- call_pipeline_fun(pre_process_fun, "pre_process_fun", big_df)
+  big_eng <- as.data.frame(call_pipeline_fun(feat_eng_fun, "feat_eng_fun", big_pp))
   preds   <- model_predict(model, big_eng)
-  preds   <- post_process_fun(preds, big_df)
+  preds   <- call_pipeline_fun(post_process_fun, "post_process_fun", preds, big_df)
 
   # --- Group-average by bin block ---------------------------------------------
   # Build a lightweight tracking table rather than adding a column to `big`

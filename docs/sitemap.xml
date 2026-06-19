@@ -15,6 +15,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/apply_binning.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/bin_equal_exposure.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/bin_equal_range.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/call_pipeline_fun.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/coerce_to_original.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_pdp.html</loc></url>
@@ -26,7 +27,6 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/hex_to_rgba.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/index.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/left_join.ModelBlueprint.html</loc></url>
-<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/loadMB.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/make_palette.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mb_dashboard.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.html</loc></url>
@@ -51,7 +51,6 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sami.html</loc></url>
-<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/saveMB.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/shap.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/shap.modelblueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sig_dig.html</loc></url>

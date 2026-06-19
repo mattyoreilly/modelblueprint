@@ -10,9 +10,11 @@ pipeline functions, and deployment metadata.
   : modelblueprint: a model-agnostic container for ML model lifecycles
 - [`predict(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/predict.modelblueprint.md)
   : Generate predictions from a modelblueprint
-- [`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
+- [`savemb()`](https://mattyoreilly.github.io/modelblueprint/reference/savemb.md)
+  [`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/savemb.md)
   : Save a modelblueprint to disk
-- [`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
+- [`loadmb()`](https://mattyoreilly.github.io/modelblueprint/reference/loadmb.md)
+  [`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadmb.md)
   : Load a modelblueprint from disk
 
 ## Data manipulation

@@ -230,7 +230,8 @@ residuals_grouped.modelblueprint <- function(
 
   # Align obs scale with predictions — if feat_eng_fun transforms the response,
   # update obs in df so it matches the prediction scale.
-  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(df)))
+  df_pp  <- call_pipeline_fun(data@pre_process_fun, "pre_process_fun", df)
+  df_eng <- as.data.frame(call_pipeline_fun(data@feat_eng_fun, "feat_eng_fun", df_pp))
   if (data@y_name %in% names(df_eng)) {
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }

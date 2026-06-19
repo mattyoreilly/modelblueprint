@@ -128,10 +128,10 @@ predict.modelblueprint <- function(object, newdata, ...) {
     as.data.frame(newdata)
   }
 
-  tmp <- object@pre_process_fun(tmp)
-  tmp <- object@feat_eng_fun(tmp)
+  tmp       <- call_pipeline_fun(object@pre_process_fun,  "pre_process_fun",  tmp)
+  tmp       <- call_pipeline_fun(object@feat_eng_fun,     "feat_eng_fun",     tmp)
   raw_preds <- model_predict(object@model, tmp)
-  object@post_process_fun(raw_preds, newdata)
+  call_pipeline_fun(object@post_process_fun, "post_process_fun", raw_preds, newdata)
 }
 
 
@@ -414,6 +414,44 @@ loadMB <- function(path) {
 # Internal helpers
 # =============================================================================
 
+#' Call a user-supplied pipeline function with a helpful error on missing pkg
+#'
+#' Intercepts "could not find function" errors that arise when a pipeline
+#' function (pre_process_fun, feat_eng_fun, post_process_fun) was written
+#' with unqualified calls (e.g. `as.data.table()` instead of
+#' `data.table::as.data.table()`) and the required package is not loaded in
+#' the current session.
+#'
+#' @param fun      The pipeline function to call.
+#' @param fun_name Character label used in the error message.
+#' @param ...      Arguments forwarded to `fun`.
+#' @keywords internal
+call_pipeline_fun <- function(fun, fun_name, ...) {
+  tryCatch(
+    fun(...),
+    error = function(e) {
+      msg <- conditionMessage(e)
+      if (grepl("could not find function", msg, fixed = TRUE)) {
+        cli::cli_abort(
+          c(
+            "{.code {fun_name}} failed: {msg}",
+            i = paste0(
+              "A package used inside {.code {fun_name}} is not loaded. ",
+              "Either call {.code library(<pkg>)} before predicting, or use ",
+              "fully-qualified calls in the function ",
+              "(e.g. {.code data.table::as.data.table()} instead of ",
+              "{.code as.data.table()})."
+            )
+          ),
+          call = NULL
+        )
+      } else {
+        stop(e)
+      }
+    }
+  )
+}
+
 #' @keywords internal
 save_model_slot <- function(model, tmp) {
   bundled <- tryCatch(
@@ -590,9 +628,8 @@ one_way.modelblueprint <- function(
 
   # Align obs scale with predictions — if feat_eng_fun transforms the response,
   # update the obs column in df so obs and predictions are on the same scale.
-  df_eng <- as.data.frame(data@feat_eng_fun(data@pre_process_fun(as.data.frame(
-    df
-  ))))
+  df_pp  <- call_pipeline_fun(data@pre_process_fun, "pre_process_fun", as.data.frame(df))
+  df_eng <- as.data.frame(call_pipeline_fun(data@feat_eng_fun, "feat_eng_fun", df_pp))
   if (data@y_name %in% names(df_eng)) {
     df <- as.data.frame(df)
     df[[data@y_name]] <- df_eng[[data@y_name]]

@@ -160,6 +160,9 @@ shap.default <- function(
 
   # -- Sample rows to explain ----------------------------------------------------
   n <- nrow(dt_full)
+  if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+    sample.int(1L)  # initialise RNG so .Random.seed exists
+  }
   old_seed    <- .Random.seed
   set.seed(2024L)
   idx_sample  <- sample(n, min(as.integer(sample_size), n))
@@ -317,10 +320,10 @@ compute_shap <- function(
     # This mirrors compute_pdp()'s batch approach: one model_predict() call
     # per feature regardless of n or nsim.
     combined    <- rbind(with_j, without_j)
-    combined_pp <- pre_process_fun(combined)
-    combined_fe <- as.data.frame(feat_eng_fun(combined_pp))
+    combined_pp <- call_pipeline_fun(pre_process_fun,  "pre_process_fun",  combined)
+    combined_fe <- as.data.frame(call_pipeline_fun(feat_eng_fun, "feat_eng_fun", combined_pp))
     all_preds   <- model_predict(model, combined_fe)
-    all_preds   <- post_process_fun(all_preds, combined)
+    all_preds   <- call_pipeline_fun(post_process_fun, "post_process_fun", all_preds, combined)
 
     preds_with    <- all_preds[seq_len(n_block)]
     preds_without <- all_preds[(n_block + 1L):(2L * n_block)]
