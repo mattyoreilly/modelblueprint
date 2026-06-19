@@ -4,9 +4,13 @@ Serialises a `modelblueprint` to a compressed `.tar.gz` archive
 containing all components needed to fully reconstruct it: model, data
 splits, pipeline functions, and metadata.
 
+`saveMB()` is deprecated; use `savemb()` instead.
+
 ## Usage
 
 ``` r
+savemb(object, path = getwd(), filename = NULL, ...)
+
 saveMB(object, path = getwd(), filename = NULL, ...)
 ```
 
@@ -34,4 +38,4 @@ Invisibly returns the full normalised path to the saved archive.
 
 ## See also
 
-[`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
+[`loadmb()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)

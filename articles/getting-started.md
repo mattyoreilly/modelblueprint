@@ -272,8 +272,14 @@ restores it exactly.
 ``` r
 
 saveMB(mb, path = tempdir(), filename = "logistic_vs")
-#> modelblueprint saved: /tmp/RtmpgZ01rE/logistic_vs.tar.gz
+#> Warning in saveMB(mb, path = tempdir(), filename = "logistic_vs"): 'saveMB' is deprecated.
+#> Use 'savemb' instead.
+#> See help("Deprecated") and help("modelblueprint-deprecated").
+#> modelblueprint saved: /tmp/RtmpZrKOWE/logistic_vs.tar.gz
 mb2 <- loadMB(file.path(tempdir(), "logistic_vs.tar.gz"))
+#> Warning in loadMB(file.path(tempdir(), "logistic_vs.tar.gz")): 'loadMB' is deprecated.
+#> Use 'loadmb' instead.
+#> See help("Deprecated") and help("modelblueprint-deprecated").
 
 # Predictions are identical
 all.equal(predict(mb, mtcars), predict(mb2, mtcars))

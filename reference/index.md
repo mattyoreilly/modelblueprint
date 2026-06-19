@@ -10,9 +10,11 @@ pipeline functions, and deployment metadata.
   : modelblueprint: a model-agnostic container for ML model lifecycles
 - [`predict(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/predict.ModelBlueprint.md)
   : Generate predictions from a modelblueprint
-- [`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
+- [`savemb()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
+  [`saveMB()`](https://mattyoreilly.github.io/modelblueprint/reference/saveMB.md)
   : Save a modelblueprint to disk
-- [`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
+- [`loadmb()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
+  [`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadMB.md)
   : Load a modelblueprint from disk
 
 ## Data manipulation
@@ -72,6 +74,10 @@ predictions.
   : Partial dependence plot for any predict()-compatible model
 - [`pdp(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.ModelBlueprint.md)
   : Partial dependence plot for a modelblueprint
+- [`shap()`](https://mattyoreilly.github.io/modelblueprint/reference/shap.md)
+  : SHAP Feature Importance and Dependence Plots
+- [`shap(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/shap.modelblueprint.md)
+  : SHAP plots for a modelblueprint
 - [`sami()`](https://mattyoreilly.github.io/modelblueprint/reference/sami.md)
   : SAMI Double Lift Chart
 
