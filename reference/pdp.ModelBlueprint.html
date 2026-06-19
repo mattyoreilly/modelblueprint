@@ -9,7 +9,7 @@ data slots."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,6 +101,16 @@ or <code>"holdout"</code>. Default <code>"train"</code>.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A plotly object or data.table depending on <code>ret</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a></h2>
+
+
+<p>When <code>@x_original_inputs</code> is set, the working dataset is narrowed to those
+columns (plus the target and exposure) before scoring, which avoids copying
+unused columns on wide frames. This assumes <code>feat_eng_fun</code> only consumes the
+declared <code>@x_original_inputs</code>; if your feature engineering reads other
+columns, leave <code>@x_original_inputs</code> unset so the full frame is used.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
