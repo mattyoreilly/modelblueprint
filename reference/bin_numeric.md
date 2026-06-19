@@ -1,9 +1,10 @@
 # Bin a numeric vector and return labels aligned to original row order
 
-Thin wrapper that picks the binning strategy, applies it to the sorted,
-non-NA values, and remaps the labels onto the original positions of `x`
-via
-[`remap_sorted_bins()`](https://mattyoreilly.github.io/modelblueprint/reference/remap_sorted_bins.md).
+Picks the binning strategy and applies it to the sorted, non-NA values,
+then remaps the labels onto the original positions of `x`. The ordering
+of the non-NA values is computed once (via a single
+[`order()`](https://rdrr.io/r/base/order.html)) and reused for both the
+sort and the remap, avoiding a redundant second pass over the data.
 Returns both the aligned labels and the underlying
 [`cut()`](https://rdrr.io/r/base/cut.html) factor so callers that need
 the interval levels (e.g. to compute midpoints) can reuse them.

@@ -74,6 +74,7 @@ other features.</p>
 <span>  pre_process_fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="va">df</span>,</span>
 <span>  feat_eng_fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="va">df</span>,</span>
 <span>  post_process_fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">preds</span>, <span class="va">df_raw</span><span class="op">)</span> <span class="va">preds</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">2024L</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -150,6 +151,12 @@ function.</p></dd>
 <dt id="arg-post-process-fun">post_process_fun<a class="anchor" aria-label="anchor" href="#arg-post-process-fun"></a></dt>
 <dd><p><code>function(preds, df_raw) -&gt; numeric</code> applied to raw
 model predictions. Default is the identity function.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p><code>[integer(1)]</code> Seed for the PDP row sample, applied via
+<code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code> so the global RNG stream is left
+undisturbed. Default <code>2024L</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
