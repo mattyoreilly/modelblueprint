@@ -265,8 +265,19 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
     expect_true(file.exists(file.path(tmp, "test_h2o_mb.tar.gz")))
 
     # Shut down and wait long enough for the JVM to release the port
-    suppressMessages(h2o::h2o.shutdown(prompt = FALSE))
-    Sys.sleep(10L)
+    tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    )
+    Sys.sleep(12L)
+
+    # bundle::unbundle() for H2O calls h2o.import_mojo() internally, which
+    # requires an active cluster — it does not start H2O automatically.
+    suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
+    h2o::h2o.no_progress()
+    if (!h2o::h2o.clusterIsUp()) {
+      skip("H2O cluster failed to restart after shutdown — port conflict.")
+    }
 
     loaded <- NULL
     expect_no_error(
@@ -275,7 +286,7 @@ describe("saveMB / loadMB — H2O model (h2o.glm)", {
       ))
     )
     expect_true(S7_inherits(loaded, modelblueprint))
-    expect_no_error(predict(loaded, iris))
+    expect_no_error(suppressWarnings(suppressMessages(predict(loaded, iris))))
     expect_identical(loaded@y_name, mb@y_name)
     expect_identical(loaded@x_names, mb@x_names)
     expect_identical(loaded@model_display_name, mb@model_display_name)
@@ -954,5 +965,327 @@ describe("resolve_exposure", {
       y_name = "mpg"
     )
     expect_equal(modelblueprint:::resolve_exposure(mb, mtcars), "vec_of_ones")
+  })
+})
+
+
+# =============================================================================
+# saveMB / loadMB — bundle round-trip helpers
+# =============================================================================
+
+# Shared assertion: save mb to a temp dir, load it back, check predictions
+# match the originals (within tolerance) and metadata is intact.
+expect_bundle_roundtrip <- function(mb, newdata, tolerance = 1e-5) {
+  orig_preds <- predict(mb, newdata)
+  tmp        <- withr::local_tempdir()
+
+  saveMB(mb, path = tmp, filename = "test_mb")
+  expect_true(file.exists(file.path(tmp, "test_mb.tar.gz")))
+
+  loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+
+  expect_true(S7_inherits(loaded, modelblueprint))
+  expect_no_error(predict(loaded, newdata))
+
+  loaded_preds <- predict(loaded, newdata)
+  expect_equal(loaded_preds, orig_preds, tolerance = tolerance)
+
+  expect_identical(loaded@y_name,             mb@y_name)
+  expect_identical(loaded@model_display_name, mb@model_display_name)
+  expect_identical(loaded@x_original_inputs,  mb@x_original_inputs)
+}
+
+
+# =============================================================================
+# saveMB / loadMB — XGBoost
+# =============================================================================
+
+describe("saveMB / loadMB — XGBoost regression (bundle round-trip)", {
+  features <- c("wt", "hp", "cyl", "am", "gear", "carb")
+
+  make_xgb_reg_mb <- function() {
+    skip_if_not_installed("xgboost")
+    set.seed(42L)
+    # Use xgb.train (stable API) + feat_eng_fun so predict() receives the
+    # correct feature matrix regardless of what extra columns newdata has.
+    suppressWarnings(suppressMessages(
+      modelblueprint(
+        model = xgboost::xgb.train(
+          params  = list(objective = "reg:squarederror", eta = 0.3, nthread = 1L),
+          data    = xgboost::xgb.DMatrix(
+            as.matrix(mtcars[, features]), label = mtcars$mpg
+          ),
+          nrounds = 20L,
+          verbose = 0L
+        ),
+        feat_eng_fun       = function(df) as.matrix(df[, features]),
+        train              = mtcars,
+        test               = mtcars,
+        y_name             = "mpg",
+        x_original_inputs  = features,
+        model_display_name = "xgb_reg_test"
+      )
+    ))
+  }
+
+  it("saves without error", {
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb  <- make_xgb_reg_mb()
+    tmp <- withr::local_tempdir()
+    expect_no_error(saveMB(mb, path = tmp, filename = "test_mb"))
+  })
+
+  it("loaded object is a modelblueprint", {
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb  <- make_xgb_reg_mb()
+    tmp <- withr::local_tempdir()
+    saveMB(mb, path = tmp, filename = "test_mb")
+    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    expect_true(S7_inherits(loaded, modelblueprint))
+  })
+
+  it("predictions from loaded object match original (bundle fixes xgb pointer)", {
+    # Without bundle, xgb's internal C++ pointer becomes invalid after
+    # saveRDS/readRDS and predict() silently returns garbage or errors.
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb <- make_xgb_reg_mb()
+    expect_bundle_roundtrip(mb, mtcars)
+  })
+
+  it("key metadata slots round-trip correctly", {
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb  <- make_xgb_reg_mb()
+    tmp <- withr::local_tempdir()
+    saveMB(mb, path = tmp, filename = "test_mb")
+    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    expect_identical(loaded@y_name,             mb@y_name)
+    expect_identical(loaded@model_display_name, mb@model_display_name)
+    expect_identical(loaded@x_original_inputs,  mb@x_original_inputs)
+    expect_equal(dim(loaded@train), dim(mb@train))
+    expect_equal(dim(loaded@test),  dim(mb@test))
+  })
+})
+
+
+describe("saveMB / loadMB — XGBoost classification (bundle round-trip)", {
+  features <- c("wt", "hp", "cyl", "am", "gear", "carb")
+
+  make_xgb_cls_mb <- function() {
+    skip_if_not_installed("xgboost")
+    set.seed(42L)
+    suppressWarnings(suppressMessages(
+      modelblueprint(
+        model = xgboost::xgb.train(
+          params  = list(objective = "binary:logistic", eta = 0.3, nthread = 1L),
+          data    = xgboost::xgb.DMatrix(
+            as.matrix(mtcars[, features]), label = mtcars$vs
+          ),
+          nrounds = 20L,
+          verbose = 0L
+        ),
+        feat_eng_fun       = function(df) as.matrix(df[, features]),
+        train              = mtcars,
+        test               = mtcars,
+        y_name             = "vs",
+        x_original_inputs  = features,
+        model_display_name = "xgb_cls_test"
+      )
+    ))
+  }
+
+  it("predictions from loaded object match original", {
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb <- make_xgb_cls_mb()
+    expect_bundle_roundtrip(mb, mtcars)
+  })
+
+  it("predictions are in [0, 1] (probabilities)", {
+    skip_on_cran()
+    skip_if_not_installed("xgboost")
+    mb  <- make_xgb_cls_mb()
+    tmp <- withr::local_tempdir()
+    saveMB(mb, path = tmp, filename = "test_mb")
+    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    preds  <- predict(loaded, mtcars)
+    expect_true(all(preds >= 0 & preds <= 1))
+  })
+})
+
+
+# =============================================================================
+# saveMB / loadMB — H2O (bundle round-trip)
+# =============================================================================
+
+h2o_init_safe <- function() {
+  suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
+  h2o::h2o.no_progress()
+  # Skip the test if the cluster still isn't reachable (e.g. port still
+  # occupied from a previous session that is still shutting down).
+  if (!h2o::h2o.clusterIsUp()) {
+    skip("H2O cluster failed to start — likely a port conflict from a prior session.")
+  }
+}
+
+describe("saveMB / loadMB — H2O GLM (bundle round-trip)", {
+  it("saves, shuts down H2O cluster, reloads and predicts correctly", {
+    skip_on_cran()
+    skip_if_not_installed("h2o")
+    skip_if_not_installed("arrow")
+
+    h2o_init_safe()
+
+    hf        <- h2o::as.h2o(iris)
+    h2o_model <- h2o::h2o.glm(
+      x = c("Sepal.Width", "Petal.Length"),
+      y = "Sepal.Length",
+      training_frame = hf,
+      family = "gaussian",
+      seed   = 42L
+    )
+    orig_preds <- as.numeric(
+      as.data.frame(h2o::h2o.predict(h2o_model, h2o::as.h2o(iris)))[[1L]]
+    )
+
+    mb <- modelblueprint(
+      model              = h2o_model,
+      train              = iris,
+      test               = iris,
+      y_name             = "Sepal.Length",
+      x_original_inputs  = c("Sepal.Width", "Petal.Length"),
+      model_display_name = "h2o_glm_bundle_test"
+    )
+    tmp <- withr::local_tempdir()
+
+    expect_no_error(saveMB(mb, path = tmp, filename = "test_h2o_mb"))
+    expect_true(file.exists(file.path(tmp, "test_h2o_mb.tar.gz")))
+
+    # Fully shut down the cluster — bundle must carry everything needed to
+    # restore the model without the original Java process.
+    tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    )
+    Sys.sleep(12L)
+
+    # bundle::unbundle() for H2O needs an active cluster to import the MOJO.
+    h2o_init_safe()
+
+    loaded <- NULL
+    expect_no_error(
+      suppressWarnings(suppressMessages(
+        loaded <- loadMB(file.path(tmp, "test_h2o_mb.tar.gz"))
+      ))
+    )
+    expect_true(S7_inherits(loaded, modelblueprint))
+
+    loaded_preds <- suppressWarnings(suppressMessages(predict(loaded, iris)))
+    expect_equal(loaded_preds, orig_preds, tolerance = 1e-5)
+
+    expect_identical(loaded@y_name,             mb@y_name)
+    expect_identical(loaded@model_display_name, mb@model_display_name)
+    expect_equal(dim(loaded@train), dim(mb@train))
+
+    withr::defer(tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    ))
+  })
+
+  it("H2O GBM saves and reloads correctly", {
+    skip_on_cran()
+    skip_if_not_installed("h2o")
+    skip_if_not_installed("arrow")
+
+    h2o_init_safe()
+
+    hf      <- h2o::as.h2o(mtcars)
+    h2o_gbm <- h2o::h2o.gbm(
+      x              = c("wt", "hp", "cyl"),
+      y              = "mpg",
+      training_frame = hf,
+      ntrees         = 10L,
+      seed           = 42L
+    )
+    mb <- modelblueprint(
+      model              = h2o_gbm,
+      train              = mtcars,
+      y_name             = "mpg",
+      x_original_inputs  = c("wt", "hp", "cyl"),
+      model_display_name = "h2o_gbm_bundle_test"
+    )
+
+    # Get reference preds directly via H2O before saving
+    orig_preds <- as.numeric(
+      as.data.frame(h2o::h2o.predict(h2o_gbm, h2o::as.h2o(mtcars)))[[1L]]
+    )
+    tmp <- withr::local_tempdir()
+    saveMB(mb, path = tmp, filename = "test_mb")
+    tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    )
+    Sys.sleep(12L)
+
+    # bundle::unbundle() for H2O needs an active cluster to import the MOJO.
+    h2o_init_safe()
+
+    loaded <- suppressWarnings(suppressMessages(
+      loadMB(file.path(tmp, "test_mb.tar.gz"))
+    ))
+    expect_true(S7_inherits(loaded, modelblueprint))
+
+    loaded_preds <- suppressWarnings(suppressMessages(predict(loaded, mtcars)))
+    expect_equal(loaded_preds, orig_preds, tolerance = 1e-5)
+
+    withr::defer(tryCatch(
+      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
+      error = function(e) NULL
+    ))
+  })
+})
+
+
+# =============================================================================
+# saveMB / loadMB — randomForest
+# =============================================================================
+
+describe("saveMB / loadMB — randomForest (bundle round-trip)", {
+  make_rf_mb <- function() {
+    skip_if_not_installed("randomForest")
+    set.seed(42L)
+    modelblueprint(
+      model = randomForest::randomForest(
+        mpg ~ wt + hp + cyl,
+        data = mtcars,
+        ntree = 50L
+      ),
+      train              = mtcars,
+      test               = mtcars,
+      y_name             = "mpg",
+      x_original_inputs  = c("wt", "hp", "cyl"),
+      model_display_name = "rf_test"
+    )
+  }
+
+  it("predictions from loaded object match original", {
+    skip_on_cran()
+    skip_if_not_installed("randomForest")
+    mb <- make_rf_mb()
+    expect_bundle_roundtrip(mb, mtcars)
+  })
+
+  it("loaded model class is preserved", {
+    skip_on_cran()
+    skip_if_not_installed("randomForest")
+    mb  <- make_rf_mb()
+    tmp <- withr::local_tempdir()
+    saveMB(mb, path = tmp, filename = "test_mb")
+    loaded <- loadMB(file.path(tmp, "test_mb.tar.gz"))
+    expect_true(inherits(loaded@model, "randomForest"))
   })
 })

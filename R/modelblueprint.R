@@ -396,36 +396,22 @@ loadMB <- function(path) {
 
 #' @keywords internal
 save_model_slot <- function(model, tmp) {
-  is_h2o <- inherits(
-    model,
-    c(
-      "H2OModel",
-      "H2OBinomialModel",
-      "H2ORegressionModel",
-      "H2OMultinomialModel",
-      "H2OAutoML"
-    )
+  bundled <- tryCatch(
+    bundle::bundle(model),
+    error = function(e) {
+      cli::cli_warn(c(
+        "bundle::bundle() failed for this model type; falling back to plain saveRDS().",
+        i = "Predictions may not survive serialisation for models with external references (H2O, XGBoost, etc.).",
+        x = conditionMessage(e)
+      ))
+      NULL
+    }
   )
-  if (is_h2o) {
-    check_package("h2o", "saving H2O models")
-    h2o::h2o.saveModel(model, path = tmp, filename = "h2o_binary", force = TRUE)
-    tryCatch(
-      h2o::h2o.save_mojo(
-        model,
-        path = tmp,
-        filename = "h2o_mojo",
-        force = TRUE
-      ),
-      error = function(e) {
-        message(
-          "Note: MOJO export failed (model type may not support MOJO): ",
-          conditionMessage(e)
-        )
-      }
-    )
-  }
-  # Always save the R-side object — needed for class detection on load
-  saveRDS(model, file = file.path(tmp, "r_model.rds"), compress = FALSE)
+  saveRDS(
+    if (is.null(bundled)) model else bundled,
+    file     = file.path(tmp, "r_model.rds"),
+    compress = FALSE
+  )
 }
 
 #' @keywords internal
@@ -458,47 +444,8 @@ load_model_slot <- function(tmp) {
   if (!file.exists(r_model_path)) {
     cli::cli_abort("Archive is missing the model file ({.file r_model.rds}).")
   }
-  r_model <- readRDS(r_model_path)
-
-  is_h2o <- inherits(
-    r_model,
-    c(
-      "H2OModel",
-      "H2OBinomialModel",
-      "H2ORegressionModel",
-      "H2OMultinomialModel",
-      "H2OAutoML"
-    )
-  )
-  if (!is_h2o) {
-    return(r_model)
-  }
-
-  check_package("h2o", "loading H2O models")
-  # Suppress the version-age warning from h2o.clusterInfo() inside h2o.init().
-  # Try the default port first; fall back to an alternate port in case the JVM
-  # is still shutting down from a previous session and 54321 is in a broken state.
-  tryCatch(
-    suppressWarnings(suppressMessages(h2o::h2o.init(
-      port = 54321L,
-      startH2O = TRUE
-    ))),
-    error = function(e) {
-      tryCatch(
-        suppressWarnings(suppressMessages(h2o::h2o.init(
-          port = 54399L,
-          startH2O = TRUE
-        ))),
-        error = function(e2) {
-          cli::cli_abort(c(
-            "Could not start an H2O cluster to load the model.",
-            x = conditionMessage(e2)
-          ))
-        }
-      )
-    }
-  )
-  h2o::h2o.loadModel(path = file.path(tmp, "h2o_binary"))
+  obj <- readRDS(r_model_path)
+  if (inherits(obj, "bundle")) bundle::unbundle(obj) else obj
 }
 
 #' @keywords internal
@@ -782,6 +729,97 @@ pdp.modelblueprint <- function(
   }
 }
 
+
+# =============================================================================
+# shap.modelblueprint
+# =============================================================================
+
+#' SHAP plots for a modelblueprint
+#'
+#' Calls [shap()] using the modelblueprint's model, data, and pipeline slots.
+#'
+#' @param data        A `modelblueprint`.
+#' @param vars        `[character]` Features to compute SHAP for. Defaults to
+#'                    `data@x_original_inputs` when `NA`.
+#' @param set         `[character(1)]` Which dataset to use: `"train"`
+#'                    (default), `"test"`, or `"holdout"`.
+#' @param type        `[character(1)]` `"importance"` (default) or
+#'                    `"dependence"`. See [shap()] for details.
+#' @param nsim        `[integer(1)]` Monte Carlo permutations per row.
+#'                    Default `50L`.
+#' @param sample_size `[integer(1)]` Rows sampled for SHAP computation.
+#'                    Default `500L`.
+#' @param bins        `[integer(1)]` Number of bins for the dependence plot
+#'                    x-axis. Default `10L`.
+#' @param type_agg    `[character(1)]` Binning strategy: `"equal_exposure"`
+#'                    (default) or `"equal_range"`.
+#' @param ret         `[character(1)]` `"plot"` (default) or `"data"`.
+#' @param ...         Further arguments passed to [shap()].
+#'
+#' @return A plotly object, a named list of plotly objects, or a data.table
+#'   depending on `type` and `ret`.
+#'
+#' @method shap modelblueprint
+#' @export
+shap.modelblueprint <- function(
+  data,
+  vars        = NA,
+  set         = c("train", "test", "holdout"),
+  type        = c("importance", "dependence"),
+  nsim        = 50L,
+  sample_size = 500L,
+  bins        = 10L,
+  type_agg    = c("equal_exposure", "equal_range"),
+  ret         = c("plot", "data"),
+  ...
+) {
+  set      <- match.arg(set)
+  type     <- match.arg(type)
+  type_agg <- match.arg(type_agg)
+  ret      <- match.arg(ret)
+
+  df <- prop(data, set)
+  if (is.null(df)) {
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
+  }
+
+  vars_resolved <- if (length(vars) == 1L && is.na(vars)) {
+    x <- stats::na.omit(data@x_original_inputs)
+    if (length(x) == 0L) {
+      cli::cli_abort(
+        "{.arg vars} = NA requires {.arg @x_original_inputs} to be set on the modelblueprint."
+      )
+    }
+    x
+  } else {
+    vars
+  }
+
+  model_name <- data@model_display_name %||% "model"
+  exposure   <- resolve_exposure(data, df)
+
+  shap(
+    data             = as.data.frame(df),
+    model            = data@model,
+    vars             = vars_resolved,
+    exposure         = exposure,
+    type             = type,
+    nsim             = nsim,
+    sample_size      = sample_size,
+    bins             = bins,
+    type_agg         = type_agg,
+    ret              = ret,
+    model_name       = model_name,
+    pre_process_fun  = data@pre_process_fun,
+    feat_eng_fun     = data@feat_eng_fun,
+    post_process_fun = data@post_process_fun,
+    ...
+  )
+}
+
+
 # =============================================================================
 # Internal helpers
 # =============================================================================
@@ -888,6 +926,12 @@ resolve_exposure <- function(object, df) {
     "gain",
     "modelblueprint::modelblueprint",
     gain.modelblueprint,
+    envir = ns
+  )
+  registerS3method(
+    "shap",
+    "modelblueprint::modelblueprint",
+    shap.modelblueprint,
     envir = ns
   )
   registerS3method("predict", "mb_seq", predict.mb_seq, envir = ns)
