@@ -289,7 +289,7 @@ describe("precomputed_preds — one_way.modelblueprint (predictions overlay)", {
 
 describe("mb_dashboard — H2O GLM large model", {
   # ── Skip guard ──────────────────────────────────────────────────────────────
-  skip_on_cran()   # JVM startup would exceed CRAN's 10-minute check limit
+  skip_on_cran() # JVM startup would exceed CRAN's 10-minute check limit
   skip_if_not_installed("shiny")
   skip_if_not_installed("bslib")
   skip_if_not_installed("plotly")
@@ -321,22 +321,27 @@ describe("mb_dashboard — H2O GLM large model", {
   # Data is generated inline — no ::: access to internal package helpers.
   # Small n so JVM startup is the dominant cost, not data generation.
   set.seed(42L)
-  n_fix    <- 2000L
+  n_fix <- 5000L
   features <- c("x1", "x2", "x3", "x4", "x5")
   raw <- data.frame(
-    x1       = rnorm(n_fix),
-    x2       = rnorm(n_fix),
-    x3       = runif(n_fix, 0, 10),
-    x4       = sample(c(0L, 1L, 2L), n_fix, replace = TRUE),
-    x5       = rnorm(n_fix, mean = 5, sd = 2),
+    x1 = rnorm(n_fix),
+    x2 = rnorm(n_fix),
+    x3 = runif(n_fix, 0, 10),
+    x4 = sample(c(0L, 1L, 2L), n_fix, replace = TRUE),
+    x5 = rnorm(n_fix, mean = 5, sd = 2),
     exposure = pmax(0.1, rgamma(n_fix, shape = 2, rate = 1))
   )
-  raw$y <- 2 * raw$x1 - 1.5 * raw$x2 + 0.5 * raw$x3 +
-    raw$x4 * 0.8 + raw$x5 * 0.3 + rnorm(n_fix, sd = 1.5)
+  raw$y <- 2 *
+    raw$x1 -
+    1.5 * raw$x2 +
+    0.5 * raw$x3 +
+    raw$x4 * 0.8 +
+    raw$x5 * 0.3 +
+    rnorm(n_fix, sd = 1.5)
   d <- list(
-    train   = raw[seq_len(1400L),       ],
-    test    = raw[1401L:1700L,          ],
-    holdout = raw[1701L:n_fix,          ]
+    train = raw[seq_len(140000L), ],
+    test = raw[140001L:170000L, ],
+    holdout = raw[170001L:n_fix, ]
   )
 
   hf_train <- h2o::as.h2o(d$train)
@@ -386,30 +391,48 @@ describe("mb_dashboard — H2O GLM large model", {
   })
 
   it("gain: returns a plotly object and a gini in [0, 1]", {
-    gini <- gain(mb_large, set = "train", precomputed_preds = preds_train, ret = "gini")
+    gini <- gain(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "gini"
+    )
     expect_true(is.numeric(unlist(gini)))
     expect_true(all(unlist(gini) >= 0 & unlist(gini) <= 1))
   })
 
   it("pred_vs_obs: returns a data.table with obs_mean and pred_mean columns", {
-    d_out <- pred_vs_obs(mb_large, set = "train",
-                         precomputed_preds = preds_train, ret = "data")
+    d_out <- pred_vs_obs(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
     expect_true(data.table::is.data.table(d_out))
     expect_true(all(c("obs_mean", "pred_mean", "exposure") %in% names(d_out)))
     expect_false(anyNA(d_out$pred_mean))
   })
 
   it("residuals_grouped: returns a data.table with no NA residuals", {
-    d_out <- residuals_grouped(mb_large, set = "train",
-                               precomputed_preds = preds_train, ret = "data")
+    d_out <- residuals_grouped(
+      mb_large,
+      set = "train",
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
     expect_true(data.table::is.data.table(d_out))
     expect_false(anyNA(d_out))
   })
 
   it("one_way with predictions overlay: prediction column present and numeric", {
-    d_out <- one_way(mb_large, var = "x1", set = "train",
-                     predictions = TRUE, precomputed_preds = preds_train,
-                     ret = "data")
+    d_out <- one_way(
+      mb_large,
+      var = "x1",
+      set = "train",
+      predictions = TRUE,
+      precomputed_preds = preds_train,
+      ret = "data"
+    )
     pred_col <- grep("^\\.pred_", names(d_out), value = TRUE)
     expect_length(pred_col, 1L)
     expect_true(is.numeric(d_out[[pred_col]]))

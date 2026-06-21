@@ -244,3 +244,118 @@ describe("unitise — edge cases", {
     expect_true(is.numeric(result$x))
   })
 })
+
+
+# =============================================================================
+# save_plots
+# =============================================================================
+
+make_widget <- function() {
+  plotly::plot_ly(
+    mtcars,
+    x = ~mpg,
+    y = ~wt,
+    type = "scatter",
+    mode = "markers"
+  )
+}
+
+describe("save_plots — input handling", {
+  it("saves a single widget (regression: previously only lists worked)", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "single.html")
+    save_plots(make_widget(), file, selfcontained = FALSE)
+    expect_true(file.exists(file))
+    # The widget must actually render — the old single-object path mangled it.
+    html <- paste(readLines(file, warn = FALSE), collapse = "")
+    expect_match(html, "plotly")
+  })
+
+  it("saves a list of widgets", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "many.html")
+    save_plots(list(make_widget(), make_widget()), file, selfcontained = FALSE)
+    expect_true(file.exists(file))
+  })
+
+  it("accepts an existing shiny.tag.list", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "tags.html")
+    tags <- htmltools::tagList(make_widget())
+    save_plots(tags, file, selfcontained = FALSE)
+    expect_true(file.exists(file))
+  })
+
+  it("returns the file path invisibly", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "ret.html")
+    expect_invisible(save_plots(make_widget(), file, selfcontained = FALSE))
+    expect_identical(
+      save_plots(make_widget(), file, selfcontained = FALSE),
+      file
+    )
+  })
+})
+
+describe("save_plots — validation", {
+  it("errors when file is not a single string", {
+    expect_error(
+      save_plots(list(), c("a.html", "b.html")),
+      "single file path",
+      fixed = TRUE
+    )
+  })
+
+  it("errors on an empty list", {
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    expect_error(
+      save_plots(list(), file.path(dir, "x.html")),
+      "non-empty list",
+      fixed = TRUE
+    )
+  })
+
+  it("errors (and names the element) when an element is not a widget/tag", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    expect_error(
+      save_plots(list(make_widget(), 42), file.path(dir, "x.html")),
+      "must be an htmlwidget"
+    )
+  })
+})
+
+describe("save_plots — dependency files", {
+  it("writes the libdir next to the file, not the working directory", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "deps.html")
+    save_plots(make_widget(), file, selfcontained = FALSE)
+    expect_true(dir.exists(file.path(dir, "deps_files")))
+  })
+})
+
+describe("save_plots — self-contained", {
+  it("embeds dependencies and removes the libdir", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    skip_if_not_installed("rmarkdown")
+    skip_if_not(rmarkdown::pandoc_available(), "Pandoc not available")
+    dir <- withr::local_tempdir()
+    file <- file.path(dir, "sc.html")
+    save_plots(make_widget(), file, selfcontained = TRUE)
+    expect_true(file.exists(file))
+    expect_false(dir.exists(file.path(dir, "sc_files")))
+  })
+})

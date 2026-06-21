@@ -45,8 +45,8 @@ pred_vs_obs(mb)
 residuals_grouped(mb)
 
 # Save and restore
-saveMB(mb, path = "models/", filename = "logistic_vs")
-mb2 <- loadMB("models/logistic_vs.tar.gz")
+savemb(mb, path = "models/", filename = "logistic_vs")
+mb2 <- loadmb("models/logistic_vs.tar.gz")
 ```
 
 ## Key features

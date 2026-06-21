@@ -51,3 +51,122 @@ unitise <- function(data, var, min_val, max_val) {
   }
   out
 }
+
+#' Save plots or HTML widgets to a single HTML file
+#'
+#' Saves a plotly/htmlwidget object, a list of them, or an HTML tag list to an
+#' HTML file. The output can optionally be made self-contained by embedding all
+#' dependencies inline with Pandoc.
+#'
+#' @param plots What to save. One of:
+#'   * a single `htmlwidget` (e.g. a `plotly` object) or HTML tag,
+#'   * a list of `htmlwidget` objects / tags,
+#'   * an existing `shiny.tag.list`.
+#'
+#'   A single object is wrapped into a length-1 list; anything that is not
+#'   already a `shiny.tag.list` is coerced via [htmltools::tagList()].
+#' @param file `[character(1)]` Path to the output HTML file.
+#' @param selfcontained `[logical(1)]` Embed all dependencies into a single
+#'   self-contained file? Requires Pandoc. Default `TRUE`.
+#' @param libdir `[character(1) | NULL]` Directory for the HTML dependency
+#'   files. When `NULL`, it is derived from `file` by appending `"_files"`
+#'   (keeping `file`'s directory). Removed after embedding when
+#'   `selfcontained = TRUE`.
+#'
+#' @return The path to the generated HTML file, invisibly.
+#'
+#' @examplesIf interactive()
+#' p1 <- plotly::plot_ly(mtcars, x = ~mpg, y = ~wt)
+#' p2 <- plotly::plot_ly(mtcars, x = ~mpg, y = ~hp)
+#'
+#' # a single widget ...
+#' save_plots(p1, tempfile(fileext = ".html"), selfcontained = FALSE)
+#' # ... or a list of them
+#' save_plots(list(p1, p2), tempfile(fileext = ".html"), selfcontained = FALSE)
+#'
+#' @export
+save_plots <- function(plots, file, selfcontained = TRUE, libdir = NULL) {
+  if (!is.character(file) || length(file) != 1L || is.na(file)) {
+    cli::cli_abort("{.arg file} must be a single file path.")
+  }
+  check_package("htmltools", "saving plots to HTML")
+
+  # Accept a single widget/tag, a list of them, or an existing tag list.
+  # A single widget *is* a list internally, so it must be wrapped before
+  # tagList() rather than iterated over.
+  if (!inherits(plots, "shiny.tag.list")) {
+    if (inherits(plots, c("htmlwidget", "shiny.tag"))) {
+      plots <- list(plots)
+    }
+    if (!is.list(plots) || length(plots) == 0L) {
+      cli::cli_abort(
+        "{.arg plots} must be an htmlwidget/tag, or a non-empty list of them."
+      )
+    }
+    is_ok <- vapply(
+      plots,
+      function(p) inherits(p, c("htmlwidget", "shiny.tag", "shiny.tag.list")),
+      logical(1L)
+    )
+    if (!all(is_ok)) {
+      cli::cli_abort(c(
+        "Every element of {.arg plots} must be an htmlwidget or HTML tag.",
+        x = "Element{?s} {.val {which(!is_ok)}} {?is/are} not."
+      ))
+    }
+    plots <- htmltools::tagList(plots)
+  }
+
+  # Keep dependency files next to `file` (basename() alone would drop the
+  # directory and write them to the working directory instead).
+  if (is.null(libdir)) {
+    libdir <- paste0(tools::file_path_sans_ext(file), "_files")
+  }
+
+  htmltools::save_html(plots, file = file, libdir = libdir)
+
+  if (selfcontained) {
+    check_package("rmarkdown", "creating a self-contained HTML file")
+    if (!rmarkdown::pandoc_available()) {
+      cli::cli_abort(c(
+        "Saving a self-contained HTML file requires Pandoc.",
+        i = "Install Pandoc from {.url https://pandoc.org/installing.html}.",
+        i = "Or set {.code selfcontained = FALSE} to skip embedding."
+      ))
+    }
+    pandoc_self_contained(file)
+    unlink(libdir, recursive = TRUE)
+  }
+
+  invisible(file)
+}
+
+#' Embed a HTML file's external dependencies inline via Pandoc
+#'
+#' Replaces the htmlwidgets internal `pandoc_self_contained_html()` (avoids a
+#' `:::` call) using the same underlying Pandoc invocation through the exported
+#' [rmarkdown::pandoc_convert()]. Pandoc cannot read and write the same file in
+#' one pass, so the embedded output is written to a temp file and copied back.
+#'
+#' @param file `[character(1)]` HTML file to rewrite in place.
+#' @keywords internal
+#' @noRd
+pandoc_self_contained <- function(file) {
+  # `--self-contained` was deprecated in Pandoc 2.19 in favour of
+  # `--embed-resources --standalone`; pick whichever the available Pandoc has.
+  opts <- if (rmarkdown::pandoc_available("2.19")) {
+    c("--standalone", "--embed-resources")
+  } else {
+    "--self-contained"
+  }
+  tmp <- tempfile(fileext = ".html")
+  on.exit(unlink(tmp), add = TRUE)
+  rmarkdown::pandoc_convert(
+    input   = normalizePath(file, mustWork = TRUE),
+    to      = "html",
+    output  = tmp,
+    options = opts
+  )
+  file.copy(tmp, file, overwrite = TRUE)
+  invisible(file)
+}
