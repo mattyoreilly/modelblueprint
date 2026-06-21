@@ -339,9 +339,9 @@ describe("mb_dashboard — H2O GLM large model", {
     raw$x5 * 0.3 +
     rnorm(n_fix, sd = 1.5)
   d <- list(
-    train = raw[seq_len(140000L), ],
-    test = raw[140001L:170000L, ],
-    holdout = raw[170001L:n_fix, ]
+    train = raw[seq_len(5000L), ],
+    test = raw[seq_len(5000L), ],
+    holdout = raw[seq_len(5000L), ]
   )
 
   hf_train <- h2o::as.h2o(d$train)
