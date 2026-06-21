@@ -1079,6 +1079,62 @@ describe("one_way — bare name arguments (NSE)", {
   })
 })
 
+describe("one_way — bare name arguments (NSE), additional coverage", {
+  df <- make_df()  # cols: x_num, x_cat, x_int, obs, obs2, expo, grp
+
+  it("bare exposure produces same result as string exposure", {
+    d_bare <- one_way(df, "x_num", "obs", exposure = expo, ret = "data")
+    d_str  <- one_way(df, "x_num", "obs", exposure = "expo", ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("fully positional bare names (var, obs, exposure) match strings", {
+    d_bare <- one_way(df, x_num, obs, expo, ret = "data")
+    d_str  <- one_way(df, "x_num", "obs", "expo", ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("bare categorical var behaves like a string", {
+    d_bare <- one_way(df, x_cat, "obs", exposure = "expo", ret = "data")
+    d_str  <- one_way(df, var = "x_cat", obs = "obs", exposure = "expo",
+                      ret = "data")
+    expect_equal(d_bare, d_str)
+  })
+
+  it("mixed bare var + string obs works", {
+    d_mixed <- one_way(df, x_num, obs = "obs", exposure = "expo", ret = "data")
+    d_str   <- one_way(df, var = "x_num", obs = "obs", exposure = "expo",
+                       ret = "data")
+    expect_equal(d_mixed, d_str)
+  })
+
+  it("c(bare, string) obs resolves both elements", {
+    d_mixed <- one_way(df, "x_num", obs = c(obs, "obs2"), exposure = "expo",
+                       ret = "data")
+    d_str   <- one_way(df, "x_num", obs = c("obs", "obs2"), exposure = "expo",
+                       ret = "data")
+    expect_equal(d_mixed, d_str)
+  })
+
+  it("programmatic obs vector held in a variable works", {
+    cols   <- c("obs", "obs2")
+    d_prog <- one_way(df, "x_num", obs = cols, exposure = "expo", ret = "data")
+    d_str  <- one_way(df, "x_num", obs = c("obs", "obs2"), exposure = "expo",
+                      ret = "data")
+    expect_equal(d_prog, d_str)
+  })
+
+  it("a bare name matching a column uses the column, not a same-named local", {
+    grp <- "x_cat" # local variable shadowing the `grp` column name
+    d_bare <- one_way(df, "x_num", "obs", exposure = "expo", split = grp,
+                      ret = "data")
+    d_col  <- one_way(df, "x_num", "obs", exposure = "expo", split = "grp",
+                      ret = "data")
+    # The column `grp` must win over the local `grp <- "x_cat"`.
+    expect_equal(d_bare, d_col)
+  })
+})
+
 # =============================================================================
 # one_way — date / datetime handling
 # =============================================================================
