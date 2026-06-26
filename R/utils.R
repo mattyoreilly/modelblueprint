@@ -2,9 +2,11 @@
 # Utilities
 # =============================================================================
 
-# Null coalescing — returns b when a is NA or NULL
-`%||%` <- function(a, b) {
-  if (is.null(a) || (length(a) == 1L && is.na(a))) b else a
+# `%||%` (NULL coalescing) is imported from rlang — see ModelBlueprint-package.R.
+# This companion handles the common pattern of optional S7 character properties
+# that use NA_character_ as their "not set" sentinel rather than NULL.
+`%|NA|%` <- function(a, b) {
+  if (is.null(a) || (length(a) == 1L && (is.na(a) || !nzchar(a)))) b else a
 }
 
 #' unitise a numeric variable to the range 0 to 1

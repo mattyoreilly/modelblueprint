@@ -7,7 +7,6 @@
 # gain() — S3 generic
 # =============================================================================
 
-utils::globalVariables("perfect_model")
 
 #' Cumulative Gains Chart
 #'

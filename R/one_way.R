@@ -2,8 +2,6 @@
 # one_way.R
 # =============================================================================
 
-# Suppress R CMD check NOTEs for data.table's non-standard evaluation.
-utils::globalVariables(c(".var", ".w", ".split", ".x_bin", ".expo", ".", "exposure"))
 
 #' Create a one-way analysis plot
 #'

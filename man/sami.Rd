@@ -68,9 +68,14 @@ A named list of plotly objects or a data.table depending on \code{ret}.
 A named list of plotly objects or a data.table.
 }
 \description{
+SAMI stands for \strong{Score Analysis for Model Improvement} — an actuarial
+diagnostic technique for comparing two competing models.
+}
+\details{
 For each pair of competing predictions, bins the ratio of one prediction to
 another and plots the observed mean alongside both model means per bin.
-Useful for diagnosing where two models systematically disagree.
+Useful for diagnosing where two models systematically disagree and which
+model better tracks the observed response across segments of the data.
 }
 \examples{
 \dontrun{

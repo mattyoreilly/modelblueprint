@@ -56,8 +56,8 @@ A \code{modelblueprint} object.
 }
 \description{
 A family of constructor functions that return ready-to-use
-\code{modelblueprint} objects for common R model types. All examples use the
-built-in \code{mtcars} dataset with a reproducible 75/25 train/test split.
+\code{modelblueprint} objects for common R model types. All examples use a
+small synthetic dataset with a reproducible 75/25 train/test split.
 }
 \details{
 \strong{Regression target:} \code{mpg} (continuous)
@@ -75,11 +75,11 @@ numeric vector of P(class = 1).
 }
 \examples{
 mb <- mb_lm_regression()
-predict(mb, mtcars)
+predict(mb, mb@test)
 one_way(mb, var = "wt")
 
 mb_cls <- mb_glm_binomial()
-predict(mb_cls, mtcars)   # returns probabilities in 0 to 1
+predict(mb_cls, mb_cls@test)   # returns probabilities in 0 to 1
 
 }
 \concept{Example modelblueprints}

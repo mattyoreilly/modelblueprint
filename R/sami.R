@@ -4,8 +4,6 @@
 # observed loss to diagnose where two models disagree.
 # =============================================================================
 
-utils::globalVariables(c("ratio_col"))
-
 
 # =============================================================================
 # sami() — S3 generic
@@ -13,9 +11,13 @@ utils::globalVariables(c("ratio_col"))
 
 #' SAMI Double Lift Chart
 #'
+#' SAMI stands for **Score Analysis for Model Improvement** — an actuarial
+#' diagnostic technique for comparing two competing models.
+#'
 #' For each pair of competing predictions, bins the ratio of one prediction to
 #' another and plots the observed mean alongside both model means per bin.
-#' Useful for diagnosing where two models systematically disagree.
+#' Useful for diagnosing where two models systematically disagree and which
+#' model better tracks the observed response across segments of the data.
 #'
 #' @param data A `data.frame`, `data.table`, or a list of `modelblueprint`
 #'             objects.

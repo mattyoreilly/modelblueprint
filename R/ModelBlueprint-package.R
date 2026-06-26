@@ -12,6 +12,7 @@
 #' @import RColorBrewer
 
 # Selective imports
+#' @importFrom rlang %||%
 #' @importFrom dplyr filter mutate left_join
 #' @importFrom stats var sd predict median
 #' @importFrom stats quantile binomial gaussian poisson

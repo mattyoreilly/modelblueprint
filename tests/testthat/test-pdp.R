@@ -1231,11 +1231,7 @@ describe("pdp — H2O model compatibility", {
   })
 
   # ── Teardown — shut H2O down cleanly after all H2O tests ────────────────────
-  # withr::defer() runs after the describe() block regardless of test outcome
-  withr::defer({
-    tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    )
-  })
+  # withr::defer() runs after the describe() block regardless of test outcome.
+  # h2o_shutdown_safe() polls until the JVM has released the port.
+  withr::defer(h2o_shutdown_safe())
 })

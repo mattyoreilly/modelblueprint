@@ -4,6 +4,60 @@
 # the enriched dataset through an aggregation function that can add further
 # derived columns (e.g. freq * sev, PD * EAD * LGD).
 
+
+# =============================================================================
+# mb_layer — S7 class
+# =============================================================================
+
+# Internal S7 class — constructed exclusively through mb_layer() below.
+# Splitting the class definition (new_mb_layer_) from the user-facing
+# constructor (mb_layer) follows the same pattern as modelblueprint /
+# new_class so that validation logic with context-sensitive defaults lives in
+# the constructor while structural invariants are enforced by the validator.
+new_mb_layer_ <- new_class(
+  "mb_layer",
+  properties = list(
+    blueprints   = new_property(class = class_list),
+    aggregate_fn = new_property(class = class_function, default = function(df) df),
+    yhat_name    = new_property(class = class_character, default = NA_character_)
+  ),
+  validator = function(self) {
+    errors <- character()
+
+    if (length(self@blueprints) == 0L) {
+      # Early return: further checks would crash on zero-length input.
+      return("@blueprints must be a non-empty list of modelblueprint objects.")
+    }
+
+    is_mb <- vapply(
+      self@blueprints,
+      function(b) inherits(b, "modelblueprint::modelblueprint"),
+      logical(1L)
+    )
+    if (!all(is_mb)) {
+      errors <- c(errors, "All elements of @blueprints must be modelblueprint objects.")
+    }
+
+    if (all(is_mb)) {
+      has_yhat <- vapply(
+        self@blueprints,
+        function(b) !is.na(b@yhat_name) && nzchar(b@yhat_name),
+        logical(1L)
+      )
+      if (!all(has_yhat)) {
+        errors <- c(errors, "All blueprints must have @yhat_name set.")
+      }
+    }
+
+    if (is.na(self@yhat_name) || !nzchar(self@yhat_name)) {
+      errors <- c(errors, "@yhat_name must be a non-empty string.")
+    }
+
+    if (length(errors)) paste(errors, collapse = "\n")
+  }
+)
+
+
 #' Construct a single layer for use in an [mb_seq()]
 #'
 #' A layer holds one or more `modelblueprint` objects that run in parallel.
@@ -49,7 +103,11 @@ mb_layer <- function(blueprints, aggregate_fn = NULL, yhat_name = NULL) {
     cli::cli_abort("{.arg blueprints} must be a non-empty list of modelblueprint objects.")
   }
 
-  is_mb <- vapply(blueprints, function(b) inherits(b, "modelblueprint::modelblueprint"), logical(1L))
+  is_mb <- vapply(
+    blueprints,
+    function(b) inherits(b, "modelblueprint::modelblueprint"),
+    logical(1L)
+  )
   if (!all(is_mb)) {
     cli::cli_abort("All elements of {.arg blueprints} must be modelblueprint objects.")
   }
@@ -71,28 +129,49 @@ mb_layer <- function(blueprints, aggregate_fn = NULL, yhat_name = NULL) {
   # Check together so the user sees both errors at once.
   if (length(blueprints) > 1L) {
     errors <- character()
-    if (is.null(aggregate_fn))    errors <- c(errors, "{.arg aggregate_fn} is required when {.arg blueprints} has more than one element.")
-    if (is.null(yhat_name)) errors <- c(errors, "{.arg yhat_name} is required when {.arg blueprints} has more than one element.")
+    if (is.null(aggregate_fn)) {
+      errors <- c(errors, "{.arg aggregate_fn} is required when {.arg blueprints} has more than one element.")
+    }
+    if (is.null(yhat_name)) {
+      errors <- c(errors, "{.arg yhat_name} is required when {.arg blueprints} has more than one element.")
+    }
     if (length(errors)) cli::cli_abort(errors)
   }
 
-  if (is.null(aggregate_fn))    aggregate_fn    <- function(df) df
-  if (is.null(yhat_name)) yhat_name <- blueprints[[1L]]@yhat_name
+  if (is.null(aggregate_fn)) aggregate_fn <- function(df) df
+  if (is.null(yhat_name))    yhat_name    <- blueprints[[1L]]@yhat_name
 
-  structure(
-    list(blueprints = blueprints, aggregate_fn = aggregate_fn, yhat_name = yhat_name),
-    class = "mb_layer"
+  new_mb_layer_(
+    blueprints   = blueprints,
+    aggregate_fn = aggregate_fn,
+    yhat_name    = yhat_name
   )
 }
 
 
-#' @export
-print.mb_layer <- function(x, ...) {
-  cli::cli_text("<mb_layer>  output: {.val {x$yhat_name}}")
-  for (mb in x$blueprints) {
-    nm <- mb@model_display_name %||% paste(class(mb@model)[[1L]], "model")
+# -----------------------------------------------------------------------------
+# print — dual S3 + S7 dispatch (same pattern as modelblueprint)
+# -----------------------------------------------------------------------------
+
+.print_mb_layer <- function(x) {
+  cli::cli_text("<mb_layer>  output: {.val {x@yhat_name}}")
+  for (mb in x@blueprints) {
+    nm <- mb@model_display_name %|NA|% paste(class(mb@model)[[1L]], "model")
     cli::cli_text("  + {nm}  ->  {mb@yhat_name}")
   }
+}
+
+# S3 path: standard R dispatch (installed package, library(), etc.)
+#' @keywords internal
+#' @exportS3Method print mb_layer
+print.mb_layer <- function(x, ...) {
+  .print_mb_layer(x)
+  invisible(x)
+}
+
+# S7 path: pkgload::load_all() routes through print.S7_object -> S7_dispatch()
+method(print, new_mb_layer_) <- function(x, ...) {
+  .print_mb_layer(x)
   invisible(x)
 }
 
@@ -118,7 +197,11 @@ new_mb_seq_ <- new_class(
     if (length(self@layers) == 0L) {
       errors <- c(errors, "@layers must contain at least one mb_layer.")
     } else {
-      is_layer <- vapply(self@layers, function(l) inherits(l, "mb_layer"), logical(1L))
+      is_layer <- vapply(
+        self@layers,
+        function(l) inherits(l, "modelblueprint::mb_layer"),
+        logical(1L)
+      )
       if (!all(is_layer)) {
         errors <- c(errors, "All elements of @layers must be mb_layer objects created by mb_layer().")
       }
@@ -203,7 +286,11 @@ mb_seq <- function(...,
                    model_display_name = NA_character_) {
   layers <- list(...)
 
-  is_layer <- vapply(layers, function(l) inherits(l, "mb_layer"), logical(1L))
+  is_layer <- vapply(
+    layers,
+    function(l) inherits(l, "modelblueprint::mb_layer"),
+    logical(1L)
+  )
   if (!all(is_layer)) {
     cli::cli_abort(
       "All positional arguments to {.fn mb_seq} must be {.cls mb_layer} objects.",
@@ -243,16 +330,15 @@ validate_seq_columns <- function(layers, data, y_name, expo_name) {
   for (i in seq_along(layers)) {
     lyr <- layers[[i]]
 
-    for (mb in lyr$blueprints) {
-      nm      <- mb@model_display_name %||% paste(class(mb@model)[[1L]], "model")
+    for (mb in lyr@blueprints) {
+      nm      <- mb@model_display_name %|NA|% paste(class(mb@model)[[1L]], "model")
       missing <- setdiff(stats::na.omit(mb@x_original_inputs), available)
 
       if (length(missing) > 0L) {
         cli::cli_abort(c(
           "Layer {i}, blueprint {.val {nm}}: required column{?s} not available.",
           x = "Missing: {.val {missing}}",
-          i = "If {?this column/these columns} come from an earlier layer, check that
-               the preceding layer's {.arg yhat_name} matches."
+          i = "If the missing column(s) come from an earlier layer, check that the preceding layer's {.arg yhat_name} matches."
         ))
       }
 
@@ -269,8 +355,8 @@ validate_seq_columns <- function(layers, data, y_name, expo_name) {
       }
     }
 
-    bp_yhats  <- vapply(lyr$blueprints, function(mb) mb@yhat_name, character(1L))
-    available <- union(available, c(bp_yhats, lyr$yhat_name))
+    bp_yhats  <- vapply(lyr@blueprints, function(mb) mb@yhat_name, character(1L))
+    available <- union(available, c(bp_yhats, lyr@yhat_name))
   }
 
   invisible(NULL)
@@ -303,14 +389,14 @@ predict.mb_seq <- function(object, newdata, return_all = FALSE, ...) {
   for (i in seq_along(object@layers)) {
     lyr <- object@layers[[i]]
 
-    for (mb in lyr$blueprints) {
+    for (mb in lyr@blueprints) {
       df[[mb@yhat_name]] <- predict(mb, df)
       pred_cols <- c(pred_cols, mb@yhat_name)
     }
 
     prev_cols <- names(df)
     df <- tryCatch(
-      lyr$aggregate_fn(df),
+      lyr@aggregate_fn(df),
       error = function(e) {
         cli::cli_abort(c("Layer {i} {.fn aggregate_fn} failed.", x = conditionMessage(e)))
       }
@@ -328,12 +414,12 @@ predict.mb_seq <- function(object, newdata, return_all = FALSE, ...) {
 
   if (return_all) return(df[pred_cols])
 
-  df[[object@layers[[length(object@layers)]]$yhat_name]]
+  df[[object@layers[[length(object@layers)]]@yhat_name]]
 }
 
 
 method(print, new_mb_seq_) <- function(x, ...) {
-  nm <- x@model_display_name %||% "mb_seq"
+  nm <- x@model_display_name %|NA|% "mb_seq"
   n  <- length(x@layers)
   cli::cli_text("<mb_seq>  {.val {nm}}  ({n} layer{?s})")
 
@@ -346,10 +432,10 @@ method(print, new_mb_seq_) <- function(x, ...) {
 
   for (i in seq_along(x@layers)) {
     lyr  <- x@layers[[i]]
-    n_bp <- length(lyr$blueprints)
-    cli::cli_text("  Layer {i} ({n_bp} blueprint{?s})  ->  {.val {lyr$yhat_name}}")
-    for (mb in lyr$blueprints) {
-      nm_mb <- mb@model_display_name %||% paste(class(mb@model)[[1L]], "model")
+    n_bp <- length(lyr@blueprints)
+    cli::cli_text("  Layer {i} ({n_bp} blueprint{?s})  ->  {.val {lyr@yhat_name}}")
+    for (mb in lyr@blueprints) {
+      nm_mb <- mb@model_display_name %|NA|% paste(class(mb@model)[[1L]], "model")
       cli::cli_text("    + {nm_mb}  ->  {mb@yhat_name}")
     }
   }

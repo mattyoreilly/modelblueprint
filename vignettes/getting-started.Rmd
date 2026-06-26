@@ -15,7 +15,6 @@ knitr::opts_chunk$set(
   fig.height = 4
 )
 library(modelblueprint)
-library(dplyr)
 ```
 
 ## What is a modelblueprint?
@@ -80,19 +79,6 @@ pred_vs_obs(mb)
 residuals_grouped(mb, exposure_per_bin = 5)
 ```
 
-## Pipe-friendly data manipulation
-
-`filter()`, `mutate()`, and `left_join()` operate on the blueprint's internal
-datasets and return a new `modelblueprint` — the original is never mutated.
-
-```{r pipes}
-mb_filtered <- mb |>
-  filter(cyl %in% c(4, 6)) |>
-  mutate(wt_kg = wt * 453.6)
-
-nrow(mb_filtered@train)
-```
-
 ## Feature engineering pipeline
 
 Use `feat_eng_fun` to apply transformations before prediction — the same
@@ -124,16 +110,25 @@ all.equal(predict(mb, mtcars), predict(mb2, mtcars))
 
 ## Example blueprints
 
-The package ships with example constructors for common model types:
+The package ships with example constructors for common model types. Those
+backed by base-R run without extra packages:
 
-```{r examples}
+```{r examples-base}
 mb_lm  <- mb_lm_regression()
 mb_glm <- mb_glm_binomial()
-mb_rf  <- mb_rf_regression()     # requires randomForest
+
+one_way(mb_lm,  var = "wt", predictions = TRUE)
+pdp(mb_lm,  var = "hp")
+gain(mb_glm)
+```
+
+Constructors for tree-based and boosted models are also available but require
+their respective packages to be installed:
+
+```{r examples-optional, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("xgboost", quietly = TRUE)}
+mb_rf  <- mb_rf_regression()      # requires randomForest
 mb_xgb <- mb_xgb_classification() # requires xgboost
 
-# All work with the same diagnostic functions
-one_way(mb_rf, var = "wt", predictions = TRUE)
+one_way(mb_rf,  var = "wt", predictions = TRUE)
 pdp(mb_xgb, var = "hp")
-gain(mb_glm)
 ```

@@ -3,11 +3,6 @@
 # Hosmer-style predicted vs observed calibration plot.
 # =============================================================================
 
-utils::globalVariables(c(
-  "left", "right", ".expo", ".pred", ".obs", ".bin",
-  "obs_sum", "pred_sum", "obs_mean", "pred_mean", "exposure"
-))
-
 
 # =============================================================================
 # pred_vs_obs() — S3 generic
@@ -195,8 +190,7 @@ pred_vs_obs.modelblueprint <- function(
     )
   }
 
-  chart_title <- title %||%
-    (data@model_display_name %||% "Predicted vs Observed")
+  chart_title <- title %||% (data@model_display_name %|NA|% "Predicted vs Observed")
 
   pred_vs_obs.default(
     df,

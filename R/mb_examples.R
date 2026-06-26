@@ -6,20 +6,24 @@
 # under the "Example modelblueprints" family in the package documentation.
 # =============================================================================
 
-# mtcars is a lazy-loaded dataset from the datasets package; it is always
-# available in R but cannot be imported via @importFrom. Suppress the
-# R CMD check NOTE with globalVariables().
-utils::globalVariables("mtcars")
-
-# Shared 75/25 train/test split — internal, not exported
-.mb_split <- function() {
-  set.seed(42L)
-  idx <- sample(nrow(mtcars), size = 24L)
-  train <- mtcars[idx, ]
-  test <- mtcars[-idx, ]
-  train$vs <- as.integer(train$vs)
-  test$vs <- as.integer(test$vs)
-  list(train = train, test = test)
+# Shared 75/25 train/test split — internal, not exported.
+# Uses synthetic data with the same column names as mtcars so that all
+# downstream model formulas work without any dataset package dependency.
+.mb_split <- function(n = 32L, seed = 42L) {
+  set.seed(seed)
+  df <- data.frame(
+    wt   = rnorm(n, mean = 3.2, sd = 0.8),
+    hp   = rnorm(n, mean = 147, sd = 68),
+    cyl  = sample(c(4L, 6L, 8L), n, replace = TRUE),
+    am   = sample(c(0L, 1L), n, replace = TRUE),
+    gear = sample(c(3L, 4L, 5L), n, replace = TRUE),
+    carb = sample(1L:4L, n, replace = TRUE)
+  )
+  df$mpg <- 30 - 3 * df$wt - 0.02 * df$hp + rnorm(n, sd = 2)
+  lp     <- -2 + 1.5 * df$am - 0.5 * df$wt
+  df$vs  <- as.integer(stats::rbinom(n, 1L, 1 / (1 + exp(-lp))))
+  idx    <- sample(n, size = round(n * 0.75))
+  list(train = df[idx, ], test = df[-idx, ])
 }
 
 
@@ -30,8 +34,8 @@ utils::globalVariables("mtcars")
 #' Example modelblueprint objects
 #'
 #' A family of constructor functions that return ready-to-use
-#' `modelblueprint` objects for common R model types. All examples use the
-#' built-in `mtcars` dataset with a reproducible 75/25 train/test split.
+#' `modelblueprint` objects for common R model types. All examples use a
+#' small synthetic dataset with a reproducible 75/25 train/test split.
 #'
 #' **Regression target:** `mpg` (continuous)
 #'
@@ -51,11 +55,11 @@ utils::globalVariables("mtcars")
 #'
 #' @examples
 #' mb <- mb_lm_regression()
-#' predict(mb, mtcars)
+#' predict(mb, mb@test)
 #' one_way(mb, var = "wt")
 #'
 #' mb_cls <- mb_glm_binomial()
-#' predict(mb_cls, mtcars)   # returns probabilities in 0 to 1
+#' predict(mb_cls, mb_cls@test)   # returns probabilities in 0 to 1
 #'
 #' @name mb_examples
 #' @family Example modelblueprints

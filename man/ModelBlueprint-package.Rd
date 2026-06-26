@@ -3,9 +3,9 @@
 \docType{package}
 \name{modelblueprint-package}
 \alias{modelblueprint-package}
-\title{modelblueprint: Model Diagnostics and Explainability for Pricing Workflows}
+\title{modelblueprint: Model Diagnostics and Explainability for Machine Learning Workflows}
 \description{
-Provides fast, production-ready one-way analysis plots and partial dependence plots (PDPs) designed for pricing workflows. One-way plots show exposure-weighted means of one or more observed variables across bins of a feature, with optional split grouping. PDP plots reveal the marginal effect of a feature on model output, controlling for all other features, and work with any model that implements a predict() method including H2O models. All plots use a consistent dual-axis Plotly style: yellow exposure bars on the left axis and weighted means on the right. Aggregation is handled by data.table and scales comfortably to datasets of 1-2 million rows.
+A model-agnostic toolkit for exploring, diagnosing, and deploying machine learning models. Wraps any fitted model (lm, glm, XGBoost, H2O, random forests, and more) in a structured S7 object that carries training data, feature engineering pipelines, and deployment metadata. Provides one-way analysis plots, partial dependence plots (PDPs), SHAP feature importance, cumulative gains charts, calibration plots, and grouped residual diagnostics — all rendered as interactive Plotly charts. Supports sequential model pipelines via mb_seq() and saves complete model bundles (including H2O and XGBoost models) as portable archives. Aggregation is handled by data.table and scales comfortably to datasets of several million rows.
 }
 \seealso{
 Useful links:

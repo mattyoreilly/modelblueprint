@@ -3,23 +3,6 @@
 # Grouped residuals vs predicted plot with loess trend line.
 # =============================================================================
 
-utils::globalVariables(c(
-  "midpoint",
-  "res",
-  "loe_pred",
-  "loe_low",
-  "loe_upp",
-  ".obs",
-  ".pred",
-  ".expo",
-  "rate",
-  "bin",
-  "obs_mean",
-  "obs_sum",
-  "pred_mean",
-  "pred_sum"
-))
-
 
 # =============================================================================
 # residuals_grouped() -- S3 generic
@@ -268,7 +251,7 @@ residuals_grouped.modelblueprint <- function(
   total_expo <- sum(df[[exposure]], na.rm = TRUE)
   exposure_per_bin <- min(exposure_per_bin, total_expo / 3)
 
-  chart_title <- title %||% (data@model_display_name %||% "Grouped Residuals")
+  chart_title <- title %||% (data@model_display_name %|NA|% "Grouped Residuals")
 
   residuals_grouped.default(
     df,

@@ -94,8 +94,103 @@ modelblueprint <- new_class(
   ),
 
   validator = function(self) {
-    errors <- character(0)
-    if (length(errors) > 0L) paste(errors, collapse = "\n")
+    errors <- character()
+    note <- function(msg) errors <<- c(errors, msg)
+
+    # ── Scalar string properties ─────────────────────────────────────────────
+    # S7 enforces class_character, but not length-1 or non-empty content.
+    # Empty strings are almost always typos; NA_character_ is the right sentinel.
+    check_str <- function(val, nm) {
+      if (length(val) != 1L) {
+        note(sprintf("@%s must be a single string (got length %d).", nm, length(val)))
+      } else if (!is.na(val) && !nzchar(val)) {
+        note(sprintf(
+          "@%s cannot be an empty string. Use NA_character_ to leave it unset.", nm
+        ))
+      }
+    }
+    check_str(self@y_name,             "y_name")
+    check_str(self@yhat_name,          "yhat_name")
+    check_str(self@expo_name,          "expo_name")
+    check_str(self@offset_name,        "offset_name")
+    check_str(self@model_display_name, "model_display_name")
+    check_str(self@deploy_notes,       "deploy_notes")
+
+    # ── Positive finite numerics ─────────────────────────────────────────────
+    check_pos <- function(val, nm) {
+      if (length(val) != 1L) {
+        note(sprintf("@%s must be a single positive finite number (got length %d).", nm, length(val)))
+      } else if (!is.finite(val) || val <= 0) {
+        note(sprintf("@%s must be a single positive finite number (got %s).", nm, val))
+      }
+    }
+    check_pos(self@expo_val,   "expo_val")
+    check_pos(self@expo_0_rep, "expo_0_rep")
+
+    # ── offset_value: scalar, finite when not NA ─────────────────────────────
+    if (length(self@offset_value) != 1L) {
+      note("@offset_value must be a single number or NA.")
+    } else if (!is.na(self@offset_value) && !is.finite(self@offset_value)) {
+      note(sprintf("@offset_value must be finite (got %s).", self@offset_value))
+    }
+
+    # ── Cross-property: y_name and yhat_name must differ ────────────────────
+    # Guard with length == 1L: non-scalar cases are already caught by check_str
+    # above. Without the guard, !is.na() on a length-2 vector produces a
+    # length-2 logical and if() throws "length > 1 in coercion to logical(1)".
+    y  <- self@y_name
+    yh <- self@yhat_name
+    if (
+      length(y)  == 1L && !is.na(y)  && nzchar(y)  &&
+      length(yh) == 1L && !is.na(yh) && nzchar(yh) &&
+      identical(y, yh)
+    ) {
+      note(sprintf(
+        "@y_name and @yhat_name are both '%s'. They must refer to different columns.", y
+      ))
+    }
+
+    # ── x_original_inputs: no empty strings, no duplicates ──────────────────
+    x <- self@x_original_inputs[!is.na(self@x_original_inputs)]
+    if (length(x) > 0L) {
+      if (any(!nzchar(x))) {
+        note("@x_original_inputs must not contain empty strings.")
+      }
+      dupes <- x[duplicated(x)]
+      if (length(dupes) > 0L) {
+        note(sprintf(
+          "@x_original_inputs contains duplicate name(s): %s.",
+          paste(unique(dupes), collapse = ", ")
+        ))
+      }
+    }
+
+    # ── Cross-data: column existence in @train ───────────────────────────────
+    # expo_name is deliberately NOT checked: resolve_exposure() falls back to
+    # unit weights when the column is absent, so a missing expo_name is valid.
+    # Same length == 1L guards apply: non-scalar names are caught by check_str.
+    if (!is.null(self@train)) {
+      cols <- names(self@train)
+
+      if (length(y) == 1L && !is.na(y) && nzchar(y) && !y %in% cols) {
+        note(sprintf("@y_name '%s' is not a column in @train.", y))
+      }
+
+      missing_x <- setdiff(x, cols)
+      if (length(missing_x) > 0L) {
+        note(sprintf(
+          "@x_original_inputs column(s) not found in @train: %s.",
+          paste(missing_x, collapse = ", ")
+        ))
+      }
+
+      on <- self@offset_name
+      if (length(on) == 1L && !is.na(on) && nzchar(on) && !on %in% cols) {
+        note(sprintf("@offset_name '%s' is not a column in @train.", on))
+      }
+    }
+
+    if (length(errors)) paste(errors, collapse = "\n")
   }
 )
 
@@ -151,8 +246,8 @@ predict.modelblueprint <- function(object, newdata, ...) {
   cat("modelblueprint\n")
   cat(rule("="), "\n")
   cat(sprintf("  Model:        %s\n", paste(class(x@model), collapse = "/")))
-  cat(sprintf("  Display name: %s\n", x@model_display_name %||% "<not set>"))
-  cat(sprintf("  Target:       %s\n", x@y_name %||% "<not set>"))
+  cat(sprintf("  Display name: %s\n", x@model_display_name %|NA|% "<not set>"))
+  cat(sprintf("  Target:       %s\n", x@y_name %|NA|% "<not set>"))
   cat(sprintf("  Exposure:     %s (val = %s)\n", x@expo_name, x@expo_val))
   cat(sprintf(
     "  Features:     %d original / %d engineered\n",
@@ -457,14 +552,28 @@ call_pipeline_fun <- function(fun, fun_name, ...) {
   )
 }
 
+# H2O class names — centralised so model_predict (pdp.R) and any future
+# H2O-aware code all agree on what counts as an H2O model.
+.H2O_CLASSES <- c(
+  "H2OModel",
+  "H2OBinomialModel",
+  "H2OMultinomialModel",
+  "H2ORegressionModel",
+  "H2OAutoML"
+)
+
+#' @keywords internal
+is_h2o_model <- function(model) inherits(model, .H2O_CLASSES)
+
+
 #' @keywords internal
 save_model_slot <- function(model, tmp) {
   bundled <- tryCatch(
     bundle::bundle(model),
     error = function(e) {
       cli::cli_warn(c(
-        "bundle::bundle() failed for this model type; falling back to plain saveRDS().",
-        i = "Predictions may not survive serialisation for models with external references (H2O, XGBoost, etc.).",
+        "{.fn bundle::bundle} failed for this model type; falling back to plain {.fn saveRDS}.",
+        i = "Predictions may not survive serialisation for models with external C++ state.",
         x = conditionMessage(e)
       ))
       NULL
@@ -476,6 +585,7 @@ save_model_slot <- function(model, tmp) {
     compress = FALSE
   )
 }
+
 
 #' @keywords internal
 load_modelblueprint <- function(tmp) {
@@ -500,6 +610,7 @@ load_modelblueprint <- function(tmp) {
 
   do.call(modelblueprint, args)
 }
+
 
 #' @keywords internal
 load_model_slot <- function(tmp) {
@@ -691,6 +802,43 @@ one_way.modelblueprint <- function(
     var
   }
 
+  # Guard: block target and exposure columns from being used as x-axis variables.
+  # These are automatically excluded when var = NA; this check covers the case
+  # where the caller passes them explicitly.
+  if (!(length(var) == 1L && is.na(var))) {
+    bad_target   <- intersect(vars, stats::na.omit(data@y_name))
+    bad_exposure <- intersect(vars, stats::na.omit(data@expo_name))
+    bad <- c(bad_target, bad_exposure)
+    if (length(bad) > 0L) {
+      detail <- character(0)
+      if (length(bad_target) > 0L) {
+        detail <- c(
+          detail,
+          i = "{.val {bad_target}} is the modelblueprint target ({.arg @y_name})."
+        )
+      }
+      if (length(bad_exposure) > 0L) {
+        detail <- c(
+          detail,
+          i = "{.val {bad_exposure}} is the modelblueprint exposure ({.arg @expo_name})."
+        )
+      }
+      cli::cli_abort(c(
+        "Cannot plot {.val {bad}} as a one-way variable.",
+        detail
+      ))
+    }
+
+    # Guard: informative error when the requested variable isn't in the dataset.
+    missing_vars <- setdiff(vars, names(df))
+    if (length(missing_vars) > 0L) {
+      cli::cli_abort(c(
+        "Variable{?s} not found in the {.val {set}} dataset: {.val {missing_vars}}.",
+        i = "Available columns: {.val {sort(names(df))}}"
+      ))
+    }
+  }
+
   dots <- list(...)
   dots[["var"]] <- NULL
 
@@ -778,7 +926,7 @@ pdp.modelblueprint <- function(
   }
 
   exposure <- resolve_exposure(data, df)
-  model_name <- data@model_display_name %||% "model"
+  model_name <- data@model_display_name %|NA|% "model"
 
   # Resolve variables: NA means "all x_original_inputs"
   vars <- if (length(var) == 1L && is.na(var)) {
@@ -918,7 +1066,7 @@ shap.modelblueprint <- function(
     vars
   }
 
-  model_name <- data@model_display_name %||% "model"
+  model_name <- data@model_display_name %|NA|% "model"
   exposure <- resolve_exposure(data, df)
 
   shap(
@@ -958,7 +1106,7 @@ resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
     return(list(obs = y, df = df))
   }
 
-  pred_col <- paste0(".pred_", object@model_display_name %||% "model")
+  pred_col <- paste0(".pred_", object@model_display_name %|NA|% "model")
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {
@@ -1054,6 +1202,12 @@ resolve_exposure <- function(object, df) {
     "predict",
     "modelblueprint::mb_seq",
     predict.mb_seq,
+    envir = ns
+  )
+  registerS3method(
+    "print",
+    "modelblueprint::mb_layer",
+    print.mb_layer,
     envir = ns
   )
 }

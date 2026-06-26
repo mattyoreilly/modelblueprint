@@ -119,7 +119,7 @@ mb_dashboard <- function(mb, ...) {
   ow_vars    <- setdiff(all_cols, c(mb@y_name, expo_col))
   split_choices <- c("None" = "none", ow_vars)
 
-  model_name <- mb@model_display_name %||% "modelblueprint"
+  model_name <- mb@model_display_name %|NA|% "modelblueprint"
 
   # ==========================================================================
   # UI

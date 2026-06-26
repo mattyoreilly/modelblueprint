@@ -104,6 +104,311 @@ is_plotly <- function(x) inherits(x, "plotly")
 
 
 # =============================================================================
+# modelblueprint — S7 validator
+# =============================================================================
+
+describe("modelblueprint — validator: valid construction", {
+  it("constructs with minimal args (model only)", {
+    expect_no_error(modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars)))
+  })
+
+  it("constructs with all common fields populated", {
+    expect_no_error(make_lm_mb())
+  })
+
+  it("allows y_name = NA (target not always known at construction)", {
+    expect_no_error(modelblueprint(
+      model  = stats::lm(mpg ~ wt, data = mtcars),
+      train  = mtcars,
+      y_name = NA_character_
+    ))
+  })
+
+  it("allows yhat_name = NA", {
+    expect_no_error(modelblueprint(
+      model     = stats::lm(mpg ~ wt, data = mtcars),
+      yhat_name = NA_character_
+    ))
+  })
+
+  it("allows expo_name = NA (resolve_exposure falls back to unit weights)", {
+    expect_no_error(modelblueprint(
+      model     = stats::lm(mpg ~ wt, data = mtcars),
+      expo_name = NA_character_
+    ))
+  })
+
+  it("allows expo_name missing from train (graceful fallback to unit weights)", {
+    expect_no_error(modelblueprint(
+      model     = stats::lm(mpg ~ wt, data = mtcars),
+      train     = mtcars,
+      expo_name = "not_in_mtcars"
+    ))
+  })
+
+  it("allows x_original_inputs = NA (inputs not always recorded)", {
+    expect_no_error(modelblueprint(
+      model             = stats::lm(mpg ~ wt, data = mtcars),
+      x_original_inputs = NA_character_
+    ))
+  })
+
+  it("allows offset_value = 0", {
+    expect_no_error(modelblueprint(
+      model        = stats::lm(mpg ~ wt, data = mtcars),
+      offset_value = 0
+    ))
+  })
+})
+
+
+describe("modelblueprint — validator: scalar string properties", {
+  it("errors when y_name is length > 1", {
+    expect_error(
+      modelblueprint(
+        model  = stats::lm(mpg ~ wt, data = mtcars),
+        y_name = c("mpg", "wt")
+      ),
+      "@y_name must be a single string"
+    )
+  })
+
+  it("errors when y_name is an empty string", {
+    expect_error(
+      modelblueprint(
+        model  = stats::lm(mpg ~ wt, data = mtcars),
+        y_name = ""
+      ),
+      "@y_name cannot be an empty string"
+    )
+  })
+
+  it("errors when yhat_name is an empty string", {
+    expect_error(
+      modelblueprint(
+        model     = stats::lm(mpg ~ wt, data = mtcars),
+        yhat_name = ""
+      ),
+      "@yhat_name cannot be an empty string"
+    )
+  })
+
+  it("errors when expo_name is an empty string", {
+    expect_error(
+      modelblueprint(
+        model     = stats::lm(mpg ~ wt, data = mtcars),
+        expo_name = ""
+      ),
+      "@expo_name cannot be an empty string"
+    )
+  })
+
+  it("errors when model_display_name is an empty string", {
+    expect_error(
+      modelblueprint(
+        model              = stats::lm(mpg ~ wt, data = mtcars),
+        model_display_name = ""
+      ),
+      "@model_display_name cannot be an empty string"
+    )
+  })
+
+  it("errors when offset_name is an empty string", {
+    expect_error(
+      modelblueprint(
+        model       = stats::lm(mpg ~ wt, data = mtcars),
+        offset_name = ""
+      ),
+      "@offset_name cannot be an empty string"
+    )
+  })
+})
+
+
+describe("modelblueprint — validator: positive finite numerics", {
+  it("errors when expo_val is zero", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_val = 0),
+      "@expo_val must be a single positive finite number"
+    )
+  })
+
+  it("errors when expo_val is negative", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_val = -1),
+      "@expo_val must be a single positive finite number"
+    )
+  })
+
+  it("errors when expo_val is Inf", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_val = Inf),
+      "@expo_val must be a single positive finite number"
+    )
+  })
+
+  it("errors when expo_val is length > 1", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_val = c(1, 2)),
+      "@expo_val must be a single positive finite number"
+    )
+  })
+
+  it("errors when expo_0_rep is zero", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_0_rep = 0),
+      "@expo_0_rep must be a single positive finite number"
+    )
+  })
+
+  it("errors when expo_0_rep is negative", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), expo_0_rep = -0.5),
+      "@expo_0_rep must be a single positive finite number"
+    )
+  })
+
+  it("errors when offset_value is Inf", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), offset_value = Inf),
+      "@offset_value must be finite"
+    )
+  })
+
+  it("errors when offset_value is length > 1", {
+    expect_error(
+      modelblueprint(model = stats::lm(mpg ~ wt, data = mtcars), offset_value = c(0, 1)),
+      "@offset_value must be a single number"
+    )
+  })
+})
+
+
+describe("modelblueprint — validator: cross-property checks", {
+  it("errors when y_name equals yhat_name", {
+    expect_error(
+      modelblueprint(
+        model     = stats::lm(mpg ~ wt, data = mtcars),
+        y_name    = "mpg",
+        yhat_name = "mpg"
+      ),
+      "@y_name and @yhat_name are both"
+    )
+  })
+
+  it("does not error when only y_name is set (yhat_name = NA)", {
+    expect_no_error(modelblueprint(
+      model  = stats::lm(mpg ~ wt, data = mtcars),
+      y_name = "mpg"
+    ))
+  })
+
+  it("does not error when only yhat_name is set (y_name = NA)", {
+    expect_no_error(modelblueprint(
+      model     = stats::lm(mpg ~ wt, data = mtcars),
+      yhat_name = "pred"
+    ))
+  })
+})
+
+
+describe("modelblueprint — validator: x_original_inputs content", {
+  it("errors when x_original_inputs contains an empty string", {
+    expect_error(
+      modelblueprint(
+        model             = stats::lm(mpg ~ wt, data = mtcars),
+        x_original_inputs = c("wt", "")
+      ),
+      "@x_original_inputs must not contain empty strings"
+    )
+  })
+
+  it("errors when x_original_inputs has duplicates", {
+    expect_error(
+      modelblueprint(
+        model             = stats::lm(mpg ~ wt, data = mtcars),
+        x_original_inputs = c("wt", "hp", "wt")
+      ),
+      "@x_original_inputs contains duplicate"
+    )
+  })
+
+  it("allows x_original_inputs as a multi-element vector", {
+    expect_no_error(modelblueprint(
+      model             = stats::lm(mpg ~ wt + hp, data = mtcars),
+      train             = mtcars,
+      y_name            = "mpg",
+      x_original_inputs = c("wt", "hp")
+    ))
+  })
+})
+
+
+describe("modelblueprint — validator: cross-data column checks", {
+  it("errors when y_name is not a column in @train", {
+    expect_error(
+      modelblueprint(
+        model  = stats::lm(mpg ~ wt, data = mtcars),
+        train  = mtcars,
+        y_name = "not_a_column"
+      ),
+      "@y_name 'not_a_column' is not a column in @train"
+    )
+  })
+
+  it("errors when x_original_inputs column is absent from @train", {
+    expect_error(
+      modelblueprint(
+        model             = stats::lm(mpg ~ wt, data = mtcars),
+        train             = mtcars,
+        y_name            = "mpg",
+        x_original_inputs = c("wt", "no_such_col")
+      ),
+      "no_such_col"
+    )
+  })
+
+  it("errors when offset_name is not a column in @train", {
+    expect_error(
+      modelblueprint(
+        model       = stats::lm(mpg ~ wt, data = mtcars),
+        train       = mtcars,
+        y_name      = "mpg",
+        offset_name = "no_such_col"
+      ),
+      "@offset_name 'no_such_col' is not a column in @train"
+    )
+  })
+
+  it("does not error when train is NULL (cross-data checks skipped)", {
+    expect_no_error(modelblueprint(
+      model             = stats::lm(mpg ~ wt, data = mtcars),
+      y_name            = "not_in_any_data",
+      x_original_inputs = "also_not_in_data"
+    ))
+  })
+})
+
+
+describe("modelblueprint — validator: multiple errors reported together", {
+  it("reports all errors at once rather than stopping at the first", {
+    err <- tryCatch(
+      modelblueprint(
+        model      = stats::lm(mpg ~ wt, data = mtcars),
+        y_name     = "",   # empty string
+        expo_val   = -1,   # non-positive
+        expo_0_rep = 0     # non-positive
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_match(err, "@y_name")
+    expect_match(err, "@expo_val")
+    expect_match(err, "@expo_0_rep")
+  })
+})
+
+
+# =============================================================================
 # savemb / loadmb — native R model
 # =============================================================================
 
@@ -229,77 +534,9 @@ describe("savemb / loadmb — native R model (lm)", {
 # savemb / loadmb — H2O model
 # =============================================================================
 
-describe("savemb / loadmb — H2O model (h2o.glm)", {
-  it("saves, shuts down H2O, reloads and predicts correctly", {
-    skip_on_cran()
-    skip_if_not_installed("h2o")
-    skip_if_not_installed("arrow")
-
-    library(h2o)
-    suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
-    h2o::h2o.no_progress()
-
-    hf <- h2o::as.h2o(iris)
-    h2o_glm <- h2o::h2o.glm(
-      x = "Sepal.Width",
-      y = "Sepal.Length",
-      training_frame = hf,
-      family = "gaussian",
-      seed = 42L
-    )
-
-    mb <- modelblueprint(
-      model = h2o_glm,
-      train = iris,
-      test = iris,
-      x_original_inputs = "Sepal.Width",
-      x_names = "Sepal.Width",
-      y_name = "Sepal.Length",
-      yhat_name = "pred",
-      model_display_name = "h2o_glm_test"
-    )
-
-    tmp <- withr::local_tempdir()
-
-    expect_no_error(savemb(mb, path = tmp, filename = "test_h2o_mb"))
-    expect_true(file.exists(file.path(tmp, "test_h2o_mb.tar.gz")))
-
-    # Shut down and wait long enough for the JVM to release the port
-    tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    )
-    Sys.sleep(12L)
-
-    # bundle::unbundle() for H2O calls h2o.import_mojo() internally, which
-    # requires an active cluster — it does not start H2O automatically.
-    suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
-    h2o::h2o.no_progress()
-    if (!h2o::h2o.clusterIsUp()) {
-      skip("H2O cluster failed to restart after shutdown — port conflict.")
-    }
-
-    loaded <- NULL
-    expect_no_error(
-      suppressWarnings(suppressMessages(
-        loaded <- loadmb(file.path(tmp, "test_h2o_mb.tar.gz"))
-      ))
-    )
-    expect_true(S7_inherits(loaded, modelblueprint))
-    expect_no_error(suppressWarnings(suppressMessages(predict(loaded, iris))))
-    expect_identical(loaded@y_name, mb@y_name)
-    expect_identical(loaded@x_names, mb@x_names)
-    expect_identical(loaded@model_display_name, mb@model_display_name)
-    expect_equal(dim(loaded@train), dim(mb@train))
-
-    withr::defer(
-      tryCatch(
-        suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-        error = function(e) NULL
-      )
-    )
-  })
-})
+## Old H2O test removed — superseded by the richer "savemb / loadmb — H2O GLM
+## (bundle round-trip)" describe block below, which uses h2o_init_safe() and
+## covers the same scenarios with proper skip guards.
 
 
 # =============================================================================
@@ -542,11 +779,16 @@ describe("predict.modelblueprint — edge cases", {
 # =============================================================================
 
 describe("predict.modelblueprint — H2O model", {
+  # Each test is self-contained: it starts its own H2O cluster and shuts it
+  # down via h2o_shutdown_safe(), which polls until the JVM releases the port
+  # before returning. This prevents the port-contention race that a fixed
+  # Sys.sleep() cannot reliably solve.
+
   it("H2O glm (gaussian) predictions are numeric and finite", {
     skip_on_cran()
     skip_if_not_installed("h2o")
-    suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
-    h2o::h2o.no_progress()
+    h2o_init_safe()
+    withr::defer(h2o_shutdown_safe())
 
     hf <- h2o::as.h2o(mtcars)
     h2o_m <- h2o::h2o.glm(
@@ -562,18 +804,13 @@ describe("predict.modelblueprint — H2O model", {
     expect_true(is.numeric(preds))
     expect_length(preds, nrow(mtcars))
     expect_true(all(is.finite(preds)))
-
-    withr::defer(tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    ))
   })
 
   it("H2O glm (binomial) predictions are in [0, 1]", {
     skip_on_cran()
     skip_if_not_installed("h2o")
-    suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
-    h2o::h2o.no_progress()
+    h2o_init_safe()
+    withr::defer(h2o_shutdown_safe())
 
     df <- mtcars
     df$vs <- as.factor(df$vs)
@@ -590,11 +827,6 @@ describe("predict.modelblueprint — H2O model", {
 
     expect_true(is.numeric(preds))
     expect_true(all(preds >= 0 & preds <= 1, na.rm = TRUE))
-
-    withr::defer(tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    ))
   })
 })
 
@@ -1121,21 +1353,13 @@ describe("savemb / loadmb — XGBoost classification (bundle round-trip)", {
 # savemb / loadmb — H2O (bundle round-trip)
 # =============================================================================
 
-h2o_init_safe <- function() {
-  suppressWarnings(suppressMessages(h2o::h2o.init(nthreads = 1L)))
-  h2o::h2o.no_progress()
-  # Skip the test if the cluster still isn't reachable (e.g. port still
-  # occupied from a previous session that is still shutting down).
-  if (!h2o::h2o.clusterIsUp()) {
-    skip("H2O cluster failed to start — likely a port conflict from a prior session.")
-  }
-}
+# h2o_init_safe() is defined in helper-h2o.R, which testthat loads before
+# any test file runs — available to all H2O tests in this file.
 
 describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
   it("saves, shuts down H2O cluster, reloads and predicts correctly", {
     skip_on_cran()
     skip_if_not_installed("h2o")
-    skip_if_not_installed("arrow")
 
     h2o_init_safe()
 
@@ -1166,13 +1390,11 @@ describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
 
     # Fully shut down the cluster — bundle must carry everything needed to
     # restore the model without the original Java process.
-    tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    )
-    Sys.sleep(12L)
+    h2o_shutdown_safe()
 
-    # bundle::unbundle() for H2O needs an active cluster to import the MOJO.
+    # bundle::unbundle() for H2O imports the model MOJO — an active cluster
+    # is required. Note: the restored model gets a new model ID (Generic_model_R_...)
+    # from the MOJO import; this is expected and predict() works correctly.
     h2o_init_safe()
 
     loaded <- NULL
@@ -1190,16 +1412,12 @@ describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
     expect_identical(loaded@model_display_name, mb@model_display_name)
     expect_equal(dim(loaded@train), dim(mb@train))
 
-    withr::defer(tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    ))
+    withr::defer(h2o_shutdown_safe())
   })
 
   it("H2O GBM saves and reloads correctly", {
     skip_on_cran()
     skip_if_not_installed("h2o")
-    skip_if_not_installed("arrow")
 
     h2o_init_safe()
 
@@ -1225,13 +1443,10 @@ describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
     )
     tmp <- withr::local_tempdir()
     savemb(mb, path = tmp, filename = "test_mb")
-    tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    )
-    Sys.sleep(12L)
+    h2o_shutdown_safe()
 
-    # bundle::unbundle() for H2O needs an active cluster to import the MOJO.
+    # bundle::unbundle() for H2O imports the model MOJO — an active cluster
+    # is required.
     h2o_init_safe()
 
     loaded <- suppressWarnings(suppressMessages(
@@ -1242,10 +1457,7 @@ describe("savemb / loadmb — H2O GLM (bundle round-trip)", {
     loaded_preds <- suppressWarnings(suppressMessages(predict(loaded, mtcars)))
     expect_equal(loaded_preds, orig_preds, tolerance = 1e-5)
 
-    withr::defer(tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    ))
+    withr::defer(h2o_shutdown_safe())
   })
 })
 

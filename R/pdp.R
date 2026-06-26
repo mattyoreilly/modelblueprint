@@ -5,29 +5,6 @@
 # other features.
 # =============================================================================
 
-# Suppress R CMD check NOTEs for data.table's non-standard evaluation.
-# These dot-prefixed names are internal column names created within the
-# package and never exist in the caller's data.
-utils::globalVariables(c(
-  ".bin",
-  ".expo",
-  ".pred",
-  ".val",
-  ".obs_col",
-  ".expo_col",
-  ".w",
-  ".var",
-  ".x_bin",
-  ".split",
-  ".",
-  ".bin_group",
-  ".pdp_pred",
-  ".wobs",
-  ".wpred",
-  "obs_mean",
-  "pred_mean",
-  "exposure"
-))
 
 
 #' Partial dependence plot for any predict()-compatible model
@@ -273,18 +250,7 @@ model_predict <- function(model, newdata) {
     as.data.frame(newdata)
   }
 
-  if (
-    inherits(
-      model,
-      c(
-        "H2OModel",
-        "H2OBinomialModel",
-        "H2OMultinomialModel",
-        "H2ORegressionModel",
-        "H2OAutoML"
-      )
-    )
-  ) {
+  if (is_h2o_model(model)) {
     # H2O requires its own frame type and returns an H2O frame
     hf <- h2o::as.h2o(nd)
     raw <- as.data.frame(h2o::h2o.predict(model, hf))

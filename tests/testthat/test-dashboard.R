@@ -439,12 +439,7 @@ describe("mb_dashboard — H2O GLM large model", {
   })
 
   # ── Teardown ────────────────────────────────────────────────────────────────
-  withr::defer(
-    tryCatch(
-      suppressMessages(h2o::h2o.shutdown(prompt = FALSE)),
-      error = function(e) NULL
-    )
-  )
+  withr::defer(h2o_shutdown_safe())
 })
 
 # =============================================================================

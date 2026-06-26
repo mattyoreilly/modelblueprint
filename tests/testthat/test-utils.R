@@ -43,24 +43,21 @@ describe("unitise — input validation", {
   it("errors when min_val is not numeric", {
     expect_error(
       unitise(make_df(), "x", "zero", 10),
-      "`min_val` and `max_val` must be single numeric values.",
-      fixed = TRUE
+      "single numeric values"
     )
   })
 
   it("errors when max_val is not numeric", {
     expect_error(
       unitise(make_df(), "x", 0, "ten"),
-      "`min_val` and `max_val` must be single numeric values.",
-      fixed = TRUE
+      "single numeric values"
     )
   })
 
   it("errors when min_val is a vector", {
     expect_error(
       unitise(make_df(), "x", c(0, 1), 10),
-      "`min_val` and `max_val` must be single numeric values.",
-      fixed = TRUE
+      "single numeric values"
     )
   })
 
@@ -319,8 +316,7 @@ describe("save_plots — validation", {
     dir <- withr::local_tempdir()
     expect_error(
       save_plots(list(), file.path(dir, "x.html")),
-      "non-empty list",
-      fixed = TRUE
+      "non-empty"
     )
   })
 

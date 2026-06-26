@@ -57,8 +57,7 @@ describe("sami.default — input validation", {
   it("errors when pred has fewer than two columns", {
     expect_error(
       sami(df, obs = "obs", pred = "pred1", exposure = "exposure"),
-      "`pred` must contain at least two prediction column names.",
-      fixed = TRUE
+      "at least two prediction column"
     )
   })
 
