@@ -24,20 +24,20 @@ The chart has the same dual-axis layout as one-way plots:
 
 ``` r
 
-library(modelblueprint)
-
-mb <- mb_glm_binomial()
-
-# PDP for wt — everything pulled from blueprint slots
-pdp(mb, var = "wt")
+# PDP for driver_age — everything pulled from blueprint slots
+pdp(mb, var = "driver_age")
+#> ℹ Calculating pdp for `driver_age`
 ```
 
 On a plain data frame:
 
 ``` r
 
-model <- glm(vs ~ wt + hp, data = mtcars, family = binomial)
-pdp(mtcars, var = "wt", obs = "vs", model = model)
+model <- glm(
+  nclaims ~ driver_age + vehicle_age + offset(log(exposure)),
+  data = mb@train, family = poisson
+)
+pdp(mb@train, var = "driver_age", obs = "claim_freq", model = model)
 ```
 
 ## Understanding the three lines
@@ -63,10 +63,8 @@ than the feature itself.
 ``` r
 
 # Coarser view
-pdp(mb, var = "wt", bins = 5L)
-
-# Finer view — slower for large models
-pdp(mb, var = "wt", bins = 20L)
+pdp(mb, var = "driver_age", bins = 8L)
+#> ℹ Calculating pdp for `driver_age`
 ```
 
 PDP computation requires predicting across the full dataset for each
@@ -75,7 +73,8 @@ bin. For large datasets, `sample_size` caps the number of rows used:
 ``` r
 
 # Use at most 1,000 rows for PDP computation
-pdp(mb, var = "wt", sample_size = 1000L)
+pdp(mb, var = "vehicle_value", sample_size = 1000L)
+#> ℹ Calculating pdp for `vehicle_value`
 ```
 
 The default is 10,000. For most models, 1,000 rows gives a stable PDP
@@ -85,15 +84,22 @@ line at a fraction of the computation cost.
 
 ``` r
 
-pdp(mb, var = "wt", type_agg = "equal_range")
+pdp(mb, var = "vehicle_age", type_agg = "equal_range")
+#> ℹ Calculating pdp for `vehicle_age`
 ```
 
 ## Choosing the dataset
 
 ``` r
 
-pdp(mb, var = "wt", set = "train")
-pdp(mb, var = "wt", set = "test")    # out-of-sample PDP
+pdp(mb, var = "driver_age", set = "train")
+#> ℹ Calculating pdp for `driver_age`
+```
+
+``` r
+
+pdp(mb, var = "driver_age", set = "test")    # out-of-sample PDP
+#> ℹ Calculating pdp for `driver_age`
 ```
 
 Computing the PDP on the test set is a useful check — if the PDP shape
@@ -104,15 +110,24 @@ to correlations present only in training data.
 
 ``` r
 
-d <- pdp(mb, var = "wt", ret = "data")
+d <- pdp(mb, var = "driver_age", ret = "data")
+#> ℹ Calculating pdp for `driver_age`
 head(d)
+#>    driver_age  obs_mean pred_mean exposure  pdp_mean global_obs global_pred
+#>        <char>     <num>     <num>    <num>     <num>      <num>       <num>
+#> 1:    [18,24] 0.1681360 0.1329939   220.06 0.1329798   0.127725    0.127725
+#> 2:    (24,29] 0.1040982 0.1287909   182.52 0.1317471   0.127725    0.127725
+#> 3:    (29,35] 0.1299968 0.1250679   184.62 0.1305258   0.127725    0.127725
+#> 4:    (35,41] 0.1368570 0.1297973   211.90 0.1292064   0.127725    0.127725
+#> 5:    (41,47] 0.1182480 0.1284004   211.42 0.1279004   0.127725    0.127725
+#> 6:    (47,52] 0.1248298 0.1309338   176.24 0.1267148   0.127725    0.127725
 ```
 
 Columns returned:
 
 | Column        | Description                               |
 |---------------|-------------------------------------------|
-| `wt`          | Bin label (interval string or level name) |
+| `driver_age`  | Bin label (interval string or level name) |
 | `obs_mean`    | Exposure-weighted observed mean           |
 | `pred_mean`   | Exposure-weighted predicted mean          |
 | `pdp_mean`    | Marginal PDP value                        |
@@ -128,8 +143,8 @@ works with any model that implements
 
 ``` r
 
-# GLM — response scale (probabilities for binomial)
-pdp(mb_glm_binomial(), var = "wt")
+# Poisson frequency GLM
+pdp(mb_glm_poisson_freq(), var = "driver_age")
 
 # Random forest
 pdp(mb_rf_regression(), var = "wt")
@@ -153,7 +168,8 @@ ignores it once other features are controlled for. A sloping line means
 the feature drives predictions in that direction across the full data
 distribution, not just where it correlates with other predictors.
 
-For binary classification models, PDP values are probabilities. A PDP
-that rises from 0.1 to 0.6 across the feature range means the model
-assigns substantially higher probability of the positive class at higher
-feature values.
+For frequency models, PDP values are on the claim frequency scale. A PDP
+that rises from 0.05 to 0.20 across the `driver_age` range means the
+model assigns substantially higher expected claim frequency to younger
+drivers, even after controlling for vehicle age, gender, and other
+features.

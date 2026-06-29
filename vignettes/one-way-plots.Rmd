@@ -17,6 +17,10 @@ knitr::opts_chunk$set(
 library(modelblueprint)
 ```
 
+```{r mb, include = FALSE}
+mb <- mb_glm_poisson_freq()
+```
+
 ## What is a one-way plot?
 
 A one-way plot shows the exposure-weighted mean of one or more target
@@ -31,19 +35,15 @@ The chart has a dual-axis layout:
 
 ## Basic usage
 
-```{r basic, eval = FALSE}
-library(modelblueprint)
-
-mb <- mb_glm_binomial()
-
+```{r basic}
 # Default: 35 equal-exposure bins, target from y_name slot
-one_way(mb, var = "wt")
+one_way(mb, var = "driver_age")
 ```
 
 You can also call `one_way()` directly on a data frame:
 
-```{r dataframe, eval = FALSE}
-one_way(mtcars, var = "wt", obs = "vs", exposure = "exposure")
+```{r dataframe}
+one_way(mb@train, var = "driver_age", obs = "claim_freq", exposure = "exposure")
 ```
 
 ## Lift chart: overlaying model predictions
@@ -52,8 +52,8 @@ Pass `predictions = TRUE` to add the model's in-sample predictions as a
 second line. This creates a lift chart — the gap between the observed and
 predicted lines reveals where the model over- or under-fits.
 
-```{r lift, eval = FALSE}
-one_way(mb, var = "wt", predictions = TRUE)
+```{r lift}
+one_way(mb, var = "driver_age", predictions = TRUE)
 ```
 
 The prediction column is named after `model_display_name` and appears in
@@ -65,26 +65,17 @@ Pass a character vector to `obs` to overlay several lines on the same chart.
 Useful for comparing two competing models or a raw target against a smoothed
 version.
 
-```{r multi-obs, eval = FALSE}
-# Compare two model predictions directly
-one_way(
-  mtcars,
-  var      = "wt",
-  obs      = c("vs", "am"),   # two lines
-  exposure = "exposure"
-)
+```{r multi-obs}
+one_way(mb, var = "vehicle_age", predictions = TRUE)
 ```
 
 ## Controlling bins
 
 The `bins` argument controls how many bins the x-axis is divided into.
 
-```{r bins, eval = FALSE}
+```{r bins}
 # Coarser view — 10 bins
-one_way(mb, var = "wt", bins = 10L)
-
-# Finer view — 50 bins
-one_way(mb, var = "wt", bins = 50L)
+one_way(mb, var = "driver_age", bins = 10L)
 ```
 
 ## Binning strategy
@@ -96,8 +87,8 @@ one_way(mb, var = "wt", bins = 50L)
 - **`"equal_range"`** — evenly-spaced bins across the feature range.
   Better for visualising the shape of the relationship at the tails.
 
-```{r type-agg, eval = FALSE}
-one_way(mb, var = "wt", type_agg = "equal_range", bins = 5)
+```{r type-agg}
+one_way(mb, var = "vehicle_value", type_agg = "equal_range", bins = 10)
 ```
 
 ## Split variable
@@ -106,8 +97,8 @@ The `split` argument breaks each bin into groups, producing one line per
 group. Useful for comparing behaviour across segments such as policy type,
 region, or claim flag.
 
-```{r split, eval = FALSE}
-one_way(mb, var = "mpg", split = "am", bins = 5)   # split by transmission type
+```{r split}
+one_way(mb, var = "driver_age", split = "gender", bins = 10)
 ```
 
 ## Choosing the dataset
@@ -116,9 +107,9 @@ When calling from a `modelblueprint`, use `set` to choose which internal
 dataset to plot. Comparing the same one-way on train vs test is a quick
 check for overfitting.
 
-```{r set, eval = FALSE}
-one_way(mb, var = "wt", set = "train")
-one_way(mb, var = "wt", set = "test")
+```{r set}
+one_way(mb, var = "driver_age", set = "train")
+one_way(mb, var = "driver_age", set = "test")
 ```
 
 ## Returning the data
@@ -126,8 +117,8 @@ one_way(mb, var = "wt", set = "test")
 Pass `ret = "data"` to get the aggregated data.table instead of a plot.
 Useful for custom visualisations or further analysis.
 
-```{r ret-data, eval = FALSE}
-d <- one_way(mb, var = "wt", ret = "data")
+```{r ret-data}
+d <- one_way(mb, var = "driver_age", ret = "data")
 head(d)
 ```
 
@@ -138,9 +129,8 @@ exposure, and one column per `obs` variable.
 
 One-way plots handle categorical and low-cardinality integer variables
 automatically — no binning is applied and each level appears as its own bar.
-Levels with more than 2,000 unique values trigger a warning and return `NULL`.
 
-```{r categorical, eval = FALSE}
-mtcars$cyl_f <- as.character(mtcars$cyl)
-one_way(mtcars, var = "cyl_f", obs = "vs", exposure = "exposure")
+```{r categorical}
+one_way(mb, var = "area")
+one_way(mb, var = "vehicle_type")
 ```

@@ -34,12 +34,18 @@
 #' Example modelblueprint objects
 #'
 #' A family of constructor functions that return ready-to-use
-#' `modelblueprint` objects for common R model types. All examples use a
-#' small synthetic dataset with a reproducible 75/25 train/test split.
+#' `modelblueprint` objects for common R model types.
 #'
-#' **Regression target:** `mpg` (continuous)
+#' **Regression target:** `mpg` (continuous) — synthetic mtcars-like data,
+#' 75/25 train/test split.
 #'
-#' **Classification target:** `vs` (binary 0/1)
+#' **Classification target:** `vs` (binary 0/1) — same synthetic dataset.
+#'
+#' **Frequency target:** `claim_freq` (claims per unit exposure) — synthetic
+#' car insurance dataset with ~5,000 rows, 70/15/15 train/test/holdout split.
+#' The underlying model is a Poisson GLM on `nclaims` with
+#' `offset(log(exposure))`; a `post_process_fun` converts predicted counts to
+#' predicted frequency before returning.
 #'
 #' @details
 #' Functions that wrap optional packages (`rpart`, `randomForest`, `xgboost`,
@@ -49,7 +55,8 @@
 #'
 #' `post_process_fun` is set on classification models that return a probability
 #' matrix (rpart, randomForest) so that `predict()` always returns a plain
-#' numeric vector of P(class = 1).
+#' numeric vector of P(class = 1), and on `mb_glm_poisson_freq()` to convert
+#' predicted counts to predicted claim frequency.
 #'
 #' @return A `modelblueprint` object.
 #'
@@ -60,6 +67,10 @@
 #'
 #' mb_cls <- mb_glm_binomial()
 #' predict(mb_cls, mb_cls@test)   # returns probabilities in 0 to 1
+#'
+#' mb_freq <- mb_glm_poisson_freq()
+#' predict(mb_freq, mb_freq@test) # returns predicted claim frequency
+#' one_way(mb_freq, var = "driver_age", predictions = TRUE)
 #'
 #' @name mb_examples
 #' @family Example modelblueprints
@@ -149,6 +160,34 @@ mb_glm_poisson <- function() {
     x_original_inputs = c("wt", "hp", "cyl"),
     model_display_name = "glm_poisson",
     deploy_notes = "GLM Poisson: rounded mpg ~ wt + hp + cyl"
+  )
+}
+
+
+#' @rdname mb_examples
+#' @export
+mb_glm_poisson_freq <- function() {
+  d        <- .car_freq_split()
+  features <- c("driver_age", "vehicle_age", "vehicle_value",
+                "area", "vehicle_type", "gender", "bonus_malus")
+
+  modelblueprint(
+    model = stats::glm(
+      nclaims ~ driver_age + vehicle_age + vehicle_value +
+                area + vehicle_type + gender + bonus_malus +
+                offset(log(exposure)),
+      data   = d$train,
+      family = poisson
+    ),
+    post_process_fun = function(preds, df_raw) preds / df_raw$exposure,
+    train   = d$train,
+    test    = d$test,
+    holdout = d$holdout,
+    y_name             = "claim_freq",
+    expo_name          = "exposure",
+    x_original_inputs  = features,
+    model_display_name = "glm_poisson_freq",
+    deploy_notes       = "GLM Poisson frequency: nclaims ~ offset(log(exposure))"
   )
 }
 
@@ -298,6 +337,78 @@ mb_xgb_classification <- function() {
     x_original_inputs = features,
     model_display_name = "xgb_classification",
     deploy_notes = "XGBoost binary classification: vs"
+  )
+}
+
+
+# =============================================================================
+# Car insurance frequency dataset helper
+# =============================================================================
+
+#' @keywords internal
+.car_freq_split <- function(n = 5000L, seed = 42L) {
+  set.seed(seed)
+
+  driver_age    <- sample(18L:75L, n, replace = TRUE)
+  vehicle_age   <- pmin(as.integer(round(stats::rexp(n, rate = 1 / 4))), 20L)
+  vehicle_value <- pmin(
+    pmax(as.integer(round(stats::rlnorm(n, log(18000), 0.55))), 2000L),
+    120000L
+  )
+  area         <- sample(
+    c("urban", "suburban", "rural"), n, replace = TRUE,
+    prob = c(0.40, 0.35, 0.25)
+  )
+  vehicle_type <- sample(
+    c("sedan", "suv", "hatchback", "sports"), n, replace = TRUE,
+    prob = c(0.35, 0.30, 0.25, 0.10)
+  )
+  gender      <- sample(c("M", "F"), n, replace = TRUE)
+  bonus_malus <- pmin(pmax(as.integer(round(stats::rnorm(n, 6, 2.5))), 0L), 10L)
+  exposure    <- round(stats::runif(n, 0.1, 1.0), 2)
+
+  # True log claim frequency (rate scale)
+  age_eff  <- ifelse(driver_age < 25,  0.50,
+              ifelse(driver_age < 30,  0.20,
+              ifelse(driver_age > 65,  0.25, 0)))
+  area_eff <- c(urban = 0.30, suburban = 0.0, rural = -0.25)[area]
+  type_eff <- c(sedan = 0.0, suv = 0.10, hatchback = -0.10, sports = 0.45)[vehicle_type]
+  gen_eff  <- c(M = 0.12, F = 0.0)[gender]
+
+  log_rate <- log(0.10) +
+    age_eff +
+    0.015 * vehicle_age +
+    -0.000003 * vehicle_value +
+    area_eff +
+    type_eff +
+    gen_eff +
+    -0.04 * bonus_malus
+
+  nclaims    <- stats::rpois(n, lambda = exposure * exp(log_rate))
+  claim_freq <- nclaims / exposure
+
+  df <- data.frame(
+    driver_age    = as.integer(driver_age),
+    vehicle_age   = as.integer(vehicle_age),
+    vehicle_value = as.integer(vehicle_value),
+    area          = area,
+    vehicle_type  = vehicle_type,
+    gender        = gender,
+    bonus_malus   = as.integer(bonus_malus),
+    exposure      = exposure,
+    nclaims       = as.integer(nclaims),
+    claim_freq    = claim_freq,
+    stringsAsFactors = FALSE
+  )
+
+  idx_train   <- seq_len(round(n * 0.70))
+  idx_test    <- seq(round(n * 0.70) + 1L, round(n * 0.85))
+  idx_holdout <- seq(round(n * 0.85) + 1L, n)
+
+  list(
+    train   = df[idx_train,   ],
+    test    = df[idx_test,    ],
+    holdout = df[idx_holdout, ]
   )
 }
 

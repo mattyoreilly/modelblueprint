@@ -29,19 +29,8 @@ better.
 
 ``` r
 
-mb <- mb_glm_binomial()
-mtcars$pred_model1 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
-mtcars$pred_model2 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
-
 # Gains chart — Gini shown in legend
 gain(mb)
-
-# Compare two models on the same chart
-gain(
-  mtcars,
-  pred     = c("pred_model1", "pred_model2"),
-  obs      = "vs"
-)
 ```
 
 **When to use it:** The gains chart is the primary performance metric in
@@ -59,10 +48,11 @@ average.
 
 ``` r
 
-mb <- mb_glm_binomial()
-
 # Calibration chart
-pred_vs_obs(mb, ret = "data")
+pred_vs_obs(mb)
+```
+
+``` r
 
 # More bins for finer resolution
 pred_vs_obs(mb, bins = 20L)
@@ -98,10 +88,10 @@ systematic pattern indicates model misspecification.
 
 ``` r
 
-mb <- mb_glm_binomial()
-
-# Raw residuals (obs - pred)
 residuals_grouped(mb)
+```
+
+``` r
 
 # Pearson residuals — scaled by sqrt(pred), useful for count/rate models
 residuals_grouped(mb, residual_type = "pearson")
@@ -132,9 +122,9 @@ observed line reveals which model is closer to reality in that region.
 
 ``` r
 
-# Compare two blueprints
-mb1 <- mb_lm_regression()
-mb2 <- mb_glm_regression()
+# Compare two frequency blueprints
+mb1 <- mb_glm_poisson_freq()
+mb2 <- mb_lm_regression()   # different model on different data — illustrative
 
 sami(list(mb1, mb2), bins = 10L)
 ```
@@ -143,12 +133,12 @@ On a plain data frame with predictions already attached:
 
 ``` r
 
-df        <- mtcars
-df$pred1  <- predict(mb1, mtcars) + rnorm(nrow(mtcars))
-df$pred2  <- predict(mb2, mtcars) + rnorm(nrow(mtcars))
+train         <- mb@train
+train$pred1   <- predict(mb, train)
+train$pred2   <- predict(mb, train) * runif(nrow(train), 0.8, 1.2)  # perturbed
 
-sami(df, obs = "mpg", pred = c("pred1", "pred2"),
-     exposure = "exposure", bins = 5, recalib = TRUE)
+sami(train, obs = "claim_freq", pred = c("pred1", "pred2"),
+     exposure = "exposure", bins = 10)
 ```
 
 With `recalib = TRUE`, both predictions are scaled to match the observed

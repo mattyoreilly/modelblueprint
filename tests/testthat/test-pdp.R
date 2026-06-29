@@ -933,8 +933,15 @@ describe("compute_pdp", {
 
   pdp_call <- function() {
     modelblueprint:::compute_pdp(
-      df, "x_num", bin_info, all_bins, ".expo",
-      m, function(x) x, function(x) x, function(p, d) p
+      df,
+      "x_num",
+      bin_info,
+      all_bins,
+      ".expo",
+      m,
+      function(x) x,
+      function(x) x,
+      function(p, d) p
     )
   }
 
@@ -1042,8 +1049,7 @@ describe("pdp — H2O model compatibility", {
             h2o::h2o.init(
               nthreads = 1L,
               max_mem_size = "512m",
-              port = 54399L,
-              start_h2o = TRUE
+              port = 54399L
             ),
             error = function(e) e
           ),

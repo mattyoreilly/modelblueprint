@@ -24,13 +24,42 @@ training data, pipeline functions, and deployment metadata. The goal is a
 single object that carries everything needed to reproduce predictions,
 run diagnostics, and save/restore the model.
 
+The example below fits a Poisson frequency model on a small synthetic
+car insurance dataset. `claim_freq` (claims per unit exposure) is the target;
+`nclaims` is the raw count modelled with a log-exposure offset.
+
 ```{r create}
+# Synthetic car insurance data ------------------------------------------------
+set.seed(42L)
+n   <- 500L
+ins <- data.frame(
+  driver_age  = sample(18L:75L, n, replace = TRUE),
+  vehicle_age = sample(0L:15L,  n, replace = TRUE),
+  gender      = sample(c("M", "F"), n, replace = TRUE),
+  exposure    = round(runif(n, 0.1, 1.0), 2)
+)
+ins$nclaims    <- rpois(n, lambda = ins$exposure * exp(
+  log(0.08) + ifelse(ins$driver_age < 25, 0.5, 0) + 0.01 * ins$vehicle_age
+))
+ins$claim_freq <- ins$nclaims / ins$exposure
+train <- ins[1:400, ]
+test  <- ins[401:500, ]
+
+# Wrap the fitted model -------------------------------------------------------
 mb <- modelblueprint(
-  model              = glm(vs ~ wt + hp, data = mtcars, family = binomial),
-  train              = mtcars,
-  y_name             = "vs",
-  model_display_name = "logistic_vs",
-  deploy_notes       = "Logistic regression baseline"
+  model = glm(
+    nclaims ~ driver_age + vehicle_age + gender + offset(log(exposure)),
+    data   = train,
+    family = poisson
+  ),
+  post_process_fun   = function(preds, df_raw) preds / df_raw$exposure,
+  train              = train,
+  test               = test,
+  y_name             = "claim_freq",
+  expo_name          = "exposure",
+  x_original_inputs  = c("driver_age", "vehicle_age", "gender"),
+  model_display_name = "glm_poisson_freq",
+  deploy_notes       = "GLM Poisson frequency: motor third-party liability"
 )
 
 print(mb)
@@ -40,21 +69,24 @@ print(mb)
 
 `predict()` applies the full pipeline — pre-processing, feature engineering,
 model prediction, and post-processing — and always returns a numeric vector.
+The `post_process_fun` above converts predicted counts to predicted claim
+frequency automatically.
 
 ```{r predict}
-preds <- predict(mb, mtcars)
+preds <- predict(mb, test)
 head(preds)
 ```
 
 ## One-way analysis
 
 `one_way()` shows the exposure-weighted mean of the target across bins of a
-feature, giving a quick view of the marginal relationship. Pass `predictions = TRUE`
-to overlay the model's in-sample predictions as a lift chart.
+feature, giving a quick view of the marginal relationship. Pass
+`predictions = TRUE` to overlay the model's in-sample predictions as a lift
+chart.
 
 ```{r one-way}
-one_way(mb, var = "wt")
-one_way(mb, var = "wt", predictions = TRUE)   # lift chart
+one_way(mb, var = "driver_age", bins = 5)
+one_way(mb, var = "driver_age", predictions = TRUE, bins = 5)   # lift chart
 ```
 
 ## Partial dependence plot
@@ -63,7 +95,7 @@ one_way(mb, var = "wt", predictions = TRUE)   # lift chart
 for all other features by averaging predictions across the training data.
 
 ```{r pdp}
-pdp(mb, var = "wt", bins = 8L)
+pdp(mb, var = "driver_age", bins = 10)
 ```
 
 ## Model diagnostics
@@ -86,13 +118,19 @@ function is applied to both training data and new data at prediction time.
 
 ```{r feat-eng}
 mb_fe <- modelblueprint(
-  model        = lm(mpg ~ wt + wt2, data = transform(mtcars, wt2 = wt^2)),
-  feat_eng_fun = function(df) transform(df, wt2 = wt^2),
-  train        = mtcars,
-  y_name       = "mpg"
+  model = glm(
+    nclaims ~ driver_age + driver_age2 + vehicle_age + offset(log(exposure)),
+    data   = transform(train, driver_age2 = driver_age^2),
+    family = poisson
+  ),
+  feat_eng_fun       = function(df) transform(df, driver_age2 = driver_age^2),
+  post_process_fun   = function(preds, df_raw) preds / df_raw$exposure,
+  train              = train,
+  y_name             = "claim_freq",
+  expo_name          = "exposure"
 )
 
-head(predict(mb_fe, mtcars))
+head(predict(mb_fe, test))
 ```
 
 ## Saving and loading
@@ -101,34 +139,9 @@ head(predict(mb_fe, mtcars))
 functions — to a `.tar.gz` archive. `loadmb()` restores it exactly.
 
 ```{r save-load}
-savemb(mb, path = tempdir(), filename = "logistic_vs")
-mb2 <- loadmb(file.path(tempdir(), "logistic_vs.tar.gz"))
+savemb(mb, path = tempdir(), filename = "glm_poisson_freq")
+mb2 <- loadmb(file.path(tempdir(), "glm_poisson_freq.tar.gz"))
 
 # Predictions are identical
-all.equal(predict(mb, mtcars), predict(mb2, mtcars))
-```
-
-## Example blueprints
-
-The package ships with example constructors for common model types. Those
-backed by base-R run without extra packages:
-
-```{r examples-base}
-mb_lm  <- mb_lm_regression()
-mb_glm <- mb_glm_binomial()
-
-one_way(mb_lm,  var = "wt", predictions = TRUE)
-pdp(mb_lm,  var = "hp")
-gain(mb_glm)
-```
-
-Constructors for tree-based and boosted models are also available but require
-their respective packages to be installed:
-
-```{r examples-optional, eval = requireNamespace("randomForest", quietly = TRUE) && requireNamespace("xgboost", quietly = TRUE)}
-mb_rf  <- mb_rf_regression()      # requires randomForest
-mb_xgb <- mb_xgb_classification() # requires xgboost
-
-one_way(mb_rf,  var = "wt", predictions = TRUE)
-pdp(mb_xgb, var = "hp")
+all.equal(predict(mb, test), predict(mb2, test))
 ```

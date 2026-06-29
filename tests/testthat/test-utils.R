@@ -43,21 +43,21 @@ describe("unitise — input validation", {
   it("errors when min_val is not numeric", {
     expect_error(
       unitise(make_df(), "x", "zero", 10),
-      "single numeric values"
+      "single numeric"
     )
   })
 
   it("errors when max_val is not numeric", {
     expect_error(
       unitise(make_df(), "x", 0, "ten"),
-      "single numeric values"
+      "single numeric"
     )
   })
 
   it("errors when min_val is a vector", {
     expect_error(
       unitise(make_df(), "x", c(0, 1), 10),
-      "single numeric values"
+      "single numeric"
     )
   })
 

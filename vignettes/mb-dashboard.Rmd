@@ -22,17 +22,9 @@ well-calibrated, and how each feature drives predictions --- without writing
 twenty lines of plotting code for every diagnostic. `mb_dashboard()` gives you
 all of that in a single function call.
 
-```{r build-mb, include = FALSE}
-# Built silently so later eval = FALSE chunks can reference `mb` coherently.
-set.seed(42L)
-mb <- modelblueprint(
-  model              = glm(vs ~ wt + hp + am, data = mtcars, family = binomial),
-  train              = mtcars[1:24, ],
-  test               = mtcars[25:32, ],
-  y_name             = "vs",
-  x_original_inputs  = c("wt", "hp", "am"),
-  model_display_name = "logistic_vs"
-)
+```{r build-mb, include = FALSE, eval = FALSE}
+# Reference object for later eval = FALSE chunks — not executed during build.
+mb <- mb_glm_poisson_freq()
 ```
 
 ## Required packages
@@ -54,14 +46,7 @@ Build a `modelblueprint` with at least one data split and call
 until you close the window.
 
 ```{r launch-build, eval = FALSE}
-mb <- modelblueprint(
-  model              = glm(vs ~ wt + hp + am, data = mtcars, family = binomial),
-  train              = mtcars[1:24, ],
-  test               = mtcars[25:32, ],
-  y_name             = "vs",
-  x_original_inputs  = c("wt", "hp", "am"),
-  model_display_name = "logistic_vs"
-)
+mb <- mb_glm_poisson_freq()
 ```
 
 ```{r launch-app, eval = FALSE}
@@ -74,7 +59,7 @@ The built-in example constructors in `?mb_examples` provide ready-made objects
 for quick experimentation:
 
 ```{r examples, eval = FALSE}
-mb_dashboard(mb_glm_binomial())
+mb_dashboard(mb_glm_poisson_freq())
 mb_dashboard(mb_rf_regression())
 ```
 
@@ -153,7 +138,7 @@ examining dense gain curves in detail.
 
 ## The PDPs tab
 
-```{r fig-pdp, echo = FALSE, out.width = "100%", fig.cap = "The PDPs tab showing the marginal effect of wt on predicted vs. the observed mean."}
+```{r fig-pdp, echo = FALSE, out.width = "100%", fig.cap = "The PDPs tab showing the marginal effect of driver_age on predicted vs. the observed mean."}
 knitr::include_graphics("figures/dashboard-pdp.png")
 ```
 
@@ -164,7 +149,7 @@ reactive controls.
 
 ```{r pdp-outside, eval = FALSE}
 # The same chart outside the dashboard:
-pdp(mb, var = "wt")
+pdp(mb, var = "driver_age")
 ```
 
 **Sample size** controls how many rows are used for the PDP computation.
@@ -191,7 +176,7 @@ Enabling **Overlay predictions** adds a second line for the model's
 exposure-weighted mean prediction per bin, turning the chart into a lift chart.
 Gaps between the two lines reveal where the model and the data disagree.
 
-```{r fig-ow-split, echo = FALSE, out.width = "100%", fig.cap = "Split by am: the effect of wt on vs differs between automatic (0) and manual (1) transmissions."}
+```{r fig-ow-split, echo = FALSE, out.width = "100%", fig.cap = "Split by gender: the effect of driver_age on claim frequency differs between male and female policyholders."}
 knitr::include_graphics("figures/dashboard-oneway-split.png")
 ```
 
@@ -201,7 +186,7 @@ differs across subgroups.
 
 ```{r ow-outside, eval = FALSE}
 # The same chart outside the dashboard:
-one_way(mb, var = "wt", predictions = TRUE)
+one_way(mb, var = "driver_age", predictions = TRUE)
 ```
 
 ---
@@ -230,12 +215,12 @@ diagnostic function, so you can take advantage of the cache when working
 outside the dashboard too:
 
 ```{r precomputed, eval = FALSE}
-preds <- predict(mb, mtcars)
+preds <- predict(mb, mb@train)
 
 gain(mb,               set = "train", precomputed_preds = preds)
 pred_vs_obs(mb,        set = "train", precomputed_preds = preds)
 residuals_grouped(mb,  set = "train", precomputed_preds = preds)
-one_way(mb, var = "wt", predictions = TRUE, precomputed_preds = preds)
+one_way(mb, var = "driver_age", predictions = TRUE, precomputed_preds = preds)
 ```
 
 ---

@@ -1137,6 +1137,12 @@ resolve_exposure <- function(object, df) {
 .onLoad <- function(libname, pkgname) {
   ns <- asNamespace(pkgname)
   registerS3method(
+    "print",
+    "modelblueprint::modelblueprint",
+    print.modelblueprint,
+    envir = ns
+  )
+  registerS3method(
     "predict",
     "modelblueprint::modelblueprint",
     predict.modelblueprint,
@@ -1210,4 +1216,32 @@ resolve_exposure <- function(object, df) {
     print.mb_layer,
     envir = ns
   )
+
+  # extract_* and set_* verbs (R/extract.R)
+  for (.generic in c(
+    "extract_fit",
+    "extract_train", "extract_test", "extract_holdout",
+    "extract_pre_process_fun", "extract_feat_eng_fun", "extract_post_process_fun",
+    "extract_original_inputs", "extract_feature_names",
+    "extract_target", "extract_yhat_name",
+    "extract_exposure_name", "extract_exposure_value", "extract_exposure_zero_rep",
+    "extract_offset_name", "extract_offset_value",
+    "extract_display_name", "extract_deploy_notes",
+    "set_model",
+    "set_train", "set_test", "set_holdout",
+    "set_pre_process_fun", "set_feat_eng_fun", "set_post_process_fun",
+    "set_original_inputs", "set_feature_names",
+    "set_target", "set_yhat_name",
+    "set_exposure_name", "set_exposure_value", "set_exposure_zero_rep",
+    "set_offset_name", "set_offset_value",
+    "set_display_name", "set_deploy_notes"
+  )) {
+    registerS3method(
+      .generic,
+      "modelblueprint::modelblueprint",
+      get(paste0(.generic, ".modelblueprint"), envir = ns),
+      envir = ns
+    )
+  }
+  rm(.generic)
 }

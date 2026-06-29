@@ -27,6 +27,7 @@ pdp(
   pre_process_fun = function(df) df,
   feat_eng_fun = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
+  seed = 2024L,
   ...
 )
 ```
@@ -98,6 +99,12 @@ pdp(
 
   `function(preds, df_raw) -> numeric` applied to raw model predictions.
   Default is the identity function.
+
+- seed:
+
+  `[integer(1)]` Seed for the PDP row sample, applied via
+  [`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
+  so the global RNG stream is left undisturbed. Default `2024L`.
 
 ## Value
 

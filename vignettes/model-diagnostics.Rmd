@@ -17,6 +17,10 @@ knitr::opts_chunk$set(
 library(modelblueprint)
 ```
 
+```{r mb, include = FALSE}
+mb <- mb_glm_poisson_freq()
+```
+
 ## Overview
 
 modelblueprint provides four diagnostic charts for evaluating model
@@ -42,20 +46,9 @@ A perfect model captures all losses in the top-risk segment. A random model
 follows the diagonal. The **Gini coefficient** summarises rank-ordering ability
 as a single number between -1 and 1 — higher is better.
 
-```{r gain, eval = FALSE}
-mb <- mb_glm_binomial()
-mtcars$pred_model1 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
-mtcars$pred_model2 <- predict(mb, mtcars) + rnorm(nrow(mtcars))
-
+```{r gain}
 # Gains chart — Gini shown in legend
 gain(mb)
-
-# Compare two models on the same chart
-gain(
-  mtcars,
-  pred     = c("pred_model1", "pred_model2"),
-  obs      = "vs"
-)
 ```
 
 **When to use it:** The gains chart is the primary performance metric in
@@ -70,12 +63,12 @@ The calibration chart bins predictions and plots the average predicted rate
 against the average observed rate per bin. A well-calibrated model has points
 close to the diagonal — predicted and observed are equal on average.
 
-```{r pred-vs-obs, eval = FALSE}
-mb <- mb_glm_binomial()
-
+```{r pred-vs-obs}
 # Calibration chart
-pred_vs_obs(mb, ret = "data")
+pred_vs_obs(mb)
+```
 
+```{r pred-vs-obs-opts, eval = FALSE}
 # More bins for finer resolution
 pred_vs_obs(mb, bins = 20L)
 
@@ -108,12 +101,11 @@ the difference between observed and predicted — with a loess trend line and
 A well-specified model has residuals scattered randomly around zero. A
 systematic pattern indicates model misspecification.
 
-```{r residuals, eval = FALSE}
-mb <- mb_glm_binomial()
-
-# Raw residuals (obs - pred)
+```{r residuals}
 residuals_grouped(mb)
+```
 
+```{r residuals-opts, eval = FALSE}
 # Pearson residuals — scaled by sqrt(pred), useful for count/rate models
 residuals_grouped(mb, residual_type = "pearson")
 
@@ -140,9 +132,9 @@ Where the ratio is far from 1, the models disagree substantially. The
 observed line reveals which model is closer to reality in that region.
 
 ```{r sami, eval = FALSE}
-# Compare two blueprints
-mb1 <- mb_lm_regression()
-mb2 <- mb_glm_regression()
+# Compare two frequency blueprints
+mb1 <- mb_glm_poisson_freq()
+mb2 <- mb_lm_regression()   # different model on different data — illustrative
 
 sami(list(mb1, mb2), bins = 10L)
 ```
@@ -150,12 +142,12 @@ sami(list(mb1, mb2), bins = 10L)
 On a plain data frame with predictions already attached:
 
 ```{r sami-df, eval = FALSE}
-df        <- mtcars
-df$pred1  <- predict(mb1, mtcars) + rnorm(nrow(mtcars))
-df$pred2  <- predict(mb2, mtcars) + rnorm(nrow(mtcars))
+train         <- mb@train
+train$pred1   <- predict(mb, train)
+train$pred2   <- predict(mb, train) * runif(nrow(train), 0.8, 1.2)  # perturbed
 
-sami(df, obs = "mpg", pred = c("pred1", "pred2"),
-     exposure = "exposure", bins = 5, recalib = TRUE)
+sami(train, obs = "claim_freq", pred = c("pred1", "pred2"),
+     exposure = "exposure", bins = 10)
 ```
 
 With `recalib = TRUE`, both predictions are scaled to match the observed

@@ -17,6 +17,23 @@ reference:
       - saveMB
       - loadMB
 
+  - title: "Accessors and updaters"
+    desc: >
+      Tidy `extract_*` and `set_*` verbs for reading and replacing individual
+      slots. Each `set_*` returns a new modelblueprint — never mutates in place
+      — and runs the S7 validator automatically.
+    contents:
+      - extract_fit
+      - extract_splits
+      - extract_pipeline
+      - extract_features
+      - extract_metadata
+      - set_model
+      - set_splits
+      - set_pipeline
+      - set_features
+      - set_metadata
+
   - title: "Data manipulation"
     desc: >
       dplyr-style verbs that operate on all data splits inside a modelblueprint
@@ -59,6 +76,13 @@ reference:
       - shap.modelblueprint
       - sami
 
+  - title: "Batch validation"
+    desc: >
+      Generate and save a full suite of validation, one-way, PDP, stability,
+      and SHAP plots for every dataset split in a single call.
+    contents:
+      - model_validation
+
   - title: "Dashboard"
     desc: >
       Interactive Shiny app that combines all diagnostics and feature analysis
@@ -71,10 +95,12 @@ reference:
       Helper functions useful in pre- and post-processing pipelines.
     contents:
       - unitise
+      - save_plots
 
   - title: "Example modelblueprints"
     desc: >
-      Ready-made modelblueprint objects built on the `mtcars` dataset. Useful
-      for exploring the package without needing your own data.
+      Ready-made modelblueprint objects for exploring the package without
+      needing your own data. Includes regression, classification, Poisson
+      frequency (car insurance), random forest, XGBoost, and H2O examples.
     contents:
       - mb_examples

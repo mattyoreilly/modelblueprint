@@ -17,6 +17,10 @@ knitr::opts_chunk$set(
 library(modelblueprint)
 ```
 
+```{r mb, include = FALSE}
+mb <- mb_glm_poisson_freq()
+```
+
 ## What is a partial dependence plot?
 
 A partial dependence plot (PDP) reveals the **marginal effect** of a single
@@ -39,20 +43,19 @@ The chart has the same dual-axis layout as one-way plots:
 
 ## Basic usage
 
-```{r basic, eval = FALSE}
-library(modelblueprint)
-
-mb <- mb_glm_binomial()
-
-# PDP for wt — everything pulled from blueprint slots
-pdp(mb, var = "wt")
+```{r basic}
+# PDP for driver_age — everything pulled from blueprint slots
+pdp(mb, var = "driver_age")
 ```
 
 On a plain data frame:
 
 ```{r dataframe, eval = FALSE}
-model <- glm(vs ~ wt + hp, data = mtcars, family = binomial)
-pdp(mtcars, var = "wt", obs = "vs", model = model)
+model <- glm(
+  nclaims ~ driver_age + vehicle_age + offset(log(exposure)),
+  data = mb@train, family = poisson
+)
+pdp(mb@train, var = "driver_age", obs = "claim_freq", model = model)
 ```
 
 ## Understanding the three lines
@@ -74,20 +77,17 @@ than the feature itself.
 
 ## Controlling bins and sample size
 
-```{r bins, eval = FALSE}
+```{r bins}
 # Coarser view
-pdp(mb, var = "wt", bins = 5L)
-
-# Finer view — slower for large models
-pdp(mb, var = "wt", bins = 20L)
+pdp(mb, var = "driver_age", bins = 8L)
 ```
 
 PDP computation requires predicting across the full dataset for each bin.
 For large datasets, `sample_size` caps the number of rows used:
 
-```{r sample-size, eval = FALSE}
+```{r sample-size}
 # Use at most 1,000 rows for PDP computation
-pdp(mb, var = "wt", sample_size = 1000L)
+pdp(mb, var = "vehicle_value", sample_size = 1000L)
 ```
 
 The default is 10,000. For most models, 1,000 rows gives a stable PDP line
@@ -95,15 +95,15 @@ at a fraction of the computation cost.
 
 ## Binning strategy
 
-```{r type-agg, eval = FALSE}
-pdp(mb, var = "wt", type_agg = "equal_range")
+```{r type-agg}
+pdp(mb, var = "vehicle_age", type_agg = "equal_range")
 ```
 
 ## Choosing the dataset
 
-```{r set, eval = FALSE}
-pdp(mb, var = "wt", set = "train")
-pdp(mb, var = "wt", set = "test")    # out-of-sample PDP
+```{r set}
+pdp(mb, var = "driver_age", set = "train")
+pdp(mb, var = "driver_age", set = "test")    # out-of-sample PDP
 ```
 
 Computing the PDP on the test set is a useful check — if the PDP shape
@@ -112,8 +112,8 @@ correlations present only in training data.
 
 ## Returning the data
 
-```{r ret-data, eval = FALSE}
-d <- pdp(mb, var = "wt", ret = "data")
+```{r ret-data}
+d <- pdp(mb, var = "driver_age", ret = "data")
 head(d)
 ```
 
@@ -121,7 +121,7 @@ Columns returned:
 
 | Column | Description |
 |---|---|
-| `wt` | Bin label (interval string or level name) |
+| `driver_age` | Bin label (interval string or level name) |
 | `obs_mean` | Exposure-weighted observed mean |
 | `pred_mean` | Exposure-weighted predicted mean |
 | `pdp_mean` | Marginal PDP value |
@@ -134,8 +134,8 @@ Columns returned:
 `pdp()` works with any model that implements `predict()`:
 
 ```{r models, eval = FALSE}
-# GLM — response scale (probabilities for binomial)
-pdp(mb_glm_binomial(), var = "wt")
+# Poisson frequency GLM
+pdp(mb_glm_poisson_freq(), var = "driver_age")
 
 # Random forest
 pdp(mb_rf_regression(), var = "wt")
@@ -157,6 +157,7 @@ ignores it once other features are controlled for. A sloping line means the
 feature drives predictions in that direction across the full data distribution,
 not just where it correlates with other predictors.
 
-For binary classification models, PDP values are probabilities. A PDP that
-rises from 0.1 to 0.6 across the feature range means the model assigns
-substantially higher probability of the positive class at higher feature values.
+For frequency models, PDP values are on the claim frequency scale. A PDP
+that rises from 0.05 to 0.20 across the `driver_age` range means the model
+assigns substantially higher expected claim frequency to younger drivers,
+even after controlling for vehicle age, gender, and other features.

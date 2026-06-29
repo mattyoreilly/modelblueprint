@@ -7,6 +7,7 @@
 \alias{mb_glm_regression}
 \alias{mb_glm_binomial}
 \alias{mb_glm_poisson}
+\alias{mb_glm_poisson_freq}
 \alias{mb_rpart_regression}
 \alias{mb_rpart_classification}
 \alias{mb_rf_regression}
@@ -27,6 +28,8 @@ mb_glm_regression()
 mb_glm_binomial()
 
 mb_glm_poisson()
+
+mb_glm_poisson_freq()
 
 mb_rpart_regression()
 
@@ -56,13 +59,19 @@ A \code{modelblueprint} object.
 }
 \description{
 A family of constructor functions that return ready-to-use
-\code{modelblueprint} objects for common R model types. All examples use a
-small synthetic dataset with a reproducible 75/25 train/test split.
+\code{modelblueprint} objects for common R model types.
 }
 \details{
-\strong{Regression target:} \code{mpg} (continuous)
+\strong{Regression target:} \code{mpg} (continuous) — synthetic mtcars-like data,
+75/25 train/test split.
 
-\strong{Classification target:} \code{vs} (binary 0/1)
+\strong{Classification target:} \code{vs} (binary 0/1) — same synthetic dataset.
+
+\strong{Frequency target:} \code{claim_freq} (claims per unit exposure) — synthetic
+car insurance dataset with ~5,000 rows, 70/15/15 train/test/holdout split.
+The underlying model is a Poisson GLM on \code{nclaims} with
+\code{offset(log(exposure))}; a \code{post_process_fun} converts predicted counts to
+predicted frequency before returning.
 
 Functions that wrap optional packages (\code{rpart}, \code{randomForest}, \code{xgboost},
 \code{h2o}) will error informatively if the package is not installed. H2O
@@ -71,7 +80,8 @@ automatically.
 
 \code{post_process_fun} is set on classification models that return a probability
 matrix (rpart, randomForest) so that \code{predict()} always returns a plain
-numeric vector of P(class = 1).
+numeric vector of P(class = 1), and on \code{mb_glm_poisson_freq()} to convert
+predicted counts to predicted claim frequency.
 }
 \examples{
 mb <- mb_lm_regression()
@@ -80,6 +90,10 @@ one_way(mb, var = "wt")
 
 mb_cls <- mb_glm_binomial()
 predict(mb_cls, mb_cls@test)   # returns probabilities in 0 to 1
+
+mb_freq <- mb_glm_poisson_freq()
+predict(mb_freq, mb_freq@test) # returns predicted claim frequency
+one_way(mb_freq, var = "driver_age", predictions = TRUE)
 
 }
 \concept{Example modelblueprints}

@@ -17,6 +17,59 @@ pipeline functions, and deployment metadata.
   [`loadMB()`](https://mattyoreilly.github.io/modelblueprint/reference/loadmb.md)
   : Load a modelblueprint from disk
 
+## Accessors and updaters
+
+Tidy `extract_*` and `set_*` verbs for reading and replacing individual
+slots. Each `set_*` returns a new modelblueprint — never mutates in
+place — and runs the S7 validator automatically.
+
+- [`extract_fit()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_fit.md)
+  : Extract the fitted model from a modelblueprint
+- [`extract_train()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_splits.md)
+  [`extract_test()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_splits.md)
+  [`extract_holdout()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_splits.md)
+  : Extract a data split from a modelblueprint
+- [`extract_pre_process_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_pipeline.md)
+  [`extract_feat_eng_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_pipeline.md)
+  [`extract_post_process_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_pipeline.md)
+  : Extract pipeline functions from a modelblueprint
+- [`extract_original_inputs()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_features.md)
+  [`extract_feature_names()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_features.md)
+  : Extract feature name vectors from a modelblueprint
+- [`extract_target()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_yhat_name()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_exposure_name()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_exposure_value()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_exposure_zero_rep()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_offset_name()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_offset_value()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_display_name()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  [`extract_deploy_notes()`](https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.md)
+  : Extract scalar metadata from a modelblueprint
+- [`set_model()`](https://mattyoreilly.github.io/modelblueprint/reference/set_model.md)
+  : Swap the fitted model inside a modelblueprint
+- [`set_train()`](https://mattyoreilly.github.io/modelblueprint/reference/set_splits.md)
+  [`set_test()`](https://mattyoreilly.github.io/modelblueprint/reference/set_splits.md)
+  [`set_holdout()`](https://mattyoreilly.github.io/modelblueprint/reference/set_splits.md)
+  : Replace a data split in a modelblueprint
+- [`set_pre_process_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/set_pipeline.md)
+  [`set_feat_eng_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/set_pipeline.md)
+  [`set_post_process_fun()`](https://mattyoreilly.github.io/modelblueprint/reference/set_pipeline.md)
+  : Replace pipeline functions in a modelblueprint
+- [`set_original_inputs()`](https://mattyoreilly.github.io/modelblueprint/reference/set_features.md)
+  [`set_feature_names()`](https://mattyoreilly.github.io/modelblueprint/reference/set_features.md)
+  : Replace feature name vectors in a modelblueprint
+- [`set_target()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_yhat_name()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_exposure_name()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_exposure_value()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_exposure_zero_rep()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_offset_name()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_offset_value()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_display_name()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  [`set_deploy_notes()`](https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.md)
+  : Set scalar metadata on a modelblueprint
+
 ## Data manipulation
 
 dplyr-style verbs that operate on all data splits inside a
@@ -41,7 +94,7 @@ output of one model feeds the input of the next.
   :
 
   Construct a single layer for use in an
-  [`mb_seq()`](https://rdrr.io/pkg/modelblueprint/man/mb_seq.html)
+  [`mb_seq()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_seq.md)
 
 - [`predict(`*`<mb_seq>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/predict.mb_seq.md)
   : Generate predictions from an mb_seq
@@ -81,6 +134,14 @@ predictions.
 - [`sami()`](https://mattyoreilly.github.io/modelblueprint/reference/sami.md)
   : SAMI Double Lift Chart
 
+## Batch validation
+
+Generate and save a full suite of validation, one-way, PDP, stability,
+and SHAP plots for every dataset split in a single call.
+
+- [`model_validation()`](https://mattyoreilly.github.io/modelblueprint/reference/model_validation.md)
+  : Generate and save model validation plots
+
 ## Dashboard
 
 Interactive Shiny app that combines all diagnostics and feature analysis
@@ -95,17 +156,21 @@ Helper functions useful in pre- and post-processing pipelines.
 
 - [`unitise()`](https://mattyoreilly.github.io/modelblueprint/reference/unitise.md)
   : unitise a numeric variable to the range 0 to 1
+- [`save_plots()`](https://mattyoreilly.github.io/modelblueprint/reference/save_plots.md)
+  : Save plots or HTML widgets to a single HTML file
 
 ## Example modelblueprints
 
-Ready-made modelblueprint objects built on the `mtcars` dataset. Useful
-for exploring the package without needing your own data.
+Ready-made modelblueprint objects for exploring the package without
+needing your own data. Includes regression, classification, Poisson
+frequency (car insurance), random forest, XGBoost, and H2O examples.
 
 - [`mb_lm_regression()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_lm_classification()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_glm_regression()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_glm_binomial()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_glm_poisson()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
+  [`mb_glm_poisson_freq()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_rpart_regression()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_rpart_classification()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
   [`mb_rf_regression()`](https://mattyoreilly.github.io/modelblueprint/reference/mb_examples.md)
