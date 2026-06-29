@@ -1,8 +1,7 @@
 # SAMI Double Lift Chart
 
-For each pair of competing predictions, bins the ratio of one prediction
-to another and plots the observed mean alongside both model means per
-bin. Useful for diagnosing where two models systematically disagree.
+SAMI stands for **Score Analysis for Model Improvement** — an actuarial
+diagnostic technique for comparing two competing models.
 
 ## Usage
 
@@ -91,6 +90,14 @@ sami(
 A named list of plotly objects or a data.table depending on `ret`.
 
 A named list of plotly objects or a data.table.
+
+## Details
+
+For each pair of competing predictions, bins the ratio of one prediction
+to another and plots the observed mean alongside both model means per
+bin. Useful for diagnosing where two models systematically disagree and
+which model better tracks the observed response across segments of the
+data.
 
 ## Examples
 

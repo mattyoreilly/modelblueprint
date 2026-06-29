@@ -22,6 +22,11 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_pdp.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_shap.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_features.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_fit.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_pipeline.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_splits.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/filter.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/gain.default.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/gain.html</loc></url>
@@ -33,6 +38,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mb_layer.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mb_seq.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/model_predict.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/model_validation.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mutate.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.html</loc></url>
@@ -48,6 +54,12 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sami.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/saveMB.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/save_plots.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/set_features.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/set_metadata.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/set_model.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/set_pipeline.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/set_splits.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/shap.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/shap.modelblueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sig_dig.html</loc></url>

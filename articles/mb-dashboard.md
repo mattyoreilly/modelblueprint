@@ -28,14 +28,7 @@ close the window.
 
 ``` r
 
-mb <- modelblueprint(
-  model              = glm(vs ~ wt + hp + am, data = mtcars, family = binomial),
-  train              = mtcars[1:24, ],
-  test               = mtcars[25:32, ],
-  y_name             = "vs",
-  x_original_inputs  = c("wt", "hp", "am"),
-  model_display_name = "logistic_vs"
-)
+mb <- mb_glm_poisson_freq()
 ```
 
 ``` r
@@ -52,7 +45,7 @@ provide ready-made objects for quick experimentation:
 
 ``` r
 
-mb_dashboard(mb_glm_binomial())
+mb_dashboard(mb_glm_poisson_freq())
 mb_dashboard(mb_rf_regression())
 ```
 
@@ -140,11 +133,11 @@ presentations or for examining dense gain curves in detail.
 
 ## The PDPs tab
 
-![The PDPs tab showing the marginal effect of wt on predicted vs. the
-observed mean.](figures/dashboard-pdp.png)
+![The PDPs tab showing the marginal effect of driver_age on predicted
+vs. the observed mean.](figures/dashboard-pdp.png)
 
-The PDPs tab showing the marginal effect of wt on predicted vs. the
-observed mean.
+The PDPs tab showing the marginal effect of driver_age on predicted
+vs. the observed mean.
 
 A partial dependence plot (PDP) shows the marginal effect of one feature
 on the model’s output, averaged over the joint distribution of all other
@@ -154,7 +147,7 @@ sample size are all reactive controls.
 ``` r
 
 # The same chart outside the dashboard:
-pdp(mb, var = "wt")
+pdp(mb, var = "driver_age")
 ```
 
 **Sample size** controls how many rows are used for the PDP computation.
@@ -186,11 +179,12 @@ exposure-weighted mean prediction per bin, turning the chart into a lift
 chart. Gaps between the two lines reveal where the model and the data
 disagree.
 
-![Split by am: the effect of wt on vs differs between automatic (0) and
-manual (1) transmissions.](figures/dashboard-oneway-split.png)
+![Split by gender: the effect of driver_age on claim frequency differs
+between male and female
+policyholders.](figures/dashboard-oneway-split.png)
 
-Split by am: the effect of wt on vs differs between automatic (0) and
-manual (1) transmissions.
+Split by gender: the effect of driver_age on claim frequency differs
+between male and female policyholders.
 
 The **Split by** dropdown segments each bin by a categorical feature,
 producing one line per level. This is useful for checking whether a
@@ -199,7 +193,7 @@ feature’s effect differs across subgroups.
 ``` r
 
 # The same chart outside the dashboard:
-one_way(mb, var = "wt", predictions = TRUE)
+one_way(mb, var = "driver_age", predictions = TRUE)
 ```
 
 ------------------------------------------------------------------------
@@ -232,12 +226,12 @@ outside the dashboard too:
 
 ``` r
 
-preds <- predict(mb, mtcars)
+preds <- predict(mb, mb@train)
 
 gain(mb,               set = "train", precomputed_preds = preds)
 pred_vs_obs(mb,        set = "train", precomputed_preds = preds)
 residuals_grouped(mb,  set = "train", precomputed_preds = preds)
-one_way(mb, var = "wt", predictions = TRUE, precomputed_preds = preds)
+one_way(mb, var = "driver_age", predictions = TRUE, precomputed_preds = preds)
 ```
 
 ------------------------------------------------------------------------

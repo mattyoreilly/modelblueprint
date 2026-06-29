@@ -16,12 +16,8 @@ The chart has a dual-axis layout:
 
 ``` r
 
-library(modelblueprint)
-
-mb <- mb_glm_binomial()
-
 # Default: 35 equal-exposure bins, target from y_name slot
-one_way(mb, var = "wt")
+one_way(mb, var = "driver_age")
 ```
 
 You can also call
@@ -30,7 +26,7 @@ directly on a data frame:
 
 ``` r
 
-one_way(mtcars, var = "wt", obs = "vs", exposure = "exposure")
+one_way(mb@train, var = "driver_age", obs = "claim_freq", exposure = "exposure")
 ```
 
 ## Lift chart: overlaying model predictions
@@ -41,7 +37,7 @@ and predicted lines reveals where the model over- or under-fits.
 
 ``` r
 
-one_way(mb, var = "wt", predictions = TRUE)
+one_way(mb, var = "driver_age", predictions = TRUE)
 ```
 
 The prediction column is named after `model_display_name` and appears in
@@ -55,13 +51,7 @@ a smoothed version.
 
 ``` r
 
-# Compare two model predictions directly
-one_way(
-  mtcars,
-  var      = "wt",
-  obs      = c("vs", "am"),   # two lines
-  exposure = "exposure"
-)
+one_way(mb, var = "vehicle_age", predictions = TRUE)
 ```
 
 ## Controlling bins
@@ -71,10 +61,7 @@ The `bins` argument controls how many bins the x-axis is divided into.
 ``` r
 
 # Coarser view — 10 bins
-one_way(mb, var = "wt", bins = 10L)
-
-# Finer view — 50 bins
-one_way(mb, var = "wt", bins = 50L)
+one_way(mb, var = "driver_age", bins = 10L)
 ```
 
 ## Binning strategy
@@ -88,7 +75,7 @@ one_way(mb, var = "wt", bins = 50L)
 
 ``` r
 
-one_way(mb, var = "wt", type_agg = "equal_range", bins = 5)
+one_way(mb, var = "vehicle_value", type_agg = "equal_range", bins = 10)
 ```
 
 ## Split variable
@@ -99,7 +86,7 @@ type, region, or claim flag.
 
 ``` r
 
-one_way(mb, var = "mpg", split = "am", bins = 5)   # split by transmission type
+one_way(mb, var = "driver_age", split = "gender", bins = 10)
 ```
 
 ## Choosing the dataset
@@ -110,8 +97,12 @@ check for overfitting.
 
 ``` r
 
-one_way(mb, var = "wt", set = "train")
-one_way(mb, var = "wt", set = "test")
+one_way(mb, var = "driver_age", set = "train")
+```
+
+``` r
+
+one_way(mb, var = "driver_age", set = "test")
 ```
 
 ## Returning the data
@@ -121,8 +112,16 @@ Useful for custom visualisations or further analysis.
 
 ``` r
 
-d <- one_way(mb, var = "wt", ret = "data")
+d <- one_way(mb, var = "driver_age", ret = "data")
 head(d)
+#>    driver_age    split claim_freq exposure
+#>        <char>   <char>      <num>    <num>
+#> 1:    [18,19] __none__  0.2363717    67.69
+#> 2:    (19,21] __none__  0.1578781    63.34
+#> 3:    (21,23] __none__  0.1249777    56.01
+#> 4:    (23,25] __none__  0.1169249    68.42
+#> 5:    (25,26] __none__  0.0307031    32.57
+#> 6:    (26,28] __none__  0.1493348    73.66
 ```
 
 The returned data.table has columns for the bin label, split group,
@@ -132,11 +131,14 @@ exposure, and one column per `obs` variable.
 
 One-way plots handle categorical and low-cardinality integer variables
 automatically — no binning is applied and each level appears as its own
-bar. Levels with more than 2,000 unique values trigger a warning and
-return `NULL`.
+bar.
 
 ``` r
 
-mtcars$cyl_f <- as.character(mtcars$cyl)
-one_way(mtcars, var = "cyl_f", obs = "vs", exposure = "exposure")
+one_way(mb, var = "area")
+```
+
+``` r
+
+one_way(mb, var = "vehicle_type")
 ```

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,6 +74,85 @@
 
         </dt>
         <dd>Load a modelblueprint from disk</dd>
+      </dl></div><div class="section level2">
+      <h2 id="accessors-and-updaters">Accessors and updaters<a class="anchor" aria-label="anchor" href="#accessors-and-updaters"></a></h2>
+
+      <div class="section-desc"><p>Tidy <code>extract_*</code> and <code>set_*</code> verbs for reading and replacing individual slots. Each <code>set_*</code> returns a new modelblueprint — never mutates in place — and runs the S7 validator automatically.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="extract_fit.html">extract_fit()</a></code>
+
+        </dt>
+        <dd>Extract the fitted model from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="extract_splits.html">extract_train()</a></code> <code><a href="extract_splits.html">extract_test()</a></code> <code><a href="extract_splits.html">extract_holdout()</a></code>
+
+        </dt>
+        <dd>Extract a data split from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="extract_pipeline.html">extract_pre_process_fun()</a></code> <code><a href="extract_pipeline.html">extract_feat_eng_fun()</a></code> <code><a href="extract_pipeline.html">extract_post_process_fun()</a></code>
+
+        </dt>
+        <dd>Extract pipeline functions from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="extract_features.html">extract_original_inputs()</a></code> <code><a href="extract_features.html">extract_feature_names()</a></code>
+
+        </dt>
+        <dd>Extract feature name vectors from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="extract_metadata.html">extract_target()</a></code> <code><a href="extract_metadata.html">extract_yhat_name()</a></code> <code><a href="extract_metadata.html">extract_exposure_name()</a></code> <code><a href="extract_metadata.html">extract_exposure_value()</a></code> <code><a href="extract_metadata.html">extract_exposure_zero_rep()</a></code> <code><a href="extract_metadata.html">extract_offset_name()</a></code> <code><a href="extract_metadata.html">extract_offset_value()</a></code> <code><a href="extract_metadata.html">extract_display_name()</a></code> <code><a href="extract_metadata.html">extract_deploy_notes()</a></code>
+
+        </dt>
+        <dd>Extract scalar metadata from a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="set_model.html">set_model()</a></code>
+
+        </dt>
+        <dd>Swap the fitted model inside a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="set_splits.html">set_train()</a></code> <code><a href="set_splits.html">set_test()</a></code> <code><a href="set_splits.html">set_holdout()</a></code>
+
+        </dt>
+        <dd>Replace a data split in a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="set_pipeline.html">set_pre_process_fun()</a></code> <code><a href="set_pipeline.html">set_feat_eng_fun()</a></code> <code><a href="set_pipeline.html">set_post_process_fun()</a></code>
+
+        </dt>
+        <dd>Replace pipeline functions in a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="set_features.html">set_original_inputs()</a></code> <code><a href="set_features.html">set_feature_names()</a></code>
+
+        </dt>
+        <dd>Replace feature name vectors in a modelblueprint</dd>
+
+        <dt>
+
+          <code><a href="set_metadata.html">set_target()</a></code> <code><a href="set_metadata.html">set_yhat_name()</a></code> <code><a href="set_metadata.html">set_exposure_name()</a></code> <code><a href="set_metadata.html">set_exposure_value()</a></code> <code><a href="set_metadata.html">set_exposure_zero_rep()</a></code> <code><a href="set_metadata.html">set_offset_name()</a></code> <code><a href="set_metadata.html">set_offset_value()</a></code> <code><a href="set_metadata.html">set_display_name()</a></code> <code><a href="set_metadata.html">set_deploy_notes()</a></code>
+
+        </dt>
+        <dd>Set scalar metadata on a modelblueprint</dd>
       </dl></div><div class="section level2">
       <h2 id="data-manipulation">Data manipulation<a class="anchor" aria-label="anchor" href="#data-manipulation"></a></h2>
 
@@ -230,6 +309,22 @@
         </dt>
         <dd>SAMI Double Lift Chart</dd>
       </dl></div><div class="section level2">
+      <h2 id="batch-validation">Batch validation<a class="anchor" aria-label="anchor" href="#batch-validation"></a></h2>
+
+      <div class="section-desc"><p>Generate and save a full suite of validation, one-way, PDP, stability, and SHAP plots for every dataset split in a single call.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="model_validation.html">model_validation()</a></code>
+
+        </dt>
+        <dd>Generate and save model validation plots</dd>
+      </dl></div><div class="section level2">
       <h2 id="dashboard">Dashboard<a class="anchor" aria-label="anchor" href="#dashboard"></a></h2>
 
       <div class="section-desc"><p>Interactive Shiny app that combines all diagnostics and feature analysis tools into a single four-tab interface.</p></div>
@@ -261,10 +356,17 @@
 
         </dt>
         <dd>unitise a numeric variable to the range 0 to 1</dd>
+
+        <dt>
+
+          <code><a href="save_plots.html">save_plots()</a></code>
+
+        </dt>
+        <dd>Save plots or HTML widgets to a single HTML file</dd>
       </dl></div><div class="section level2">
       <h2 id="example-modelblueprints">Example modelblueprints<a class="anchor" aria-label="anchor" href="#example-modelblueprints"></a></h2>
 
-      <div class="section-desc"><p>Ready-made modelblueprint objects built on the <code>mtcars</code> dataset. Useful for exploring the package without needing your own data.</p></div>
+      <div class="section-desc"><p>Ready-made modelblueprint objects for exploring the package without needing your own data. Includes regression, classification, Poisson frequency (car insurance), random forest, XGBoost, and H2O examples.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -273,7 +375,7 @@
 
       <dl><dt>
 
-          <code><a href="mb_examples.html">mb_lm_regression()</a></code> <code><a href="mb_examples.html">mb_lm_classification()</a></code> <code><a href="mb_examples.html">mb_glm_regression()</a></code> <code><a href="mb_examples.html">mb_glm_binomial()</a></code> <code><a href="mb_examples.html">mb_glm_poisson()</a></code> <code><a href="mb_examples.html">mb_rpart_regression()</a></code> <code><a href="mb_examples.html">mb_rpart_classification()</a></code> <code><a href="mb_examples.html">mb_rf_regression()</a></code> <code><a href="mb_examples.html">mb_rf_classification()</a></code> <code><a href="mb_examples.html">mb_xgb_regression()</a></code> <code><a href="mb_examples.html">mb_xgb_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_regression()</a></code> <code><a href="mb_examples.html">mb_h2o_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_glm_large()</a></code>
+          <code><a href="mb_examples.html">mb_lm_regression()</a></code> <code><a href="mb_examples.html">mb_lm_classification()</a></code> <code><a href="mb_examples.html">mb_glm_regression()</a></code> <code><a href="mb_examples.html">mb_glm_binomial()</a></code> <code><a href="mb_examples.html">mb_glm_poisson()</a></code> <code><a href="mb_examples.html">mb_glm_poisson_freq()</a></code> <code><a href="mb_examples.html">mb_rpart_regression()</a></code> <code><a href="mb_examples.html">mb_rpart_classification()</a></code> <code><a href="mb_examples.html">mb_rf_regression()</a></code> <code><a href="mb_examples.html">mb_rf_classification()</a></code> <code><a href="mb_examples.html">mb_xgb_regression()</a></code> <code><a href="mb_examples.html">mb_xgb_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_regression()</a></code> <code><a href="mb_examples.html">mb_h2o_classification()</a></code> <code><a href="mb_examples.html">mb_h2o_glm_large()</a></code>
 
         </dt>
         <dd>Example modelblueprint objects</dd>

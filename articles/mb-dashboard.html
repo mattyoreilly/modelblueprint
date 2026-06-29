@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,14 +90,7 @@ call.</p>
 call <code><a href="../reference/mb_dashboard.html">mb_dashboard()</a></code>. The app opens in your browser; the R
 session stays blocked until you close the window.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ModelBlueprint.html">modelblueprint</a></span><span class="op">(</span></span>
-<span>  model              <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">vs</span> <span class="op">~</span> <span class="va">wt</span> <span class="op">+</span> <span class="va">hp</span> <span class="op">+</span> <span class="va">am</span>, data <span class="op">=</span> <span class="va">mtcars</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span>,</span>
-<span>  train              <span class="op">=</span> <span class="va">mtcars</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">24</span>, <span class="op">]</span>,</span>
-<span>  test               <span class="op">=</span> <span class="va">mtcars</span><span class="op">[</span><span class="fl">25</span><span class="op">:</span><span class="fl">32</span>, <span class="op">]</span>,</span>
-<span>  y_name             <span class="op">=</span> <span class="st">"vs"</span>,</span>
-<span>  x_original_inputs  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wt"</span>, <span class="st">"hp"</span>, <span class="st">"am"</span><span class="op">)</span>,</span>
-<span>  model_display_name <span class="op">=</span> <span class="st">"logistic_vs"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mb_examples.html">mb_glm_poisson_freq</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mb_dashboard.html">mb_dashboard</a></span><span class="op">(</span><span class="va">mb</span><span class="op">)</span></span></code></pre></div>
 <p>Any model that implements <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> works —
@@ -107,7 +100,7 @@ supported out of the box. The built-in example constructors in
 <code><a href="../reference/mb_examples.html">?mb_examples</a></code> provide ready-made objects for quick
 experimentation:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mb_dashboard.html">mb_dashboard</a></span><span class="op">(</span><span class="fu"><a href="../reference/mb_examples.html">mb_glm_binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mb_dashboard.html">mb_dashboard</a></span><span class="op">(</span><span class="fu"><a href="../reference/mb_examples.html">mb_glm_poisson_freq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mb_dashboard.html">mb_dashboard</a></span><span class="op">(</span><span class="fu"><a href="../reference/mb_examples.html">mb_rf_regression</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
@@ -197,9 +190,9 @@ presentations or for examining dense gain curves in detail.</p>
 <h2 id="the-pdps-tab">The PDPs tab<a class="anchor" aria-label="anchor" href="#the-pdps-tab"></a>
 </h2>
 <div class="figure">
-<img src="figures/dashboard-pdp.png" class="r-plt" alt="The PDPs tab showing the marginal effect of wt on predicted vs. the observed mean." width="100%"><p class="caption">
-The PDPs tab showing the marginal effect of wt on predicted vs. the
-observed mean.
+<img src="figures/dashboard-pdp.png" class="r-plt" alt="The PDPs tab showing the marginal effect of driver_age on predicted vs. the observed mean." width="100%"><p class="caption">
+The PDPs tab showing the marginal effect of driver_age on predicted
+vs. the observed mean.
 </p>
 </div>
 <p>A partial dependence plot (PDP) shows the marginal effect of one
@@ -208,7 +201,7 @@ all other features. The feature selector, bin count, aggregation
 strategy, and sample size are all reactive controls.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The same chart outside the dashboard:</span></span>
-<span><span class="fu"><a href="../reference/pdp.html">pdp</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"wt"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/pdp.html">pdp</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"driver_age"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Sample size</strong> controls how many rows are used for the
 PDP computation. Larger values are more accurate; smaller values are
 faster. For large or slow models (H2O, XGBoost on millions of rows),
@@ -236,9 +229,9 @@ the model’s exposure-weighted mean prediction per bin, turning the chart
 into a lift chart. Gaps between the two lines reveal where the model and
 the data disagree.</p>
 <div class="figure">
-<img src="figures/dashboard-oneway-split.png" class="r-plt" alt="Split by am: the effect of wt on vs differs between automatic (0) and manual (1) transmissions." width="100%"><p class="caption">
-Split by am: the effect of wt on vs differs between automatic (0) and
-manual (1) transmissions.
+<img src="figures/dashboard-oneway-split.png" class="r-plt" alt="Split by gender: the effect of driver_age on claim frequency differs between male and female policyholders." width="100%"><p class="caption">
+Split by gender: the effect of driver_age on claim frequency differs
+between male and female policyholders.
 </p>
 </div>
 <p>The <strong>Split by</strong> dropdown segments each bin by a
@@ -246,7 +239,7 @@ categorical feature, producing one line per level. This is useful for
 checking whether a feature’s effect differs across subgroups.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The same chart outside the dashboard:</span></span>
-<span><span class="fu"><a href="../reference/one_way.html">one_way</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"wt"</span>, predictions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/one_way.html">one_way</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"driver_age"</span>, predictions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -271,12 +264,12 @@ the UI does not appear frozen.</p>
 every individual diagnostic function, so you can take advantage of the
 cache when working outside the dashboard too:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">mb</span>, <span class="va">mtcars</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">mb</span>, <span class="va">mb</span><span class="op">@</span><span class="va">train</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/gain.html">gain</a></span><span class="op">(</span><span class="va">mb</span>,               set <span class="op">=</span> <span class="st">"train"</span>, precomputed_preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pred_vs_obs.html">pred_vs_obs</a></span><span class="op">(</span><span class="va">mb</span>,        set <span class="op">=</span> <span class="st">"train"</span>, precomputed_preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/residuals_grouped.html">residuals_grouped</a></span><span class="op">(</span><span class="va">mb</span>,  set <span class="op">=</span> <span class="st">"train"</span>, precomputed_preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/one_way.html">one_way</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"wt"</span>, predictions <span class="op">=</span> <span class="cn">TRUE</span>, precomputed_preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/one_way.html">one_way</a></span><span class="op">(</span><span class="va">mb</span>, var <span class="op">=</span> <span class="st">"driver_age"</span>, predictions <span class="op">=</span> <span class="cn">TRUE</span>, precomputed_preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
