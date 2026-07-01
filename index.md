@@ -2,8 +2,8 @@
 
 **modelblueprint** is a model-agnostic container for managing machine
 learning model lifecycles in R. Wrap any
-[`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model —
-`lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline
+[`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model -
+`lm`, `glm`, XGBoost, H2O, and more - with its training data, pipeline
 functions, and metadata, then run diagnostics with a single function
 call.
 
@@ -32,7 +32,7 @@ mb <- modelblueprint(
 # Predict
 predict(mb, mtcars)
 
-# One-way analysis — pulled directly from blueprint slots
+# One-way analysis - pulled directly from blueprint slots
 one_way(mb, var = "wt")
 
 # Partial dependence plot
@@ -54,15 +54,15 @@ mb2 <- loadmb("models/logistic_vs.tar.gz")
 
 ## Key features
 
-- **Model-agnostic** — works with any R model implementing
+- **Model-agnostic** - works with any R model implementing
   [`predict()`](https://rdrr.io/r/stats/predict.html), including H2O
-- **Pipe-friendly** — [`filter()`](https://rdrr.io/r/stats/filter.html),
+- **Pipe-friendly** - [`filter()`](https://rdrr.io/r/stats/filter.html),
   `mutate()`, and `left_join()` methods return new modelblueprints
-- **Diagnostic plots** — one-way, PDP, gains, calibration, and residual
+- **Diagnostic plots** - one-way, PDP, gains, calibration, and residual
   plots built in
-- **Persistence** — save and restore full model pipelines including H2O
+- **Persistence** - save and restore full model pipelines including H2O
   models
-- **S7 class system** — type-safe properties with informative validation
+- **S7 class system** - type-safe properties with informative validation
   errors
 
 ## Supported models
@@ -75,4 +75,4 @@ mb2 <- loadmb("models/logistic_vs.tar.gz")
 | Random forest | randomForest | ✓ | ✓ |
 | Gradient boosting | xgboost | ✓ | ✓ |
 | H2O GLM / GBM / AutoML | h2o | ✓ | ✓ |
-| Any [`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model | — | ✓ | ✓ |
+| Any [`predict()`](https://rdrr.io/r/stats/predict.html)-compatible model | \- | ✓ | ✓ |

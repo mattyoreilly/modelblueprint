@@ -147,7 +147,7 @@ model better tracks the observed response across segments of the data.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  obs      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">100</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  pred1    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">100</span><span class="op">)</span>,</span></span>
@@ -155,14 +155,22 @@ model better tracks the observed response across segments of the data.</p>
 <span class="r-in"><span>  exposure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">sami</span><span class="op">(</span><span class="va">df</span>, obs <span class="op">=</span> <span class="st">"obs"</span>, pred <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pred1"</span>, <span class="st">"pred2"</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`pred2 / pred1`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`pred1 / pred2`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">mb1</span> <span class="op">&lt;-</span> <span class="fu"><a href="ModelBlueprint.html">modelblueprint</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span>, <span class="va">mtcars</span><span class="op">)</span>, train <span class="op">=</span> <span class="va">mtcars</span>,</span></span>
 <span class="r-in"><span>                       y_name <span class="op">=</span> <span class="st">"mpg"</span>, model_display_name <span class="op">=</span> <span class="st">"lm_wt"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">mb2</span> <span class="op">&lt;-</span> <span class="fu"><a href="ModelBlueprint.html">modelblueprint</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">hp</span>, <span class="va">mtcars</span><span class="op">)</span>, train <span class="op">=</span> <span class="va">mtcars</span>,</span></span>
 <span class="r-in"><span>                       y_name <span class="op">=</span> <span class="st">"mpg"</span>, model_display_name <span class="op">=</span> <span class="st">"lm_hp"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">sami</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">mb1</span>, <span class="va">mb2</span><span class="op">)</span>, set <span class="op">=</span> <span class="st">"train"</span>, bins <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`pred_lm_hp / pred_lm_wt`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`pred_lm_wt / pred_lm_hp`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

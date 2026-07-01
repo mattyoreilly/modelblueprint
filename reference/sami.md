@@ -102,7 +102,7 @@ data.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 df <- data.frame(
   obs      = rnorm(500, 100),
   pred1    = rnorm(500, 100),
@@ -110,12 +110,20 @@ df <- data.frame(
   exposure = rep(1, 500)
 )
 sami(df, obs = "obs", pred = c("pred1", "pred2"), bins = 10)
-} # }
-if (FALSE) { # \dontrun{
+#> $`pred2 / pred1`
+#> 
+#> $`pred1 / pred2`
+#> 
+# }
+# \donttest{
 mb1 <- modelblueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
                        y_name = "mpg", model_display_name = "lm_wt")
 mb2 <- modelblueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,
                        y_name = "mpg", model_display_name = "lm_hp")
 sami(list(mb1, mb2), set = "train", bins = 10)
-} # }
+#> $`pred_lm_hp / pred_lm_wt`
+#> 
+#> $`pred_lm_wt / pred_lm_hp`
+#> 
+# }
 ```

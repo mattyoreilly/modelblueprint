@@ -60,7 +60,8 @@ inside a directory named after <code>@model_display_name</code>.</p>
 <span>  pdp_bins <span class="op">=</span> <span class="fl">10L</span>,</span>
 <span>  split <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  filepath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  selfcontained <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  selfcontained <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -111,6 +112,12 @@ created inside.</p></dd>
 <dd><p><code>[logical(1)]</code> Passed to <code><a href="save_plots.html">save_plots()</a></code>. <code>TRUE</code>
 (default) embeds all dependencies into each HTML file. Set to <code>FALSE</code>
 for faster saves during development.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p><code>[integer(1)]</code> Seed for the random 50/50 split used
+by the <code>"stability"</code> plots, applied via <code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code> so the result
+is reproducible without disturbing the global RNG stream. Default <code>1L</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

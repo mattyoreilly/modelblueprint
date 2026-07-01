@@ -16,7 +16,8 @@ model_validation(
   pdp_bins = 10L,
   split = NA_character_,
   filepath = getwd(),
-  selfcontained = TRUE
+  selfcontained = TRUE,
+  seed = 1L
 )
 ```
 
@@ -65,6 +66,14 @@ model_validation(
   [`save_plots()`](https://mattyoreilly.github.io/modelblueprint/reference/save_plots.md).
   `TRUE` (default) embeds all dependencies into each HTML file. Set to
   `FALSE` for faster saves during development.
+
+- seed:
+
+  `[integer(1)]` Seed for the random 50/50 split used by the
+  `"stability"` plots, applied via
+  [`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
+  so the result is reproducible without disturbing the global RNG
+  stream. Default `1L`.
 
 ## Value
 
