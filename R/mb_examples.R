@@ -10,20 +10,24 @@
 # Uses synthetic data with the same column names as mtcars so that all
 # downstream model formulas work without any dataset package dependency.
 .mb_split <- function(n = 32L, seed = 42L) {
-  set.seed(seed)
-  df <- data.frame(
-    wt   = rnorm(n, mean = 3.2, sd = 0.8),
-    hp   = rnorm(n, mean = 147, sd = 68),
-    cyl  = sample(c(4L, 6L, 8L), n, replace = TRUE),
-    am   = sample(c(0L, 1L), n, replace = TRUE),
-    gear = sample(c(3L, 4L, 5L), n, replace = TRUE),
-    carb = sample(1L:4L, n, replace = TRUE)
-  )
-  df$mpg <- 30 - 3 * df$wt - 0.02 * df$hp + rnorm(n, sd = 2)
-  lp     <- -2 + 1.5 * df$am - 0.5 * df$wt
-  df$vs  <- as.integer(stats::rbinom(n, 1L, 1 / (1 + exp(-lp))))
-  idx    <- sample(n, size = round(n * 0.75))
-  list(train = df[idx, ], test = df[-idx, ])
+  # withr::with_seed() draws with a fixed seed and restores the caller's RNG
+  # state afterwards, so these example datasets are reproducible without
+  # clobbering the user's global random stream.
+  withr::with_seed(seed, {
+    df <- data.frame(
+      wt   = rnorm(n, mean = 3.2, sd = 0.8),
+      hp   = rnorm(n, mean = 147, sd = 68),
+      cyl  = sample(c(4L, 6L, 8L), n, replace = TRUE),
+      am   = sample(c(0L, 1L), n, replace = TRUE),
+      gear = sample(c(3L, 4L, 5L), n, replace = TRUE),
+      carb = sample(1L:4L, n, replace = TRUE)
+    )
+    df$mpg <- 30 - 3 * df$wt - 0.02 * df$hp + rnorm(n, sd = 2)
+    lp     <- -2 + 1.5 * df$am - 0.5 * df$wt
+    df$vs  <- as.integer(stats::rbinom(n, 1L, 1 / (1 + exp(-lp))))
+    idx    <- sample(n, size = round(n * 0.75))
+    list(train = df[idx, ], test = df[-idx, ])
+  })
 }
 
 
@@ -347,6 +351,10 @@ mb_xgb_classification <- function() {
 
 #' @keywords internal
 .car_freq_split <- function(n = 5000L, seed = 42L) {
+  # Snapshot the caller's RNG state and restore it on exit, so the local
+  # set.seed() below makes this dataset reproducible without clobbering the
+  # user's global random stream.
+  withr::local_preserve_seed()
   set.seed(seed)
 
   driver_age    <- sample(18L:75L, n, replace = TRUE)
@@ -419,6 +427,10 @@ mb_xgb_classification <- function() {
 
 #' @keywords internal
 .mb_large_split <- function(n = 50000L, seed = 42L) {
+  # Snapshot the caller's RNG state and restore it on exit, so the local
+  # set.seed() below makes this dataset reproducible without clobbering the
+  # user's global random stream.
+  withr::local_preserve_seed()
   set.seed(seed)
   df <- data.frame(
     x1       = rnorm(n),

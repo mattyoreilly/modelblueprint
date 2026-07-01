@@ -39,14 +39,39 @@
 \description{
 modelblueprint: a model-agnostic container for ML model lifecycles
 }
-\examples{
-\dontrun{
-mb <- modelblueprint(
-  model  = lm(mpg ~ wt + hp, data = mtcars),
-  train  = mtcars,
-  y_name = "mpg"
+\section{Construction}{
+Create a blueprint by passing a fitted model plus, optionally, its data
+splits and metadata:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{modelblueprint(
+  model,
+  train = NULL, test = NULL, holdout = NULL,
+  pre_process_fun  = function(df) df,
+  feat_eng_fun     = function(df) df,
+  post_process_fun = function(preds, df_raw) preds,
+  x_original_inputs = NA_character_, x_names = NA_character_,
+  y_name = NA_character_, yhat_name = NA_character_,
+  expo_name = "exposure", expo_val = 1, expo_0_rep = 0.1,
+  offset_name = NA_character_, offset_value = NA_real_,
+  model_display_name = NA_character_, deploy_notes = NA_character_
 )
-predict(mb, mtcars)
+}\if{html}{\out{</div>}}
+
+Only \code{model} is required; every other property has a sensible default. See
+the argument list and the example below for details.
 }
+
+\examples{
+# Wrap a fitted model together with its training data and metadata.
+mb <- modelblueprint(
+  model              = lm(mpg ~ wt + hp, data = mtcars),
+  train              = mtcars,
+  y_name             = "mpg",
+  x_original_inputs  = c("wt", "hp"),
+  model_display_name = "lm_mpg"
+)
+
+mb                       # print method shows a structured summary
+predict(mb, head(mtcars))
 
 }

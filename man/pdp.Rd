@@ -93,7 +93,7 @@ Alongside the PDP line the chart also shows:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 m <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 
 # Basic usage

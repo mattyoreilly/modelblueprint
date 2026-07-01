@@ -70,7 +70,7 @@ against average observed values across bins of the prediction space. A
 yellow exposure bar on the secondary axis shows the distribution of data.
 }
 \examples{
-\dontrun{
+\donttest{
 mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,

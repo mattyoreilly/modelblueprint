@@ -28,6 +28,9 @@
 #' @param filepath         `[character(1)]` Parent directory for all output.
 #'   Defaults to `getwd()`. A subdirectory named `@model_display_name` is
 #'   created inside.
+#' @param seed             `[integer(1)]` Seed for the random 50/50 split used
+#'   by the `"stability"` plots, applied via [withr::with_seed()] so the result
+#'   is reproducible without disturbing the global RNG stream. Default `1L`.
 #'
 #' @return The root output directory path, invisibly.
 #'
@@ -81,7 +84,8 @@ model_validation <- function(
   pdp_bins        = 10L,
   split           = NA_character_,
   filepath        = getwd(),
-  selfcontained   = TRUE
+  selfcontained   = TRUE,
+  seed            = 1L
 ) {
 
   # ── input validation ────────────────────────────────────────────────────────
@@ -204,8 +208,12 @@ model_validation <- function(
     if ("stability" %in% plots) {
       rand_col            <- ".rand_split"
       stab_data           <- set_data
-      stab_data[[rand_col]] <- sample(c("A", "B"), nrow(stab_data),
-                                      replace = TRUE)
+      # Seeded so the stability diagnostic is reproducible across runs;
+      # with_seed() restores the caller's global RNG state afterwards.
+      stab_data[[rand_col]] <- withr::with_seed(
+        seed,
+        sample(c("A", "B"), nrow(stab_data), replace = TRUE)
+      )
 
       stab_plots <- Filter(Negate(is.null), lapply(
         stats::setNames(features, features),

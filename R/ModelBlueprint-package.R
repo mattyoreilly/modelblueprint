@@ -5,13 +5,22 @@
 # scattered across individual function files. Run `devtools::document()` after
 # any change to regenerate NAMESPACE.
 
-# Whole-package imports
-#' @import S7
-#' @import data.table
-#' @import plotly
-#' @import RColorBrewer
-
-# Selective imports
+# Selective imports — prefer @importFrom over whole-package @import to avoid
+# masking collisions (e.g. data.table and dplyr both export `:=`, `first`,
+# `last`, `between`) and to keep the NAMESPACE minimal. plotly, RColorBrewer
+# and most data.table functions are called fully-qualified (plotly::, etc.),
+# so only the symbols genuinely needed in-scope are imported below:
+#   - S7: the class-system verbs used throughout the package.
+#   - data.table: the non-standard-evaluation pronouns (`:=`, `.SD`, `.N`)
+#     that cannot be namespace-qualified inside `dt[...]`.
+#   - rlang `%||%`: the NULL-coalescing operator. (The pipe is the native `|>`.)
+#' @importFrom S7 new_class new_property new_generic new_union
+#' @importFrom S7 class_any class_character class_numeric class_function
+#' @importFrom S7 class_list class_data.frame
+#' @importFrom S7 prop prop<- props method method<-
+#' @importFrom S7 S7_dispatch S7_inherits
+#' @importFrom data.table := .SD .N
+#' @importFrom RColorBrewer brewer.pal
 #' @importFrom rlang %||%
 #' @importFrom dplyr filter mutate left_join
 #' @importFrom stats var sd predict median

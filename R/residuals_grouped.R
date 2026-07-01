@@ -42,7 +42,7 @@ residuals_grouped <- function(data, ...) UseMethod("residuals_grouped")
 #' @return A plotly object or data.table depending on `ret`.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' df <- data.frame(
 #'   obs      = rbinom(500, 1, 0.3),
 #'   pred     = runif(500, 0.1, 0.5),
@@ -174,7 +174,7 @@ residuals_grouped.default <- function(
 #' @return A plotly object or data.table depending on `ret`.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
@@ -227,12 +227,9 @@ residuals_grouped.modelblueprint <- function(
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }
 
-  # Attach predictions
-  pred_col <- if (!is.na(data@model_display_name)) {
-    data@model_display_name
-  } else {
-    "pred"
-  }
+  # Attach predictions. .pred_col_name() keeps the column name consistent
+  # across all modelblueprint diagnostics.
+  pred_col <- .pred_col_name(data)
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {

@@ -430,7 +430,7 @@ plot_shap_importance <- function(imp, model_name) {
   bar_colours <- ifelse(imp$mean_shap >= 0, "#9900cc", "#2171B5")
   sign_str    <- ifelse(imp$mean_shap > 0, "+", "")
 
-  p <- plotly::plot_ly(as.data.frame(imp)) %>%
+  p <- plotly::plot_ly(as.data.frame(imp)) |>
     plotly::add_trace(
       x           = ~mean_shap,
       y           = ~feature,
@@ -442,7 +442,7 @@ plot_shap_importance <- function(imp, model_name) {
         imp$feature, ": ", sign_str, sig_dig(imp$mean_shap, 5L)
       ),
       showlegend  = FALSE
-    ) %>%
+    ) |>
     plotly::layout(
       title = list(
         text = paste0(
@@ -559,7 +559,7 @@ plot_shap_dependence <- function(agg, var, model_name) {
 
   # -- Layout  - identical structure to plot_pdp() --------------------------------
   p$sizingPolicy$defaultHeight <- 800
-  p %>%
+  p |>
     plotly::layout(
       xaxis = list(
         title         = var,

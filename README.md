@@ -1,10 +1,10 @@
 # modelblueprint
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/matt/modelblueprint/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/matt/modelblueprint/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/mattyoreilly/modelblueprint/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mattyoreilly/modelblueprint/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-**modelblueprint** is a model-agnostic container for managing machine learning model lifecycles in R. Wrap any `predict()`-compatible model — `lm`, `glm`, XGBoost, H2O, and more — with its training data, pipeline functions, and metadata, then run diagnostics with a single function call.
+**modelblueprint** is a model-agnostic container for managing machine learning model lifecycles in R. Wrap any `predict()`-compatible model - `lm`, `glm`, XGBoost, H2O, and more - with its training data, pipeline functions, and metadata, then run diagnostics with a single function call.
 
 ## Installation
 
@@ -29,7 +29,7 @@ mb <- modelblueprint(
 # Predict
 predict(mb, mtcars)
 
-# One-way analysis — pulled directly from blueprint slots
+# One-way analysis - pulled directly from blueprint slots
 one_way(mb, var = "wt")
 
 # Partial dependence plot
@@ -51,11 +51,11 @@ mb2 <- loadmb("models/logistic_vs.tar.gz")
 
 ## Key features
 
-- **Model-agnostic** — works with any R model implementing `predict()`, including H2O
-- **Pipe-friendly** — `filter()`, `mutate()`, and `left_join()` methods return new modelblueprints
-- **Diagnostic plots** — one-way, PDP, gains, calibration, and residual plots built in
-- **Persistence** — save and restore full model pipelines including H2O models
-- **S7 class system** — type-safe properties with informative validation errors
+- **Model-agnostic** - works with any R model implementing `predict()`, including H2O
+- **Pipe-friendly** - `filter()`, `mutate()`, and `left_join()` methods return new modelblueprints
+- **Diagnostic plots** - one-way, PDP, gains, calibration, and residual plots built in
+- **Persistence** - save and restore full model pipelines including H2O models
+- **S7 class system** - type-safe properties with informative validation errors
 
 ## Supported models
 
@@ -67,4 +67,4 @@ mb2 <- loadmb("models/logistic_vs.tar.gz")
 | Random forest | randomForest | ✓ | ✓ |
 | Gradient boosting | xgboost | ✓ | ✓ |
 | H2O GLM / GBM / AutoML | h2o | ✓ | ✓ |
-| Any `predict()`-compatible model | — | ✓ | ✓ |
+| Any `predict()`-compatible model | - | ✓ | ✓ |

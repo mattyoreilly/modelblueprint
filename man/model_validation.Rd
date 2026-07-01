@@ -13,7 +13,8 @@ model_validation(
   pdp_bins = 10L,
   split = NA_character_,
   filepath = getwd(),
-  selfcontained = TRUE
+  selfcontained = TRUE,
+  seed = 1L
 )
 }
 \arguments{
@@ -43,6 +44,10 @@ created inside.}
 \item{selfcontained}{\verb{[logical(1)]} Passed to \code{\link[=save_plots]{save_plots()}}. \code{TRUE}
 (default) embeds all dependencies into each HTML file. Set to \code{FALSE}
 for faster saves during development.}
+
+\item{seed}{\verb{[integer(1)]} Seed for the random 50/50 split used
+by the \code{"stability"} plots, applied via \code{\link[withr:with_seed]{withr::with_seed()}} so the result
+is reproducible without disturbing the global RNG stream. Default \code{1L}.}
 }
 \value{
 The root output directory path, invisibly.

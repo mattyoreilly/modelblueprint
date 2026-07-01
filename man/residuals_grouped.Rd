@@ -72,7 +72,7 @@ loess trend line with a 95\% confidence interval. Useful for diagnosing
 systematic model bias across the prediction range.
 }
 \examples{
-\dontrun{
+\donttest{
 df <- data.frame(
   obs      = rbinom(500, 1, 0.3),
   pred     = runif(500, 0.1, 0.5),
@@ -80,7 +80,7 @@ df <- data.frame(
 )
 residuals_grouped(df, pred = "pred", obs = "obs", exposure = "exposure")
 }
-\dontrun{
+\donttest{
 mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
