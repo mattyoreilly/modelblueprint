@@ -539,3 +539,63 @@ describe("compute_cumulative", {
     expect_equal(names(dt), cols_before)
   })
 })
+
+
+# =============================================================================
+# Public API end-to-end
+# These assert on what users actually see (Gini values, ret = "data" shape,
+# plot object) via the exported gain() only — no ::: access. A refactor of the
+# internals that breaks user-visible behaviour must fail here.
+# =============================================================================
+
+describe("gain — public API", {
+  it("a perfect model matches the baseline and beats a random model", {
+    # NB: the maximum achievable Gini depends on target prevalence, so for a
+    # balanced 50/50 target the "perfect" Gini is ~0.5, not ~1. The right
+    # invariant is that a pred == obs model attains the perfect-model baseline
+    # (element [[1]]) and clearly exceeds a random model.
+    gp <- gain(make_perfect_df(), pred = "pred", obs = "obs",
+               exposure = "exposure", ret = "gini")
+    expect_equal(as.numeric(gp[[2L]]), as.numeric(gp[[1L]]), tolerance = 1e-6)
+
+    gr <- gain(make_gain_df(), pred = "pred", obs = "obs",
+               exposure = "exposure", ret = "gini")
+    expect_lt(abs(as.numeric(gr[[2L]])), 0.2)
+
+    expect_gt(as.numeric(gp[[2L]]), abs(as.numeric(gr[[2L]])))
+  })
+
+  it("ret = 'data' returns cumulative curves rising to 1", {
+    out <- gain(make_perfect_df(), pred = "pred", obs = "obs",
+                exposure = "exposure", ret = "data")
+    expect_type(out, "list")
+    score_curve <- out[[2L]]
+    expect_s3_class(score_curve, "data.table")
+    expect_equal(ncol(score_curve), 2L)
+    # Both cumulative axes are fractions that end at 1.
+    expect_equal(max(score_curve[[1L]]), 1, tolerance = 1e-6)
+    expect_equal(max(score_curve[[2L]]), 1, tolerance = 1e-6)
+  })
+
+  it("ret = 'plot' returns a plotly object", {
+    p <- gain(make_gain_df(), pred = "pred", obs = "obs",
+              exposure = "exposure", ret = "plot")
+    expect_s3_class(p, "plotly")
+  })
+
+  it("gain.modelblueprint produces a usable Gini end-to-end", {
+    mb <- modelblueprint(
+      model              = stats::glm(vs ~ wt + hp, data = mtcars,
+                                      family = binomial),
+      train              = mtcars,
+      y_name             = "vs",
+      x_original_inputs  = c("wt", "hp"),
+      model_display_name = "logistic_vs"
+    )
+    gini <- gain(mb, ret = "gini")
+    score_gini <- as.numeric(gini[[2L]])
+    expect_true(is.finite(score_gini))
+    # A real logistic fit should beat a coin flip on its training data.
+    expect_gt(score_gini, 0)
+  })
+})

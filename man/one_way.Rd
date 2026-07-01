@@ -69,7 +69,7 @@ Column name arguments (\code{var}, \code{obs}, \code{exposure}, \code{split}) ac
 \code{one_way(df, "wt", "mpg")} are equivalent.
 }
 \examples{
-\dontrun{
+\donttest{
 # bare names
 one_way(mtcars, wt, mpg, bins = 10)
 one_way(mtcars, cyl, c(mpg, hp), split = am)

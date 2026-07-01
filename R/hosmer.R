@@ -116,7 +116,7 @@ pred_vs_obs.default <- function(
 #' @return A plotly object or data.table depending on `ret`.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
@@ -170,12 +170,9 @@ pred_vs_obs.modelblueprint <- function(
     df[[data@y_name]] <- df_eng[[data@y_name]]
   }
 
-  # Attach predictions via the full pipeline
-  pred_col <- if (!is.na(data@model_display_name)) {
-    data@model_display_name
-  } else {
-    "pred"
-  }
+  # Attach predictions via the full pipeline. .pred_col_name() keeps the column
+  # name consistent across all modelblueprint diagnostics.
+  pred_col <- .pred_col_name(data)
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {

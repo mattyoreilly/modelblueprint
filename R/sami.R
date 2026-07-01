@@ -49,7 +49,7 @@ sami <- function(data, ...) UseMethod("sami")
 #' @return A named list of plotly objects or a data.table depending on `ret`.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' df <- data.frame(
 #'   obs      = rnorm(500, 100),
 #'   pred1    = rnorm(500, 100),
@@ -145,7 +145,7 @@ sami.default <- function(
 #' @return A named list of plotly objects or a data.table.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' mb1 <- modelblueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
 #'                        y_name = "mpg", model_display_name = "lm_wt")
 #' mb2 <- modelblueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,

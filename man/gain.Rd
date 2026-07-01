@@ -42,7 +42,7 @@ perfect model baseline. The Gini coefficient for each score is shown in
 the legend.
 }
 \examples{
-\dontrun{
+\donttest{
 mb <- modelblueprint(
   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
   train  = mtcars,
