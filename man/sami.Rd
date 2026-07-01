@@ -78,7 +78,7 @@ Useful for diagnosing where two models systematically disagree and which
 model better tracks the observed response across segments of the data.
 }
 \examples{
-\dontrun{
+\donttest{
 df <- data.frame(
   obs      = rnorm(500, 100),
   pred1    = rnorm(500, 100),
@@ -87,7 +87,7 @@ df <- data.frame(
 )
 sami(df, obs = "obs", pred = c("pred1", "pred2"), bins = 10)
 }
-\dontrun{
+\donttest{
 mb1 <- modelblueprint(model = lm(mpg ~ wt, mtcars), train = mtcars,
                        y_name = "mpg", model_display_name = "lm_wt")
 mb2 <- modelblueprint(model = lm(mpg ~ hp, mtcars), train = mtcars,

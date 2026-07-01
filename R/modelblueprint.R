@@ -12,6 +12,30 @@ NULL
 
 #' modelblueprint: a model-agnostic container for ML model lifecycles
 #'
+#' @details
+#' # Construction
+#'
+#' Create a blueprint by passing a fitted model plus, optionally, its data
+#' splits and metadata:
+#'
+#' ```r
+#' modelblueprint(
+#'   model,
+#'   train = NULL, test = NULL, holdout = NULL,
+#'   pre_process_fun  = function(df) df,
+#'   feat_eng_fun     = function(df) df,
+#'   post_process_fun = function(preds, df_raw) preds,
+#'   x_original_inputs = NA_character_, x_names = NA_character_,
+#'   y_name = NA_character_, yhat_name = NA_character_,
+#'   expo_name = "exposure", expo_val = 1, expo_0_rep = 0.1,
+#'   offset_name = NA_character_, offset_value = NA_real_,
+#'   model_display_name = NA_character_, deploy_notes = NA_character_
+#' )
+#' ```
+#'
+#' Only `model` is required; every other property has a sensible default. See
+#' the argument list and the example below for details.
+#'
 #' @param model A fitted model object. Any class implementing `predict()`.
 #' @param train,test,holdout Datasets as `data.frame`. Default `NULL`.
 #' @param pre_process_fun `function(df) -> df`. Pre-processing pipeline.
@@ -30,14 +54,17 @@ NULL
 #' @param deploy_notes `[character(1)]` Deployment notes.
 #'
 #' @examples
-#' \dontrun{
+#' # Wrap a fitted model together with its training data and metadata.
 #' mb <- modelblueprint(
-#'   model  = lm(mpg ~ wt + hp, data = mtcars),
-#'   train  = mtcars,
-#'   y_name = "mpg"
+#'   model              = lm(mpg ~ wt + hp, data = mtcars),
+#'   train              = mtcars,
+#'   y_name             = "mpg",
+#'   x_original_inputs  = c("wt", "hp"),
+#'   model_display_name = "lm_mpg"
 #' )
-#' predict(mb, mtcars)
-#' }
+#'
+#' mb                       # print method shows a structured summary
+#' predict(mb, head(mtcars))
 #'
 #' @usage NULL
 #' @export
@@ -396,8 +423,10 @@ method(savemb, modelblueprint) <- function(
     dir.create(path, recursive = TRUE)
   }
 
-  tmp <- file.path(tempdir(), paste0("savemb_", as.integer(Sys.time())))
-  dir.create(tmp, showWarnings = FALSE)
+  # tempfile() returns a fresh, unique path on every call, so two saves in the
+  # same second cannot collide (unlike a Sys.time()-based name).
+  tmp <- tempfile("savemb_")
+  dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
 
   # Save class metadata so loadmb() can reconstruct the right class.
@@ -440,7 +469,7 @@ method(savemb, modelblueprint) <- function(
 
   final_path <- file.path(path, basename(filename))
   file.copy(file.path(tmp, tarfile), final_path, overwrite = TRUE)
-  message(sprintf("modelblueprint saved: %s", normalizePath(final_path)))
+  cli::cli_inform(c(v = "modelblueprint saved: {.path {normalizePath(final_path)}}"))
   invisible(normalizePath(final_path))
 }
 
@@ -472,8 +501,8 @@ loadmb <- function(path) {
     cli::cli_abort("Archive not found: {.path {path}}")
   }
 
-  tmp <- file.path(tempdir(), paste0("loadmb_", as.integer(Sys.time())))
-  dir.create(tmp, showWarnings = FALSE)
+  tmp <- tempfile("loadmb_")
+  dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
   utils::untar(path, exdir = tmp)
 
@@ -1093,6 +1122,20 @@ shap.modelblueprint <- function(
 # Internal helpers
 # =============================================================================
 
+#' Canonical name for a modelblueprint's prediction column
+#'
+#' Single source of truth for the column name under which in-sample predictions
+#' are attached to a dataset. Used by `resolve_obs()` (one_way), `gain()`,
+#' `pred_vs_obs()`, and `residuals_grouped()` so that `ret = "data"` output is
+#' predictable across every diagnostic: always `.pred_<display_name>`, falling
+#' back to `.pred_model` when `@model_display_name` is unset.
+#'
+#' @keywords internal
+#' @noRd
+.pred_col_name <- function(object) {
+  paste0(".pred_", object@model_display_name %|NA|% "model")
+}
+
 #' @keywords internal
 #' @noRd
 resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
@@ -1106,7 +1149,7 @@ resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
     return(list(obs = y, df = df))
   }
 
-  pred_col <- paste0(".pred_", object@model_display_name %|NA|% "model")
+  pred_col <- .pred_col_name(object)
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {
@@ -1128,13 +1171,31 @@ resolve_exposure <- function(object, df) {
 
 
 # =============================================================================
-# .onLoad — register S3 methods for the S7 package-qualified class name
+# .onLoad — method registration for the S7 package-qualified class name
 # =============================================================================
-# S7 stores the class as "modelblueprint::modelblueprint". UseMethod() needs
-# methods registered under that exact string. registerS3method() at load time
-# is the correct approach — it avoids backtick-named functions that R CMD check
-# flags as apparent unregistered methods.
+# Two mechanisms run here, covering the two kinds of method this package defines
+# on its S7 classes:
+#
+# 1. S7::methods_register() — REQUIRED by S7 whenever you define a method() on a
+#    generic owned by another package (here: base `print`, and the S7 generic
+#    `savemb`). Without it those `method(print, modelblueprint) <- ...`
+#    definitions are not wired up in the *installed* package (they only happen
+#    to work under pkgload::load_all()). This is the documented S7 pattern; see
+#    vignette("compatibility", package = "S7").
+#
+# 2. registerS3method() — for the package's own S3 generics (one_way(), pdp(),
+#    extract_*(), set_*(), …). An S7 object's implicit class is
+#    "modelblueprint::modelblueprint", so UseMethod() needs each method
+#    registered under that exact string. Registering at load time avoids
+#    backtick-named functions that R CMD check flags as apparent unregistered
+#    S3 methods.
+#
+# A regression test (test-dispatch.R) exercises every one of these verbs on a
+# real S7 object so a future S7 change cannot silently break dispatch under
+# either library() or load_all().
 .onLoad <- function(libname, pkgname) {
+  S7::methods_register()
+
   ns <- asNamespace(pkgname)
   registerS3method(
     "print",

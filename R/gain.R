@@ -34,7 +34,7 @@ gain <- function(data, ...) UseMethod("gain")
 #' @return A plotly object, list of data.tables, or list of Gini values.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' df <- data.frame(
 #'   obs      = c(0, 1, 0, 1, 1),
 #'   pred     = c(0.1, 0.9, 0.2, 0.8, 0.7),
@@ -121,7 +121,7 @@ gain.default <- function(
 #' @return A plotly object, list of data.tables, or list of Gini values.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' mb <- modelblueprint(
 #'   model  = glm(vs ~ wt + hp, data = mtcars, family = binomial),
 #'   train  = mtcars,
@@ -163,19 +163,17 @@ gain.modelblueprint <- function(
     exposure <- ".exposure_ones"
   }
 
-  # Attach in-sample predictions — copy already made above via as.data.frame
-  pred_col <- if (!is.na(data@model_display_name)) {
-    data@model_display_name
-  } else {
-    "model_pred"
-  }
+  # Attach in-sample predictions — copy already made above via as.data.frame.
+  # .pred_col_name() keeps the column name consistent with one_way(),
+  # pred_vs_obs() and residuals_grouped() so ret = "data" is predictable.
+  pred_col <- .pred_col_name(data)
   if (!is.null(precomputed_preds)) {
     df[[pred_col]] <- precomputed_preds
   } else {
     df[[pred_col]] <- predict.modelblueprint(data, df)
   }
 
-  chart_title <- title %||% pred_col
+  chart_title <- title %||% (data@model_display_name %|NA|% "model")
 
   gain.default(
     df,

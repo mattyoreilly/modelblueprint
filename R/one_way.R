@@ -41,7 +41,7 @@
 #'         with a warning if the plot cannot be produced.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # bare names
 #' one_way(mtcars, wt, mpg, bins = 10)
 #' one_way(mtcars, cyl, c(mpg, hp), split = am)
@@ -535,7 +535,7 @@ plot_one_way_simple <- function(agg, var, obs) {
     )
   )
 
-  p %>%
+  p |>
     plotly::layout(
       xaxis = list(
         title = var,
@@ -637,7 +637,7 @@ plot_one_way_split <- function(agg, var, obs, split) {
     )
   }
 
-  p %>%
+  p |>
     plotly::layout(
       barmode = "group",
       xaxis = list(

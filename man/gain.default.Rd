@@ -37,7 +37,7 @@ A plotly object, list of data.tables, or list of Gini values.
 Cumulative Gains Chart (default method)
 }
 \examples{
-\dontrun{
+\donttest{
 df <- data.frame(
   obs      = c(0, 1, 0, 1, 1),
   pred     = c(0.1, 0.9, 0.2, 0.8, 0.7),

@@ -57,7 +57,7 @@
 #'         with a warning when the variable cannot be plotted.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' m <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 #'
 #' # Basic usage
@@ -626,7 +626,7 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
 
   # -- Layout - identical to one_way() ------------------------------------------
   p$sizingPolicy$defaultHeight <- 800
-  p %>%
+  p |>
     plotly::layout(
       xaxis = list(
         title = var,
