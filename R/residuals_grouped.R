@@ -26,7 +26,8 @@ residuals_grouped <- function(data, ...) UseMethod("residuals_grouped")
 #' @param data            A `data.frame` or `data.table`.
 #' @param pred            `[character(1)]` Name of the predictions column.
 #' @param obs             `[character(1)]` Name of the observed target column.
-#' @param exposure        `[character(1)]` Name of the exposure column.
+#' @param exposure        `[character(1)]` Name of the exposure column. If the
+#'                        column is absent, every row is given weight 1.
 #'                        Default `"exposure"`.
 #' @param exposure_per_bin `[numeric(1)]` Target exposure per bin. Controls
 #'                        granularity -- smaller values give more bins.
@@ -65,10 +66,15 @@ residuals_grouped.default <- function(
   residual_type <- match.arg(residual_type)
   ret <- match.arg(ret)
 
-  # Select only the three columns we need *before* coercing, so a wide frame
-  # isn't duplicated to use obs/pred/exposure. The list() step builds an
+  assert_col_exists(data, obs, "`obs`")
+  assert_col_exists(data, pred, "`pred`")
+
+  # Select only the columns we need *before* coercing, so a wide frame isn't
+  # duplicated to use obs/pred/exposure. A missing exposure column falls back
+  # to unit weights, matching one_way() and gain(). The list() step builds an
   # independent working table, so the caller's data is never mutated.
-  keep <- c(obs, pred, exposure)
+  has_expo <- exposure %in% names(data)
+  keep <- c(obs, pred, if (has_expo) exposure)
   narrow <- if (data.table::is.data.table(data)) {
     data[, keep, with = FALSE]
   } else {
@@ -76,7 +82,11 @@ residuals_grouped.default <- function(
   }
   dt <- data.table::as.data.table(narrow)
   dt <- dt[,
-    list(.obs = .SD[[1L]], .pred = .SD[[2L]], .expo = .SD[[3L]]),
+    list(
+      .obs = .SD[[1L]],
+      .pred = .SD[[2L]],
+      .expo = if (has_expo) .SD[[3L]] else 1
+    ),
     .SDcols = keep
   ]
 
@@ -99,19 +109,16 @@ residuals_grouped.default <- function(
     breaks <- c(breaks[1L] - eps, breaks[1L] + eps)
   }
 
-  dt[, bin := cut(rate, breaks = breaks, include.lowest = TRUE)]
+  dt[,
+    bin := cut(rate, breaks = breaks, labels = FALSE, include.lowest = TRUE)
+  ]
 
-  # Midpoint of each bin for x-axis
-  bin_levels <- levels(dt$bin)
-  midpoints <- vapply(
-    bin_levels,
-    function(lbl) {
-      nums <- as.numeric(regmatches(lbl, gregexpr("-?[0-9.]+", lbl))[[1L]])
-      mean(nums[c(1L, length(nums))])
-    },
-    numeric(1L)
-  )
-  dt[, midpoint := midpoints[as.integer(bin)]]
+  # Midpoint of each bin, computed directly from the numeric breaks. Never
+  # re-parse cut()'s labels: they truncate digits and switch to scientific
+  # notation for small rates, which a regex cannot round-trip reliably.
+  n_breaks <- length(breaks)
+  midpoints <- (breaks[-n_breaks] + breaks[-1L]) / 2
+  dt[, midpoint := midpoints[bin]]
 
   # Aggregate per midpoint
   agg <- dt[,
@@ -211,13 +218,10 @@ residuals_grouped.modelblueprint <- function(
     )
   }
 
-  # Resolve exposure -- fall back to unit weights
-  exposure <- resolve_exposure(data, df)
-  df <- as.data.frame(df)
-  if (exposure == "vec_of_ones") {
-    df[[".exposure_ones"]] <- 1L
-    exposure <- ".exposure_ones"
-  }
+  # Resolve exposure -- unit-weight fallback, zeros replaced with @expo_0_rep
+  resolved <- resolve_exposure_values(data, df)
+  df <- resolved$df
+  exposure <- resolved$exposure
 
   # Align obs scale with predictions — if feat_eng_fun transforms the response,
   # update obs in df so it matches the prediction scale.

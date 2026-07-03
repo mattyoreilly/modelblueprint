@@ -1501,3 +1501,23 @@ describe("savemb / loadmb — randomForest (bundle round-trip)", {
     expect_true(inherits(loaded@model, "randomForest"))
   })
 })
+
+
+# =============================================================================
+# Regression tests — xgboost interface (1.6.1)
+# =============================================================================
+
+describe("mb_xgb examples — current xgboost interface", {
+  it("mb_xgb_regression builds without deprecation warnings", {
+    skip_if_not_installed("xgboost")
+    expect_no_warning(mb <- mb_xgb_regression())
+    expect_true(is.numeric(predict(mb, mb@test)))
+  })
+
+  it("mb_xgb_classification builds without deprecation warnings", {
+    skip_if_not_installed("xgboost")
+    expect_no_warning(mb <- mb_xgb_classification())
+    p <- predict(mb, mb@test)
+    expect_true(all(p >= 0 & p <= 1))
+  })
+})

@@ -32,3 +32,19 @@
 class_tabular <- new_union(NULL, class_data.frame)
 
 NULL
+
+# Re-export the dplyr generics that modelblueprint defines methods for, so
+# `library(modelblueprint)` alone is enough to call filter()/mutate()/
+# left_join() on a blueprint — without also attaching dplyr.
+
+#' @importFrom dplyr filter
+#' @export
+dplyr::filter
+
+#' @importFrom dplyr mutate
+#' @export
+dplyr::mutate
+
+#' @importFrom dplyr left_join
+#' @export
+dplyr::left_join

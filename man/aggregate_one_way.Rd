@@ -12,7 +12,8 @@ aggregate_one_way(
   split,
   bins,
   type_agg,
-  time_unit = NA_character_
+  time_unit = NA_character_,
+  verbose = FALSE
 )
 }
 \value{

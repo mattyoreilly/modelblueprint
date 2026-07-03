@@ -483,6 +483,20 @@ saveMB <- function(object, path = getwd(), filename = NULL, ...) {
   savemb(object, path = path, filename = filename, ...)
 }
 
+# mb_seq serialisation is not implemented yet — fail with guidance rather
+# than S7's generic "can't find method" error. Defined here (not mb_seq.R)
+# because file collation loads mb_seq.R before the savemb generic exists.
+method(savemb, new_mb_seq_) <- function(
+  object,
+  path = getwd(),
+  filename = NULL
+) {
+  cli::cli_abort(c(
+    "{.fn savemb} does not support {.cls mb_seq} objects yet.",
+    i = "Save each blueprint individually with {.fn savemb} and rebuild the sequence with {.fn mb_seq} + {.fn mb_layer} after loading."
+  ))
+}
+
 
 # =============================================================================
 # loadmb
@@ -982,6 +996,9 @@ pdp.modelblueprint <- function(
       declared,
       data@y_name,
       if (exposure %in% names(df)) exposure,
+      # A model fit with offset(<column>) needs that column at predict time
+      # even though it is rarely listed in @x_original_inputs.
+      as.character(stats::na.omit(data@offset_name)),
       vars
     ))
     keep <- keep[keep %in% names(df)]
@@ -1167,6 +1184,37 @@ resolve_exposure <- function(object, df) {
   } else {
     "vec_of_ones"
   }
+}
+
+#' Materialise the exposure column for rate-based diagnostics
+#'
+#' Used by `gain()`, `pred_vs_obs()`, and `residuals_grouped()` — the
+#' diagnostics that divide predictions by per-row exposure. Guarantees a
+#' usable exposure column: falls back to unit weights when the blueprint's
+#' exposure column is absent, and replaces zero exposure values with
+#' `@expo_0_rep` so the rate division cannot produce `Inf`.
+#'
+#' @return A list with `df` (as a data.frame, exposure column materialised)
+#'   and `exposure` (the column name to use).
+#' @keywords internal
+#' @noRd
+resolve_exposure_values <- function(object, df) {
+  exposure <- resolve_exposure(object, df)
+  df <- as.data.frame(df)
+  if (exposure == "vec_of_ones") {
+    df[[".exposure_ones"]] <- 1L
+    exposure <- ".exposure_ones"
+  } else {
+    zero <- !is.na(df[[exposure]]) & df[[exposure]] == 0
+    if (any(zero)) {
+      df[[exposure]][zero] <- object@expo_0_rep
+      cli::cli_warn(
+        "Replaced {sum(zero)} zero-exposure row{?s} with @expo_0_rep = \\
+        {object@expo_0_rep} before computing rates."
+      )
+    }
+  }
+  list(df = df, exposure = exposure)
 }
 
 

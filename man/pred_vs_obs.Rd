@@ -40,7 +40,8 @@ pred_vs_obs(data, ...)
 
 \item{obs}{\verb{[character(1)]} Name of the observed target column.}
 
-\item{exposure}{\verb{[character(1)]} Name of the exposure column.
+\item{exposure}{\verb{[character(1)]} Name of the exposure column. If the column
+is absent, every row is given weight 1.
 Default \code{"exposure"}.}
 
 \item{bins}{\verb{[integer(1)]} Number of bins. Default \code{10L}.}

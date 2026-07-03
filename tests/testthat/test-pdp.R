@@ -1241,3 +1241,70 @@ describe("pdp — H2O model compatibility", {
   # h2o_shutdown_safe() polls until the JVM has released the port.
   withr::defer(h2o_shutdown_safe())
 })
+
+
+# =============================================================================
+# Regression tests — multinomial guard, verbose, NA weighting, offset (1.6.1)
+# =============================================================================
+
+describe("model_predict — H2O multinomial guard", {
+  it("errors clearly instead of returning class level codes", {
+    fake <- structure(list(), class = c("H2OMultinomialModel", "H2OModel"))
+    expect_error(
+      modelblueprint:::model_predict(fake, mtcars),
+      "multinomial"
+    )
+  })
+})
+
+describe("pdp — verbose argument", {
+  it("is silent by default", {
+    m <- lm(mpg ~ wt, mtcars)
+    expect_no_message(
+      pdp(mtcars, var = "wt", obs = "mpg", model = m, ret = "data")
+    )
+  })
+
+  it("announces the variable when verbose = TRUE", {
+    m <- lm(mpg ~ wt, mtcars)
+    expect_message(
+      pdp(mtcars, var = "wt", obs = "mpg", model = m, ret = "data",
+          verbose = TRUE),
+      "Calculating pdp"
+    )
+  })
+})
+
+describe("pdp — NA target weighting", {
+  it("excludes exposure of NA-target rows from obs_mean denominators", {
+    df <- mtcars
+    df$mpg[1:5] <- NA
+    m <- lm(mpg ~ wt, mtcars)
+    out <- pdp(df, var = "cyl", obs = "mpg", model = m, ret = "data")
+    for (b in c(4, 6, 8)) {
+      expected <- mean(df$mpg[df$cyl == b], na.rm = TRUE)
+      expect_equal(
+        out$obs_mean[out$cyl == as.character(b)],
+        expected,
+        tolerance = 1e-10
+      )
+    }
+    expect_equal(out$global_obs[1L], mean(df$mpg, na.rm = TRUE))
+  })
+})
+
+describe("pdp.modelblueprint — offset models", {
+  it("keeps @offset_name when narrowing to @x_original_inputs", {
+    df <- transform(mtcars, off = log(pmax(wt, 1)))
+    mb <- modelblueprint(
+      model = glm(mpg ~ hp + offset(off), data = df, family = gaussian),
+      train = df,
+      y_name = "mpg",
+      x_original_inputs = "hp",
+      offset_name = "off",
+      model_display_name = "offset_glm"
+    )
+    out <- pdp(mb, var = "hp", ret = "data")
+    expect_true(all(is.finite(out$pdp_mean)))
+  })
+})

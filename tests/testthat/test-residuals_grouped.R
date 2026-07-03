@@ -497,3 +497,61 @@ describe("residuals_grouped — statistical properties", {
     expect_true(all(result$res < 0))
   })
 })
+
+
+# =============================================================================
+# Regression tests — midpoints and exposure fallback (1.6.1)
+# =============================================================================
+
+describe("residuals_grouped — small prediction rates", {
+  it("computes correct midpoints when cut() labels use scientific notation", {
+    set.seed(1L)
+    df <- data.frame(
+      obs      = rbinom(500L, 1L, 0.0001),
+      pred     = runif(500L, 1e-5, 1e-4),
+      exposure = rep(1, 500L)
+    )
+    result <- residuals_grouped(df, pred = "pred", obs = "obs", ret = "data")
+    # Midpoints must sit inside the range of observed rates. The old
+    # label-parsing regex turned "(4e-05,7e-05]" into -0.5.
+    expect_true(all(is.finite(result$midpoint)))
+    expect_true(all(result$midpoint > 0))
+    expect_true(all(result$midpoint < 2e-4))
+  })
+
+  it("midpoints equal the average of adjacent quantile breaks", {
+    df <- make_df()
+    result <- residuals_grouped(
+      df,
+      pred = "pred", obs = "obs",
+      exposure_per_bin = 100, ret = "data"
+    )
+    rate <- df$pred / df$exposure
+    expect_true(all(result$midpoint >= min(rate)))
+    expect_true(all(result$midpoint <= max(rate)))
+  })
+})
+
+describe("residuals_grouped — missing columns", {
+  it("falls back to unit weights when the exposure column is absent", {
+    df <- make_df()
+    df$exposure <- NULL
+    result <- residuals_grouped(df, pred = "pred", obs = "obs", ret = "data")
+    expect_true(data.table::is.data.table(result))
+    expect_equal(sum(result$exposure), nrow(df))
+  })
+
+  it("errors informatively when the obs column is missing", {
+    expect_error(
+      residuals_grouped(make_df(), pred = "pred", obs = "nope", ret = "data"),
+      "nope"
+    )
+  })
+
+  it("errors informatively when the pred column is missing", {
+    expect_error(
+      residuals_grouped(make_df(), pred = "nope", obs = "obs", ret = "data"),
+      "nope"
+    )
+  })
+})

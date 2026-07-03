@@ -52,6 +52,8 @@
 #' @param seed        `[integer(1)]` Seed for the PDP row sample, applied via
 #'                    [withr::with_seed()] so the global RNG stream is left
 #'                    undisturbed. Default `2024L`.
+#' @param verbose     `[logical(1)]` Announce the variable being computed?
+#'                    Default `FALSE`.
 #'
 #' @return A plotly object, or a data.table when `ret = "data"`, or `NULL`
 #'         with a warning when the variable cannot be plotted.
@@ -95,6 +97,7 @@ pdp.default <- function(
   feat_eng_fun = function(df) df,
   post_process_fun = function(preds, df_raw) preds,
   seed = 2024L,
+  verbose = FALSE,
   ...
 ) {
   type_agg <- match.arg(type_agg)
@@ -106,8 +109,9 @@ pdp.default <- function(
   # -- Coerce; always copy so the caller's object is never mutated -------------
   dt <- data.table::copy(data.table::as.data.table(data))
 
-  # Announce current variable
-  cli::cli_alert_info("Calculating pdp for {.var {var}}")
+  if (isTRUE(verbose)) {
+    cli::cli_alert_info("Calculating pdp for {.var {var}}")
+  }
 
   # -- Apply pipeline for in-sample predictions --------------------------------
   df_pp  <- call_pipeline_fun(pre_process_fun, "pre_process_fun", as.data.frame(dt))
@@ -189,9 +193,13 @@ pdp.default <- function(
   result[, .bin := as.character(.bin)]
 
   # -- Global reference values ---------------------------------------------------
+  # Denominators count only the exposure of rows with a non-missing value,
+  # mirroring the per-bin means in aggregate_pdp_oneway().
   w <- dt[[expo_col]]
-  global_obs <- sum(dt[[obs]] * w, na.rm = TRUE) / sum(w, na.rm = TRUE)
-  global_pred <- sum(dt$.pred * w, na.rm = TRUE) / sum(w, na.rm = TRUE)
+  global_obs <- sum(dt[[obs]] * w, na.rm = TRUE) /
+    sum(w[!is.na(dt[[obs]])], na.rm = TRUE)
+  global_pred <- sum(dt$.pred * w, na.rm = TRUE) /
+    sum(w[!is.na(dt$.pred)], na.rm = TRUE)
 
   # -- Return --------------------------------------------------------------------
   if (ret == "data") {
@@ -251,15 +259,27 @@ model_predict <- function(model, newdata) {
   }
 
   if (is_h2o_model(model)) {
+    # Multinomial has no single probability column to reduce to, and column 1
+    # of h2o.predict() is the class *label* — as.numeric() on it would return
+    # meaningless factor level codes rather than probabilities.
+    if (inherits(model, "H2OMultinomialModel")) {
+      cli::cli_abort(c(
+        "H2O multinomial models are not supported.",
+        i = paste0(
+          "modelblueprint diagnostics need a single numeric prediction per ",
+          "row; a multinomial model returns one probability per class."
+        )
+      ))
+    }
+
     # H2O requires its own frame type and returns an H2O frame
     hf <- h2o::as.h2o(nd)
     raw <- as.data.frame(h2o::h2o.predict(model, hf))
     h2o::h2o.rm(hf) # clean up the temporary frame immediately
 
     # h2o.predict() column layout by family:
-    #   regression / gaussian : "predict"           -> take col 1
-    #   binomial              : "predict", "p0","p1" -> take "p1" (positive class prob)
-    #   multinomial           : "predict", "C1","C2",... -> take col 2 (first class prob)
+    #   regression / gaussian : "predict"            -> take col 1
+    #   binomial              : "predict","p0","p1"  -> take "p1" (positive class prob)
     # For binomial we always want the probability, not the class label in col 1.
     if ("p1" %in% names(raw)) {
       return(as.numeric(raw[["p1"]]))
@@ -356,19 +376,25 @@ aggregate_pdp_oneway <- function(dt, obs, expo_col) {
   w <- dt[[expo_col]]
   data.table::set(dt, j = ".wobs", value = dt[[obs]] * w)
   data.table::set(dt, j = ".wpred", value = dt[[".pred"]] * w)
+  # Per-column denominators: count only the exposure of rows where the value
+  # is non-missing — the numerator drops NA rows via na.rm, so dividing by
+  # the full bin exposure would deflate the mean wherever the target has NAs.
+  data.table::set(dt, j = ".wobs_den", value = w * !is.na(dt[[obs]]))
+  data.table::set(dt, j = ".wpred_den", value = w * !is.na(dt[[".pred"]]))
 
   agg <- dt[,
     lapply(.SD, sum, na.rm = TRUE),
     by = .bin,
-    .SDcols = c(".wobs", ".wpred", expo_col)
+    .SDcols = c(".wobs", ".wpred", ".wobs_den", ".wpred_den", expo_col)
   ]
   data.table::setnames(
     agg,
     c(".wobs", ".wpred", expo_col),
     c("obs_mean", "pred_mean", "exposure")
   )
-  agg[, obs_mean := obs_mean / exposure]
-  agg[, pred_mean := pred_mean / exposure]
+  agg[, obs_mean := obs_mean / .wobs_den]
+  agg[, pred_mean := pred_mean / .wpred_den]
+  agg[, c(".wobs_den", ".wpred_den") := NULL]
   agg[]
 }
 
@@ -537,10 +563,8 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
   )
 
   # -- In-sample average predicted line -----------------------------------------
-  err_pred <- round(
-    (df$pred_mean - df$obs_mean) / df$obs_mean * 100,
-    1L
-  )
+  # pct_diff() blanks the percentage when the observed mean is 0 or missing.
+  err_pred <- pct_diff(df$pred_mean, df$obs_mean)
   p <- plotly::add_trace(
     p,
     x = ~.bin,
@@ -557,9 +581,7 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
       model_name,
       ": ",
       sig_dig(df$pred_mean, 7L),
-      ", err: ",
-      err_pred,
-      "%"
+      ifelse(nzchar(err_pred), paste0(", err: ", err_pred), "")
     )
   )
 
@@ -583,11 +605,9 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
   )
 
   # -- PDP line -----------------------------------------------------------------
-  # PDP deviation expressed as % of global predicted mean
-  pdp_dev <- round(
-    (df$pdp_mean - global_pred) / global_pred * 100,
-    1L
-  )
+  # PDP deviation expressed as % of global predicted mean; blanked by
+  # pct_diff() when that mean is 0 or missing.
+  pdp_dev <- pct_diff(df$pdp_mean, global_pred)
   p <- plotly::add_trace(
     p,
     x = ~.bin,
@@ -604,9 +624,7 @@ plot_pdp <- function(result, var, obs, model_name, global_obs, global_pred) {
       model_name,
       ": ",
       sig_dig(df$pdp_mean, 7L),
-      ", vs global avg: ",
-      pdp_dev,
-      "%"
+      ifelse(nzchar(pdp_dev), paste0(", vs global avg: ", pdp_dev), "")
     )
   )
 

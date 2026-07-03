@@ -1319,3 +1319,72 @@ describe("apply_binning — date / datetime", {
     expect_equal(out$var, dates)   # class and values preserved
   })
 })
+
+
+# =============================================================================
+# Regression tests — NA-target weighting, verbose, label ordering (1.6.1)
+# =============================================================================
+
+describe("one_way — NA target weighting", {
+  it("excludes exposure of NA-target rows from the bin mean denominator", {
+    df <- data.frame(
+      x        = rep(c("a", "b"), each = 4L),
+      y        = c(10, 10, NA, NA, 5, 5, 5, 5),
+      exposure = rep(1, 8L)
+    )
+    agg <- one_way(df, var = "x", obs = "y", ret = "data")
+    # Bin "a" has two observed 10s and two NAs: the mean is 10, not 5.
+    expect_equal(agg$y[agg$x == "a"], 10)
+    expect_equal(agg$y[agg$x == "b"], 5)
+  })
+
+  it("computes independent denominators per obs column", {
+    df <- data.frame(
+      x        = rep("a", 4L),
+      y1       = c(10, 10, NA, NA),
+      y2       = c(2, 2, 2, 2),
+      exposure = rep(1, 4L)
+    )
+    agg <- one_way(df, var = "x", obs = c("y1", "y2"), ret = "data")
+    expect_equal(agg$y1, 10)
+    expect_equal(agg$y2, 2)
+  })
+})
+
+describe("one_way — verbose argument", {
+  it("is silent about NA relocation by default", {
+    df <- data.frame(x = c(1, NA, 3), y = 1:3)
+    expect_no_message(one_way(df, var = "x", obs = "y", ret = "data"))
+  })
+
+  it("reports NA relocation when verbose = TRUE", {
+    df <- data.frame(x = c(1, NA, 3), y = 1:3)
+    expect_message(
+      one_way(df, var = "x", obs = "y", ret = "data", verbose = TRUE),
+      "moved to trailing"
+    )
+  })
+})
+
+describe("smart_level_order — scientific notation", {
+  it("orders interval labels with mixed exponents numerically", {
+    lv <- modelblueprint:::smart_level_order(
+      c("(4e-05,7e-05]", "(9.9e-06,4e-05]", "(7e-05,0.0001]")
+    )
+    expect_equal(
+      lv,
+      c("(9.9e-06,4e-05]", "(4e-05,7e-05]", "(7e-05,0.0001]")
+    )
+  })
+})
+
+describe("pct_diff", {
+  it("formats finite percentage differences", {
+    expect_equal(modelblueprint:::pct_diff(1.5, 1), "50%")
+  })
+
+  it("blanks the percentage when the reference is zero or NA", {
+    out <- modelblueprint:::pct_diff(c(1, 2, 3), c(2, 0, NA))
+    expect_equal(out, c("-50%", "", ""))
+  })
+})

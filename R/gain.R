@@ -80,11 +80,34 @@ gain.default <- function(
     dt[[exposure]] <- 1L
   }
 
-  # Perfect model baseline — dt already holds only obs/pred/exposure, so adding
-  # perfect_model leaves exactly the columns compute_cumulative() needs.
-  dt[, perfect_model := .SD[[1L]], .SDcols = obs]
+  # Drop incomplete rows up front. The gains curve is built from cumsum(),
+  # which — unlike sum(na.rm = TRUE) — cannot skip NAs: a single NA row would
+  # poison the curve from that point onward.
+  n_before <- nrow(dt)
+  dt <- stats::na.omit(dt)
+  n_dropped <- n_before - nrow(dt)
+  if (nrow(dt) == 0L) {
+    cli::cli_abort(
+      "Every row of {.arg data} has a missing value in {.val {names(dt)}}."
+    )
+  }
+  if (n_dropped > 0L) {
+    cli::cli_warn(
+      "Dropped {n_dropped} row{?s} with missing obs/pred/exposure values."
+    )
+  }
 
-  perfect <- compute_cumulative(dt, "perfect_model", obs, exposure)
+  # Perfect model baseline — dt already holds only obs/pred/exposure, so adding
+  # the baseline column leaves exactly the columns compute_cumulative() needs.
+  # Dodge the (unlikely) case where the user's own score is named
+  # "perfect_model", which would otherwise be silently overwritten.
+  perfect_col <- "perfect_model"
+  while (perfect_col %in% c(obs, pred)) {
+    perfect_col <- paste0(".", perfect_col)
+  }
+  dt[, (perfect_col) := .SD[[1L]], .SDcols = obs]
+
+  perfect <- compute_cumulative(dt, perfect_col, obs, exposure)
   list_sets <- list(perfect$data)
   list_gini <- list(perfect$gini)
 
@@ -155,13 +178,10 @@ gain.modelblueprint <- function(
     )
   }
 
-  # Resolve exposure — fall back to unit weights
-  exposure <- resolve_exposure(data, df)
-  df <- as.data.frame(df)
-  if (exposure == "vec_of_ones") {
-    df[[".exposure_ones"]] <- 1L
-    exposure <- ".exposure_ones"
-  }
+  # Resolve exposure — unit-weight fallback, zeros replaced with @expo_0_rep
+  resolved <- resolve_exposure_values(data, df)
+  df <- resolved$df
+  exposure <- resolved$exposure
 
   # Attach in-sample predictions — copy already made above via as.data.frame.
   # .pred_col_name() keeps the column name consistent with one_way(),
@@ -235,10 +255,11 @@ compute_cumulative <- function(dt, variable, obs, exposure) {
 #' @noRd
 plot_gain <- function(list_sets, scores, title, list_gini) {
   n <- length(scores)
-  colors <- c(
-    "rgb(237,41,57)",
-    RColorBrewer::brewer.pal(max(3L, n), "Paired")
-  )[seq_len(n)]
+  # brewer.pal() caps at 12 colours for "Paired" (and warns beyond it);
+  # interpolate through the palette when more scores than that are plotted.
+  base_pal <- RColorBrewer::brewer.pal(min(max(3L, n), 12L), "Paired")
+  pal <- if (n > 12L) grDevices::colorRampPalette(base_pal)(n) else base_pal
+  colors <- c("rgb(237,41,57)", pal)[seq_len(n)]
 
   p <- plotly::plot_ly()
   p <- plotly::layout(

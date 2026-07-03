@@ -308,8 +308,8 @@ mb_xgb_regression <- function() {
     model = xgboost::xgboost(
       x = as.matrix(d$train[, features]),
       y = d$train$mpg,
-      nrounds = 50L,
-      params = list(objective = "reg:squarederror")
+      objective = "reg:squarederror",
+      nrounds = 50L
     ),
     feat_eng_fun = function(df) as.matrix(df[, features]),
     train = d$train,
@@ -331,8 +331,8 @@ mb_xgb_classification <- function() {
     model = xgboost::xgboost(
       x = as.matrix(d$train[, features]),
       y = factor(d$train$vs),
-      nrounds = 50L,
-      params = list(objective = "binary:logistic")
+      objective = "binary:logistic",
+      nrounds = 50L
     ),
     feat_eng_fun = function(df) as.matrix(df[, features]),
     train = d$train,

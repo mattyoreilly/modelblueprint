@@ -8,3 +8,6 @@
 ^Meta$
 ^profiling$
 ^CRAN-review-posit\.md$
+^\.claude$
+\.DS_Store$
+\.Rapp\.history$

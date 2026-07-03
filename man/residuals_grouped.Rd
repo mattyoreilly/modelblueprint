@@ -40,7 +40,8 @@ residuals_grouped(data, ...)
 
 \item{obs}{\verb{[character(1)]} Name of the observed target column.}
 
-\item{exposure}{\verb{[character(1)]} Name of the exposure column.
+\item{exposure}{\verb{[character(1)]} Name of the exposure column. If the
+column is absent, every row is given weight 1.
 Default \code{"exposure"}.}
 
 \item{exposure_per_bin}{\verb{[numeric(1)]} Target exposure per bin.

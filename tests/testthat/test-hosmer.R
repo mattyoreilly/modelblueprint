@@ -514,3 +514,31 @@ describe("make_interval_labels", {
     expect_true(all(grepl("^\\(.*\\]$", labels)))
   })
 })
+
+
+# =============================================================================
+# Regression tests — exposure fallback and column validation (1.6.1)
+# =============================================================================
+
+describe("pred_vs_obs — missing columns", {
+  it("falls back to unit weights when the exposure column is absent", {
+    set.seed(21L)
+    df <- data.frame(
+      observed = rnorm(100L, 10),
+      predict  = rnorm(100L, 10)
+    )
+    result <- pred_vs_obs(df, ret = "data")
+    expect_true(data.table::is.data.table(result))
+    expect_equal(sum(result$exposure), nrow(df))
+  })
+
+  it("errors informatively when the obs column is missing", {
+    df <- data.frame(predict = 1:5, exposure = 1)
+    expect_error(pred_vs_obs(df, ret = "data"), "observed")
+  })
+
+  it("errors informatively when the pred column is missing", {
+    df <- data.frame(observed = 1:5, exposure = 1)
+    expect_error(pred_vs_obs(df, ret = "data"), "predict")
+  })
+})

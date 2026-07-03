@@ -26,7 +26,8 @@ pred_vs_obs <- function(data, ...) UseMethod("pred_vs_obs")
 #' @param data     A `data.frame` or `data.table`.
 #' @param pred     `[character(1)]` Name of the predictions column.
 #' @param obs      `[character(1)]` Name of the observed target column.
-#' @param exposure `[character(1)]` Name of the exposure column.
+#' @param exposure `[character(1)]` Name of the exposure column. If the column
+#'                 is absent, every row is given weight 1.
 #'                 Default `"exposure"`.
 #' @param bins     `[integer(1)]` Number of bins. Default `10L`.
 #' @param type_agg `[character(1)]` `"equal_exposure"` or `"equal_range"`.
@@ -51,10 +52,15 @@ pred_vs_obs.default <- function(
   type_agg <- match.arg(type_agg)
   ret <- match.arg(ret)
 
-  # Select only the three columns we need *before* coercing, so a wide frame
-  # isn't duplicated to use obs/pred/exposure. The list() step builds an
+  assert_col_exists(data, obs, "`obs`")
+  assert_col_exists(data, pred, "`pred`")
+
+  # Select only the columns we need *before* coercing, so a wide frame isn't
+  # duplicated to use obs/pred/exposure. A missing exposure column falls back
+  # to unit weights, matching one_way() and gain(). The list() step builds an
   # independent working table, so the caller's data is never mutated.
-  keep <- c(obs, pred, exposure)
+  has_expo <- exposure %in% names(data)
+  keep <- c(obs, pred, if (has_expo) exposure)
   narrow <- if (data.table::is.data.table(data)) {
     data[, keep, with = FALSE]
   } else {
@@ -62,7 +68,11 @@ pred_vs_obs.default <- function(
   }
   dt <- data.table::as.data.table(narrow)
   dt <- dt[,
-    list(.obs = .SD[[1L]], .pred = .SD[[2L]], .expo = .SD[[3L]]),
+    list(
+      .obs = .SD[[1L]],
+      .pred = .SD[[2L]],
+      .expo = if (has_expo) .SD[[3L]] else 1
+    ),
     .SDcols = keep
   ]
 
@@ -153,13 +163,10 @@ pred_vs_obs.modelblueprint <- function(
     )
   }
 
-  # Resolve exposure
-  exposure <- resolve_exposure(data, df)
-  df <- as.data.frame(df)
-  if (exposure == "vec_of_ones") {
-    df[[".exposure_ones"]] <- 1L
-    exposure <- ".exposure_ones"
-  }
+  # Resolve exposure — unit-weight fallback, zeros replaced with @expo_0_rep
+  resolved <- resolve_exposure_values(data, df)
+  df <- resolved$df
+  exposure <- resolved$exposure
 
   # Apply pipeline to get engineered data for predictions and obs alignment.
   # Same logic as pdp.default: if feat_eng_fun transforms the response, obs and

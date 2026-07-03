@@ -36,6 +36,8 @@
 #'                   `"equal_exposure"` (default) or `"equal_range"`.
 #' @param ret        `[character(1)]` `"plot"` (default) returns a plotly
 #'                   object; `"data"` returns the aggregated data.table.
+#' @param verbose    `[logical(1)]` Report how many NA values of `var` were
+#'                   moved to the trailing `"NA"` category? Default `FALSE`.
 #'
 #' @return A plotly object, or a data.table when `ret = "data"`, or `NULL`
 #'         with a warning if the plot cannot be produced.
@@ -69,6 +71,7 @@ one_way.default <- function(
   time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
+  verbose = FALSE,
   ...
 ) {
   # --- NSE: accept bare names or strings for column arguments ----------------
@@ -206,7 +209,8 @@ one_way.default <- function(
     split,
     bins,
     type_agg,
-    time_unit
+    time_unit,
+    verbose = verbose
   )
 
   if (ret == "data") {
@@ -328,7 +332,8 @@ aggregate_one_way <- function(
   split,
   bins,
   type_agg,
-  time_unit = NA_character_
+  time_unit = NA_character_,
+  verbose = FALSE
 ) {
   # Select only the columns we need - critical for large datasets
   keep <- unique(c(var, obs, expo_col, if (!is.na(split)) split))
@@ -389,12 +394,10 @@ aggregate_one_way <- function(
   na_rows <- dt[na_mask]
   dt_clean <- dt[!na_mask]
 
-  if (n_na > 0L) {
-    message(sprintf(
-      "one_way: %d NA value(s) in '%s' moved to trailing 'NA' category.",
-      n_na,
-      var
-    ))
+  if (n_na > 0L && isTRUE(verbose)) {
+    cli::cli_inform(
+      "one_way: {n_na} NA value{?s} in {.var {var}} moved to trailing 'NA' category."
+    )
   }
 
   # Bin the internal ".var" column directly. Force to character immediately
@@ -423,17 +426,29 @@ aggregate_one_way <- function(
   # GForce, so instead: (1) pre-weight each obs column by the exposure, (2) take
   # plain grouped sums via lapply(.SD, sum), (3) divide by the grouped weight.
   # ".x_bin" is dot-prefixed so the grouping key cannot shadow an obs column.
+  # Each obs column gets its own denominator counting only the exposure of
+  # rows where that obs is non-missing — the numerator drops NA rows via
+  # na.rm, so a shared denominator would deflate the mean wherever the
+  # target has NAs.
   dt_all[, .x_bin := as.character(.var)]
   w_obs <- paste0(".wobs_", seq_along(obs))
+  w_den <- paste0(".wden_", seq_along(obs))
   dt_all[, (w_obs) := lapply(.SD, function(col) col * .w), .SDcols = obs]
+  dt_all[,
+    (w_den) := lapply(.SD, function(col) .w * !is.na(col)),
+    .SDcols = obs
+  ]
 
   agg <- dt_all[,
     lapply(.SD, sum, na.rm = TRUE),
     by = .(.x_bin, .split),
-    .SDcols = c(w_obs, ".w")
+    .SDcols = c(w_obs, w_den, ".w")
   ]
   data.table::setnames(agg, c(w_obs, ".w"), c(obs, "exposure"))
-  agg[, (obs) := lapply(.SD, function(col) col / exposure), .SDcols = obs]
+  for (i in seq_along(obs)) {
+    data.table::set(agg, j = obs[i], value = agg[[obs[i]]] / agg[[w_den[i]]])
+  }
+  agg[, (w_den) := NULL]
 
   # Rename .split -> split for the public output; keep .x_bin as-is so it
   # never collides with an obs column named "x".
@@ -476,13 +491,17 @@ plot_one_way_simple <- function(agg, var, obs) {
     colour <- colours[i]
     symbol <- symbols[min(i, length(symbols))]
     y_vals <- as.numeric(agg_df[[col]])
+    # Exclude bins whose mean is NA (e.g. an all-NA target bin) from the
+    # denominator so the grand mean matches the exposure actually averaged.
     grand_mean <- sum(y_vals * agg_df$exposure, na.rm = TRUE) /
-      sum(agg_df$exposure, na.rm = TRUE)
+      sum(agg_df$exposure[!is.na(y_vals)], na.rm = TRUE)
 
-    # Percentage difference vs first obs - mirrors original set$error logic
+    # Percentage difference vs first obs - mirrors original set$error logic.
+    # pct_diff() blanks the percentage when the reference is 0 or missing.
     if (i > 1L) {
       y_ref <- as.numeric(agg_df[[obs[1L]]])
-      err <- paste0(", ", round((y_vals - y_ref) / y_ref, 3L) * 100, "%")
+      err <- pct_diff(y_vals, y_ref)
+      err <- ifelse(nzchar(err), paste0(", ", err), "")
     } else {
       err <- rep("", nrow(agg_df))
     }
@@ -685,9 +704,16 @@ smart_level_order <- function(x) {
   is_date_str <- grepl("^\\d{4}-\\d{2}-\\d{2}", non_na)
 
   # Extract leading number from interval/numeric labels (e.g. "(1.5,3.2]" -> 1.5).
+  # The optional exponent matters: cut() emits scientific notation for small
+  # breaks (e.g. "(9.9e-06,4e-05]"), and dropping it would sort by mantissa.
   # Exclude date-like strings so "2023-01-15" isn't mistaken for the number 2023.
   leading <- suppressWarnings(as.numeric(
-    sub("^[\\[\\(]?(-?[0-9]*\\.?[0-9]+).*", "\\1", trimws(non_na), perl = TRUE)
+    sub(
+      "^[\\[\\(]?(-?[0-9]*\\.?[0-9]+([eE][+-]?[0-9]+)?).*",
+      "\\1",
+      trimws(non_na),
+      perl = TRUE
+    )
   ))
   is_num <- !is.na(leading) & !is_date_str
 
@@ -703,4 +729,16 @@ smart_level_order <- function(x) {
 #' @keywords internal
 sig_dig <- function(x, n = 7L) {
   formatC(signif(x, digits = n), digits = n, format = "fg", flag = "#")
+}
+
+#' Percentage difference vs a reference, formatted for hover text
+#'
+#' Returns `""` wherever the percentage is not finite (reference of zero,
+#' or either value missing) so tooltips never display "Inf%" or "NaN%".
+#' @keywords internal
+pct_diff <- function(x, ref, digits = 1L) {
+  pct <- round((x - ref) / ref * 100, digits)
+  out <- paste0(pct, "%")
+  out[!is.finite(pct)] <- ""
+  out
 }

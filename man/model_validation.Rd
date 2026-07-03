@@ -26,8 +26,8 @@ Default \code{c("train", "test", "holdout")}. NULL splits are silently skipped.}
 \item{plots}{\verb{[character]} Plot types to produce. Any combination
 of \code{"validation"}, \code{"oneway"}, \code{"pdp"}, \code{"stability"}, \code{"shap"}.}
 
-\item{validation_bins}{\verb{[integer(1)]} Bins for gain / pred-vs-obs charts.
-Default \code{10L}.}
+\item{validation_bins}{\verb{[integer(1)]} Bins for the pred-vs-obs calibration
+chart. Default \code{10L}.}
 
 \item{one_way_bins}{\verb{[integer(1)]} Bins for one-way charts.
 Default \code{10L}.}
