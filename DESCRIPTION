@@ -1,6 +1,6 @@
 Package: modelblueprint
 Title: Model Diagnostics and Explainability for Machine Learning Workflows
-Version: 1.6.0
+Version: 1.7.0
 Authors@R: c(
     person("Matt", role = c("aut", "cre"), email = "fermoymatt@gmail.com"),
     person("Hubert", "Ratajczyk", role = "aut", email = "jane@example.com")
