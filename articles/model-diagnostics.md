@@ -29,8 +29,9 @@ better.
 
 ``` r
 
-# Gains chart — Gini shown in legend
-gain(mb)
+# Gains chart — Gini shown in legend. Called without set =, one chart per
+# available set (train/test/holdout) is returned as a named list.
+gain(mb, set = "train")
 ```
 
 **When to use it:** The gains chart is the primary performance metric in
@@ -49,7 +50,7 @@ average.
 ``` r
 
 # Calibration chart
-pred_vs_obs(mb)
+pred_vs_obs(mb, set = "train")
 ```
 
 ``` r
@@ -88,7 +89,7 @@ systematic pattern indicates model misspecification.
 
 ``` r
 
-residuals_grouped(mb)
+residuals_grouped(mb, set = "train")
 ```
 
 ``` r

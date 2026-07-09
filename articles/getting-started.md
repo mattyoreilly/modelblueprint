@@ -107,29 +107,31 @@ data.
 ``` r
 
 pdp(mb, var = "driver_age", bins = 10)
-#> ℹ Calculating pdp for `driver_age`
 ```
 
 ## Model diagnostics
 
 ``` r
 
+# Each diagnostic defaults to one chart per available set (train/test/holdout);
+# pass set = to pick one.
+
 # Gains chart with Gini coefficient
-gain(mb)
+gain(mb, set = "train")
 ```
 
 ``` r
 
 
 # Predicted vs observed calibration
-pred_vs_obs(mb)
+pred_vs_obs(mb, set = "train")
 ```
 
 ``` r
 
 
 # Grouped residuals with loess trend
-residuals_grouped(mb, exposure_per_bin = 5)
+residuals_grouped(mb, set = "train", exposure_per_bin = 5)
 ```
 
 ## Feature engineering pipeline
@@ -169,7 +171,7 @@ restores it exactly.
 
 savemb(mb, path = tempdir(), filename = "glm_poisson_freq")
 #> ✔ modelblueprint saved:
-#> /tmp/RtmpYLnBVt/glm_poisson_freq.tar.gz
+#> /tmp/RtmppX5FI5/glm_poisson_freq.tar.gz
 mb2 <- loadmb(file.path(tempdir(), "glm_poisson_freq.tar.gz"))
 
 # Predictions are identical

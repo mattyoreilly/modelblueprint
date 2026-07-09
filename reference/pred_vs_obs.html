@@ -11,7 +11,7 @@ yellow exposure bar on the secondary axis shows the distribution of data."><!-- 
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,8 +28,10 @@ yellow exposure bar on the secondary axis shows the distribution of data."><!-- 
     <li><a class="dropdown-item" href="../articles/one-way-plots.html">One-way analysis plots</a></li>
     <li><a class="dropdown-item" href="../articles/partial-dependence-plots.html">Partial dependence plots</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/mattyoreilly/modelblueprint/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -39,7 +41,7 @@ yellow exposure bar on the secondary axis shows the distribution of data."><!-- 
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Predicted vs Observed Calibration Plot</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/mattyoreilly/modelblueprint/blob/main/R/hosmer.R" class="external-link"><code>R/hosmer.R</code></a></small>
       <div class="d-none name"><code>pred_vs_obs.Rd</code></div>
     </div>
 
@@ -100,7 +102,8 @@ yellow exposure bar on the secondary axis shows the distribution of data.</p>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p><code>[character(1)]</code> Name of the exposure column.
+<dd><p><code>[character(1)]</code> Name of the exposure column. If the column
+is absent, every row is given weight 1.
 Default <code>"exposure"</code>.</p></dd>
 
 
@@ -114,7 +117,8 @@ Default <code>"exposure"</code>.</p></dd>
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p><code>[character(1)]</code> Chart title. Defaults to
-<code>model_display_name</code>.</p></dd>
+<code>model_display_name</code> (with the set name appended when
+plotting multiple sets).</p></dd>
 
 
 <dt id="arg-ret">ret<a class="anchor" aria-label="anchor" href="#arg-ret"></a></dt>
@@ -122,8 +126,10 @@ Default <code>"exposure"</code>.</p></dd>
 
 
 <dt id="arg-set">set<a class="anchor" aria-label="anchor" href="#arg-set"></a></dt>
-<dd><p><code>[character(1)]</code> Which dataset to use: <code>"train"</code>,
-<code>"test"</code>, or <code>"holdout"</code>. Default <code>"train"</code>.</p></dd>
+<dd><p><code>[character]</code> Dataset splits to use: any of <code>"train"</code>,
+<code>"test"</code>, <code>"holdout"</code>. Defaults to all available (non-NULL)
+sets. When more than one set is used, a named list with
+one result per set is returned.</p></dd>
 
 
 <dt id="arg-precomputed-preds">precomputed_preds<a class="anchor" aria-label="anchor" href="#arg-precomputed-preds"></a></dt>
@@ -149,7 +155,7 @@ internal <code><a href="predict.ModelBlueprint.html">predict.modelblueprint()</a
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">pred_vs_obs</span><span class="op">(</span><span class="va">mb</span><span class="op">)</span></span></span>
 <div id="htmlwidget-416566eb193bf50d04e6" style="width:700px;height:432.632880098888px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-416566eb193bf50d04e6">{"x":{"visdat":{"1b609d9bd0":["function () ","plotlyVisDat"]},"cur_data":"1b609d9bd0","attrs":{"1b609d9bd0":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[4,3,3,3,3,3,3,3,3,4],"type":"bar","name":"Exposure","marker":{"color":"#ffff00"},"yaxis":"y2","inherit":true},"1b609d9bd0.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[0,0,0,0,0.33333333333333331,0.66666666666666663,0.66666666666666663,0.66666666666666663,1,1],"type":"scatter","mode":"markers","name":"Observed","marker":{"size":7,"color":"rgb(0,0,128)","symbol":"circle"},"yaxis":"y","inherit":true},"1b609d9bd0.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[3.0119505840138254e-05,0.0043837060015286169,0.012875001192762971,0.020699811223330845,0.19604826944796525,0.61245868138860982,0.73320758636404104,0.84934117191774783,0.92322388618405105,0.98579129564592183],"type":"scatter","mode":"lines","name":"Predicted","line":{"color":"rgb(0,0,0)","width":2,"dash":"dash"},"yaxis":"y","inherit":true}},"layout":{"margin":{"b":120,"l":50,"t":25,"r":80},"title":"logistic_vs","xaxis":{"domain":[0,1],"automargin":true,"title":"Predicted (binned)","tickangle":-45,"tickmode":"array","tickvals":[1,2,3,4,5,6,7,8,9,10],"ticktext":["(2.2749e-08, 0.000163326]","(0.000163326, 0.00813611]","(0.00813611, 0.0157828]","(0.0157828, 0.0649784]","(0.0649784, 0.459202]","(0.459202, 0.689082]","(0.689082, 0.815987]","(0.815987, 0.869412]","(0.869412, 0.976281]","(0.976281, 0.995129]"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Observed / Predicted rate","overlaying":"y2","showgrid":false},"yaxis2":{"title":"Exposure","side":"right","showgrid":false},"legend":{"x":1.1000000000000001,"y":0.5},"barmode":"overlay","hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1,2,3,4,5,6,7,8,9,10],"y":[4,3,3,3,3,3,3,3,3,4],"type":"bar","name":"Exposure","marker":{"color":"#ffff00","line":{"color":"rgba(31,119,180,1)"}},"yaxis":"y2","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","frame":null},{"x":[1,2,3,4,5,6,7,8,9,10],"y":[0,0,0,0,0.33333333333333331,0.66666666666666663,0.66666666666666663,0.66666666666666663,1,1],"type":"scatter","mode":"markers","name":"Observed","marker":{"color":"rgb(0,0,128)","size":7,"symbol":"circle","line":{"color":"rgba(255,127,14,1)"}},"yaxis":"y","error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":[1,2,3,4,5,6,7,8,9,10],"y":[3.0119505840138254e-05,0.0043837060015286169,0.012875001192762971,0.020699811223330845,0.19604826944796525,0.61245868138860982,0.73320758636404104,0.84934117191774783,0.92322388618405105,0.98579129564592183],"type":"scatter","mode":"lines","name":"Predicted","line":{"color":"rgb(0,0,0)","width":2,"dash":"dash"},"yaxis":"y","marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><span class="r-in"><span><span class="co"># }</span></span></span>
+<script type="application/json" data-for="htmlwidget-416566eb193bf50d04e6">{"x":{"visdat":{"1b9523c9fb21":["function () ","plotlyVisDat"]},"cur_data":"1b9523c9fb21","attrs":{"1b9523c9fb21":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[4,3,3,3,3,3,3,3,3,4],"type":"bar","name":"Exposure","marker":{"color":"#ffff00"},"yaxis":"y2","inherit":true},"1b9523c9fb21.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[0,0,0,0,0.33333333333333331,0.66666666666666663,0.66666666666666663,0.66666666666666663,1,1],"type":"scatter","mode":"markers","name":"Observed","marker":{"size":7,"color":"rgb(0,0,128)","symbol":"circle"},"yaxis":"y","inherit":true},"1b9523c9fb21.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10],"y":[3.0119505840138254e-05,0.0043837060015286169,0.012875001192762971,0.020699811223330845,0.19604826944796525,0.61245868138860982,0.73320758636404104,0.84934117191774783,0.92322388618405105,0.98579129564592183],"type":"scatter","mode":"lines","name":"Predicted","line":{"color":"rgb(0,0,0)","width":2,"dash":"dash"},"yaxis":"y","inherit":true}},"layout":{"margin":{"b":120,"l":50,"t":25,"r":80},"title":"logistic_vs","xaxis":{"domain":[0,1],"automargin":true,"title":"Predicted (binned)","tickangle":-45,"tickmode":"array","tickvals":[1,2,3,4,5,6,7,8,9,10],"ticktext":["(2.2749e-08, 0.000163326]","(0.000163326, 0.00813611]","(0.00813611, 0.0157828]","(0.0157828, 0.0649784]","(0.0649784, 0.459202]","(0.459202, 0.689082]","(0.689082, 0.815987]","(0.815987, 0.869412]","(0.869412, 0.976281]","(0.976281, 0.995129]"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Observed / Predicted rate","overlaying":"y2","showgrid":false},"yaxis2":{"title":"Exposure","side":"right","showgrid":false},"legend":{"x":1.1000000000000001,"y":0.5},"barmode":"overlay","hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1,2,3,4,5,6,7,8,9,10],"y":[4,3,3,3,3,3,3,3,3,4],"type":"bar","name":"Exposure","marker":{"color":"#ffff00","line":{"color":"rgba(31,119,180,1)"}},"yaxis":"y2","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","frame":null},{"x":[1,2,3,4,5,6,7,8,9,10],"y":[0,0,0,0,0.33333333333333331,0.66666666666666663,0.66666666666666663,0.66666666666666663,1,1],"type":"scatter","mode":"markers","name":"Observed","marker":{"color":"rgb(0,0,128)","size":7,"symbol":"circle","line":{"color":"rgba(255,127,14,1)"}},"yaxis":"y","error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":[1,2,3,4,5,6,7,8,9,10],"y":[3.0119505840138254e-05,0.0043837060015286169,0.012875001192762971,0.020699811223330845,0.19604826944796525,0.61245868138860982,0.73320758636404104,0.84934117191774783,0.92322388618405105,0.98579129564592183],"type":"scatter","mode":"lines","name":"Predicted","line":{"color":"rgb(0,0,0)","width":2,"dash":"dash"},"yaxis":"y","marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -157,11 +163,11 @@ internal <code><a href="predict.ModelBlueprint.html">predict.modelblueprint()</a
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Matt, Hubert Ratajczyk.</p>
+  <p>Developed by Matt O’Reilly, Hubert Ratajczyk.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

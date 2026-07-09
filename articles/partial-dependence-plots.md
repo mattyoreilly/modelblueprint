@@ -26,7 +26,6 @@ The chart has the same dual-axis layout as one-way plots:
 
 # PDP for driver_age — everything pulled from blueprint slots
 pdp(mb, var = "driver_age")
-#> ℹ Calculating pdp for `driver_age`
 ```
 
 On a plain data frame:
@@ -64,7 +63,6 @@ than the feature itself.
 
 # Coarser view
 pdp(mb, var = "driver_age", bins = 8L)
-#> ℹ Calculating pdp for `driver_age`
 ```
 
 PDP computation requires predicting across the full dataset for each
@@ -74,7 +72,6 @@ bin. For large datasets, `sample_size` caps the number of rows used:
 
 # Use at most 1,000 rows for PDP computation
 pdp(mb, var = "vehicle_value", sample_size = 1000L)
-#> ℹ Calculating pdp for `vehicle_value`
 ```
 
 The default is 10,000. For most models, 1,000 rows gives a stable PDP
@@ -85,7 +82,6 @@ line at a fraction of the computation cost.
 ``` r
 
 pdp(mb, var = "vehicle_age", type_agg = "equal_range")
-#> ℹ Calculating pdp for `vehicle_age`
 ```
 
 ## Choosing the dataset
@@ -93,13 +89,11 @@ pdp(mb, var = "vehicle_age", type_agg = "equal_range")
 ``` r
 
 pdp(mb, var = "driver_age", set = "train")
-#> ℹ Calculating pdp for `driver_age`
 ```
 
 ``` r
 
 pdp(mb, var = "driver_age", set = "test")    # out-of-sample PDP
-#> ℹ Calculating pdp for `driver_age`
 ```
 
 Computing the PDP on the test set is a useful check — if the PDP shape
@@ -111,7 +105,6 @@ to correlations present only in training data.
 ``` r
 
 d <- pdp(mb, var = "driver_age", ret = "data")
-#> ℹ Calculating pdp for `driver_age`
 head(d)
 #>    driver_age  obs_mean pred_mean exposure  pdp_mean global_obs global_pred
 #>        <char>     <num>     <num>    <num>     <num>      <num>       <num>

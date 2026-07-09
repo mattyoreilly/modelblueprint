@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,8 +24,10 @@
     <li><a class="dropdown-item" href="../articles/one-way-plots.html">One-way analysis plots</a></li>
     <li><a class="dropdown-item" href="../articles/partial-dependence-plots.html">Partial dependence plots</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/mattyoreilly/modelblueprint/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -35,7 +37,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Cumulative Gains Chart (default method)</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/mattyoreilly/modelblueprint/blob/main/R/gain.R" class="external-link"><code>R/gain.R</code></a></small>
       <div class="d-none name"><code>gain.default.Rd</code></div>
     </div>
 
@@ -105,7 +107,7 @@ Default <code>"exposure"</code>.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="gain.html">gain</a></span><span class="op">(</span><span class="va">df</span>, pred <span class="op">=</span> <span class="st">"pred"</span>, obs <span class="op">=</span> <span class="st">"obs"</span>, exposure <span class="op">=</span> <span class="st">"exposure"</span><span class="op">)</span></span></span>
 <div id="htmlwidget-e5c8c404fe174e4c81bd" style="width:700px;height:432.632880098888px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"visdat":{"1b6038413c46":["function () ","plotlyVisDat"]},"cur_data":"1b6038413c46","attrs":{"1b6038413c46":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"type":"scatter","mode":"lines","name":"Mean model, Gini: 0.000","line":{"color":"rgb(180,180,180)","dash":"dot","width":1},"inherit":true},"1b6038413c46.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"Perfect model, Gini: 0.333","line":{"color":"rgb(0,0,0)","dash":"dash","width":1},"inherit":true},"1b6038413c46.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"pred, Gini: 0.333","line":{"color":"rgb(237,41,57)"},"inherit":true}},"layout":{"margin":{"b":100,"l":50,"t":25,"r":50},"title":"Cumulative Gains","xaxis":{"domain":[0,1],"automargin":true,"title":"Cumulative % of Exposure","rangemode":"tozero"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Cumulative % of Target","rangemode":"tozero","showgrid":false},"legend":{"x":1.05,"y":0.5},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"type":"scatter","mode":"lines","name":"Mean model, Gini: 0.000","line":{"color":"rgb(180,180,180)","dash":"dot","width":1},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"Perfect model, Gini: 0.333","line":{"color":"rgb(0,0,0)","dash":"dash","width":1},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"pred, Gini: 0.333","line":{"color":"rgb(237,41,57)"},"marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><span class="r-in"><span><span class="co"># }</span></span></span>
+<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"visdat":{"1b955e509e86":["function () ","plotlyVisDat"]},"cur_data":"1b955e509e86","attrs":{"1b955e509e86":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"type":"scatter","mode":"lines","name":"Mean model, Gini: 0.000","line":{"color":"rgb(180,180,180)","dash":"dot","width":1},"inherit":true},"1b955e509e86.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"Perfect model, Gini: 0.333","line":{"color":"rgb(0,0,0)","dash":"dash","width":1},"inherit":true},"1b955e509e86.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"pred, Gini: 0.333","line":{"color":"rgb(237,41,57)"},"inherit":true}},"layout":{"margin":{"b":100,"l":50,"t":25,"r":50},"title":"Cumulative Gains","xaxis":{"domain":[0,1],"automargin":true,"title":"Cumulative % of Exposure","rangemode":"tozero"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Cumulative % of Target","rangemode":"tozero","showgrid":false},"legend":{"x":1.05,"y":0.5},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"type":"scatter","mode":"lines","name":"Mean model, Gini: 0.000","line":{"color":"rgb(180,180,180)","dash":"dot","width":1},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"Perfect model, Gini: 0.333","line":{"color":"rgb(0,0,0)","dash":"dash","width":1},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.20000000000000001,0.40000000000000002,0.59999999999999998,0.80000000000000004,1],"y":[0.33333333333333331,0.66666666666666663,1,1,1],"type":"scatter","mode":"lines","name":"pred, Gini: 0.333","line":{"color":"rgb(237,41,57)"},"marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -113,11 +115,11 @@ Default <code>"exposure"</code>.</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Matt, Hubert Ratajczyk.</p>
+  <p>Developed by Matt O’Reilly, Hubert Ratajczyk.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

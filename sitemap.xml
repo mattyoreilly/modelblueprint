@@ -9,6 +9,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/articles/partial-dependence-plots.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/authors.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/index.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/news/index.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/ModelBlueprint-package.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/aggregate_one_way.html</loc></url>
@@ -43,6 +44,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/mutate.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/one_way.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pct_diff.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pdp.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pdp.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/plot_pdp.html</loc></url>
@@ -51,6 +53,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/pred_vs_obs.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/predict.ModelBlueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/predict.mb_seq.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/reexports.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/remap_sorted_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sami.html</loc></url>

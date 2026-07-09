@@ -39,7 +39,8 @@ model_validation(
 
 - validation_bins:
 
-  `[integer(1)]` Bins for gain / pred-vs-obs charts. Default `10L`.
+  `[integer(1)]` Bins for the pred-vs-obs calibration chart. Default
+  `10L`.
 
 - one_way_bins:
 

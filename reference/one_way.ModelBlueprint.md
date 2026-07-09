@@ -75,4 +75,6 @@ one_way(
 
 ## Value
 
-A plotly object or data.table depending on `ret`.
+A plotly object or data.table depending on `ret`. With multiple
+variables (e.g. `var = NA`), a named list with one entry per variable;
+variables that are skipped with a warning are omitted from the list.

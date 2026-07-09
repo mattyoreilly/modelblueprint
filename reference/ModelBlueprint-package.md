@@ -18,12 +18,15 @@ Useful links:
 
 - <https://mattyoreilly.github.io/modelblueprint/>
 
+- Report bugs at <https://github.com/mattyoreilly/modelblueprint/issues>
+
 ## Author
 
-**Maintainer**: Matt <fermoymatt@gmail.com>
+**Maintainer**: Matt O'Reilly <fermoymatt@gmail.com> \[copyright
+holder\]
 
 Authors:
 
-- Matt <fermoymatt@gmail.com>
+- Matt O'Reilly <fermoymatt@gmail.com> \[copyright holder\]
 
-- Hubert Ratajczyk <jane@example.com>
+- Hubert Ratajczyk
