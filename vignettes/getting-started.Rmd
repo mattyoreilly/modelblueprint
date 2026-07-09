@@ -101,14 +101,17 @@ pdp(mb, var = "driver_age", bins = 10)
 ## Model diagnostics
 
 ```{r diagnostics}
+# Each diagnostic defaults to one chart per available set (train/test/holdout);
+# pass set = to pick one.
+
 # Gains chart with Gini coefficient
-gain(mb)
+gain(mb, set = "train")
 
 # Predicted vs observed calibration
-pred_vs_obs(mb)
+pred_vs_obs(mb, set = "train")
 
 # Grouped residuals with loess trend
-residuals_grouped(mb, exposure_per_bin = 5)
+residuals_grouped(mb, set = "train", exposure_per_bin = 5)
 ```
 
 ## Feature engineering pipeline

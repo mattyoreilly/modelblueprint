@@ -15,8 +15,8 @@
 #'   Default `c("train", "test", "holdout")`. NULL splits are silently skipped.
 #' @param plots            `[character]` Plot types to produce. Any combination
 #'   of `"validation"`, `"oneway"`, `"pdp"`, `"stability"`, `"shap"`.
-#' @param validation_bins  `[integer(1)]` Bins for gain / pred-vs-obs charts.
-#'   Default `10L`.
+#' @param validation_bins  `[integer(1)]` Bins for the pred-vs-obs calibration
+#'   chart. Default `10L`.
 #' @param one_way_bins     `[integer(1)]` Bins for one-way charts.
 #'   Default `10L`.
 #' @param pdp_bins         `[integer(1)]` Bins for PDP charts. Default `10L`.
@@ -164,7 +164,7 @@ model_validation <- function(
     if ("validation" %in% plots) {
       val_plots <- Filter(Negate(is.null), list(
         gain         = .try_plot(
-          gain(mb, set = set, bins = validation_bins),
+          gain(mb, set = set),
           paste0("gain(", set, ")")
         ),
         pred_vs_obs  = .try_plot(

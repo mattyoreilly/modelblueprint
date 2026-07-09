@@ -21,9 +21,13 @@ gain(data, ...)
 
 \item{...}{Passed to the default method.}
 
-\item{set}{Which dataset to use: \code{"train"}, \code{"test"}, or \code{"holdout"}.}
+\item{set}{\verb{[character]} Dataset splits to use: any of \code{"train"},
+\code{"test"}, \code{"holdout"}. Defaults to all available (non-NULL) sets. When
+more than one set is used, a named list with one result per set is
+returned.}
 
-\item{title}{Chart title. Defaults to \code{model_display_name}.}
+\item{title}{Chart title. Defaults to \code{model_display_name} (with the set
+name appended when plotting multiple sets).}
 
 \item{ret}{\code{"plot"}, \code{"data"}, or \code{"gini"}. Default \code{"plot"}.}
 

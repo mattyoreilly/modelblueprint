@@ -441,3 +441,44 @@ describe("print methods", {
     expect_no_error(print(seq1))
   })
 })
+
+
+# =============================================================================
+# Regression tests — yhat_name uniqueness, return_all, savemb (1.6.1)
+# =============================================================================
+
+describe("mb_layer — duplicate yhat_name", {
+  it("rejects blueprints sharing a yhat_name within a layer", {
+    mb1 <- set_yhat_name(mb_lm_regression(), "p")
+    mb2 <- set_yhat_name(mb_glm_regression(), "p")
+    expect_error(
+      mb_layer(list(mb1, mb2), aggregate_fn = function(df) df, yhat_name = "p"),
+      "distinct"
+    )
+  })
+})
+
+describe("predict.mb_seq — return_all column uniqueness", {
+  it("deduplicates columns when layers share a yhat_name", {
+    mb1 <- set_yhat_name(mb_lm_regression(), "p1")
+    mb2 <- set_yhat_name(mb_glm_regression(), "p1")
+    # No train= here: the example blueprints declare expo_name = "exposure",
+    # which the synthetic data lacks, and column validation would reject it.
+    s <- mb_seq(
+      mb_layer(list(mb1)),
+      mb_layer(list(mb2)),
+      y_name = "mpg"
+    )
+    out <- predict(s, mb1@train, return_all = TRUE)
+    expect_equal(anyDuplicated(names(out)), 0L)
+    expect_equal(sum(names(out) == "p1"), 1L)
+  })
+})
+
+describe("savemb — mb_seq", {
+  it("fails with an informative not-yet-supported message", {
+    mb1 <- set_yhat_name(mb_lm_regression(), "p1")
+    s <- mb_seq(mb_layer(list(mb1)), y_name = "mpg")
+    expect_error(savemb(s), "mb_seq")
+  })
+})

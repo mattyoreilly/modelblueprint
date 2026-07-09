@@ -47,6 +47,23 @@ new_mb_layer_ <- new_class(
       if (!all(has_yhat)) {
         errors <- c(errors, "All blueprints must have @yhat_name set.")
       }
+
+      # Duplicate yhat_names within a layer mean the later blueprint silently
+      # overwrites the earlier one's prediction column at predict time.
+      if (all(has_yhat)) {
+        yhats <- vapply(
+          self@blueprints,
+          function(b) b@yhat_name,
+          character(1L)
+        )
+        dupes <- unique(yhats[duplicated(yhats)])
+        if (length(dupes) > 0L) {
+          errors <- c(errors, sprintf(
+            "Blueprints in a layer must have distinct @yhat_name values (duplicated: %s).",
+            paste(dupes, collapse = ", ")
+          ))
+        }
+      }
     }
 
     if (is.na(self@yhat_name) || !nzchar(self@yhat_name)) {
@@ -412,7 +429,9 @@ predict.mb_seq <- function(object, newdata, return_all = FALSE, ...) {
     pred_cols <- c(pred_cols, new_cols)
   }
 
-  if (return_all) return(df[pred_cols])
+  # unique(): a later layer's aggregate_fn may legitimately overwrite a column
+  # added by an earlier layer, in which case pred_cols records the name twice.
+  if (return_all) return(df[unique(pred_cols)])
 
   df[[object@layers[[length(object@layers)]]@yhat_name]]
 }

@@ -35,7 +35,8 @@ one_way(mb, var = "wt")
 # Partial dependence plot
 pdp(mb, var = "wt")
 
-# Gains chart with Gini coefficient
+# Gains chart with Gini coefficient — one chart per available set by default;
+# pass set = "train" (or "test"/"holdout") for a single chart
 gain(mb)
 
 # Calibration chart

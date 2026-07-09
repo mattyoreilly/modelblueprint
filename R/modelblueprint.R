@@ -483,6 +483,20 @@ saveMB <- function(object, path = getwd(), filename = NULL, ...) {
   savemb(object, path = path, filename = filename, ...)
 }
 
+# mb_seq serialisation is not implemented yet — fail with guidance rather
+# than S7's generic "can't find method" error. Defined here (not mb_seq.R)
+# because file collation loads mb_seq.R before the savemb generic exists.
+method(savemb, new_mb_seq_) <- function(
+  object,
+  path = getwd(),
+  filename = NULL
+) {
+  cli::cli_abort(c(
+    "{.fn savemb} does not support {.cls mb_seq} objects yet.",
+    i = "Save each blueprint individually with {.fn savemb} and rebuild the sequence with {.fn mb_seq} + {.fn mb_layer} after loading."
+  ))
+}
+
 
 # =============================================================================
 # loadmb
@@ -745,7 +759,9 @@ check_package <- function(pkg, context) {
 #'   predictions (one per row of the requested `set`). Only used when
 #'   `predictions = TRUE`. When supplied, the internal
 #'   `predict.modelblueprint()` call is skipped.
-#' @return A plotly object or data.table depending on `ret`.
+#' @return A plotly object or data.table depending on `ret`. With multiple
+#'   variables (e.g. `var = NA`), a named list with one entry per variable;
+#'   variables that are skipped with a warning are omitted from the list.
 #' @method one_way modelblueprint
 #' @export
 one_way.modelblueprint <- function(
@@ -893,7 +909,12 @@ one_way.modelblueprint <- function(
   if (length(vars) == 1L) {
     run_one_way(vars)
   } else {
-    stats::setNames(lapply(vars, run_one_way), vars)
+    # Drop skipped variables (one_way() returns NULL with a warning) so the
+    # result is directly usable by save_plots() and friends.
+    Filter(
+      Negate(is.null),
+      stats::setNames(lapply(vars, run_one_way), vars)
+    )
   }
 }
 
@@ -982,6 +1003,9 @@ pdp.modelblueprint <- function(
       declared,
       data@y_name,
       if (exposure %in% names(df)) exposure,
+      # A model fit with offset(<column>) needs that column at predict time
+      # even though it is rarely listed in @x_original_inputs.
+      as.character(stats::na.omit(data@offset_name)),
       vars
     ))
     keep <- keep[keep %in% names(df)]
@@ -1136,6 +1160,30 @@ shap.modelblueprint <- function(
   paste0(".pred_", object@model_display_name %|NA|% "model")
 }
 
+#' Resolve which dataset splits a diagnostic should run on
+#'
+#' Multi-set aware `match.arg()` used by `gain()`, `pred_vs_obs()` and
+#' `residuals_grouped()`. A single explicit set is returned as-is (the
+#' caller's own NULL-slot check then gives the precise error); a multi-set
+#' request — including the default of all three — is filtered down to the
+#' splits that actually hold data, so `gain(mb)` covers every available set.
+#'
+#' @keywords internal
+#' @noRd
+resolve_sets <- function(object, set) {
+  set <- match.arg(set, c("train", "test", "holdout"), several.ok = TRUE)
+  if (length(set) == 1L) {
+    return(set)
+  }
+  available <- set[!vapply(set, function(s) is.null(prop(object, s)), logical(1))]
+  if (length(available) == 0L) {
+    cli::cli_abort(
+      "modelblueprint has no data for set{?s} {.val {set}}. Supply data when constructing."
+    )
+  }
+  available
+}
+
 #' @keywords internal
 #' @noRd
 resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
@@ -1167,6 +1215,37 @@ resolve_exposure <- function(object, df) {
   } else {
     "vec_of_ones"
   }
+}
+
+#' Materialise the exposure column for rate-based diagnostics
+#'
+#' Used by `gain()`, `pred_vs_obs()`, and `residuals_grouped()` — the
+#' diagnostics that divide predictions by per-row exposure. Guarantees a
+#' usable exposure column: falls back to unit weights when the blueprint's
+#' exposure column is absent, and replaces zero exposure values with
+#' `@expo_0_rep` so the rate division cannot produce `Inf`.
+#'
+#' @return A list with `df` (as a data.frame, exposure column materialised)
+#'   and `exposure` (the column name to use).
+#' @keywords internal
+#' @noRd
+resolve_exposure_values <- function(object, df) {
+  exposure <- resolve_exposure(object, df)
+  df <- as.data.frame(df)
+  if (exposure == "vec_of_ones") {
+    df[[".exposure_ones"]] <- 1L
+    exposure <- ".exposure_ones"
+  } else {
+    zero <- !is.na(df[[exposure]]) & df[[exposure]] == 0
+    if (any(zero)) {
+      df[[exposure]][zero] <- object@expo_0_rep
+      cli::cli_warn(
+        "Replaced {sum(zero)} zero-exposure row{?s} with @expo_0_rep = \\
+        {object@expo_0_rep} before computing rates."
+      )
+    }
+  }
+  list(df = df, exposure = exposure)
 }
 
 

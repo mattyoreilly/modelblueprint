@@ -333,12 +333,18 @@ describe("pred_vs_obs.default — immutability", {
 describe("pred_vs_obs.modelblueprint — return type", {
   mb <- make_mb()
 
-  it("returns a plotly object by default", {
-    expect_true(is_plotly(pred_vs_obs(mb)))
+  it("returns a named list of plots for all available sets by default", {
+    result <- pred_vs_obs(mb)
+    expect_named(result, c("train", "test"))
+    expect_true(all(vapply(result, is_plotly, logical(1L))))
+  })
+
+  it("returns a plotly object for a single set", {
+    expect_true(is_plotly(pred_vs_obs(mb, set = "train")))
   })
 
   it("ret = 'data' returns a data.table", {
-    result <- pred_vs_obs(mb, ret = "data")
+    result <- pred_vs_obs(mb, set = "train", ret = "data")
     expect_true(data.table::is.data.table(result))
   })
 })
@@ -356,13 +362,13 @@ describe("pred_vs_obs.modelblueprint — slot usage", {
 
   it("uses model to generate predictions", {
     mb <- make_mb()
-    result <- pred_vs_obs(mb, ret = "data")
+    result <- pred_vs_obs(mb, set = "train", ret = "data")
     expect_false(any(is.na(result$pred_mean)))
   })
 
   it("falls back to unit weights when expo_name not in data", {
     mb <- make_mb() # expo_name = "exposure" but mtcars has no such col
-    result <- pred_vs_obs(mb, ret = "data")
+    result <- pred_vs_obs(mb, set = "train", ret = "data")
     expect_equal(sum(result$exposure), nrow(mb@train))
   })
 
@@ -398,16 +404,36 @@ describe("pred_vs_obs.modelblueprint — set argument", {
     expect_no_error(pred_vs_obs(mb, set = "test"))
   })
 
+  it("uses all available sets by default", {
+    result <- pred_vs_obs(mb)
+    expect_named(result, c("train", "test"))
+  })
+
+  it("precomputed_preds requires a single set", {
+    expect_error(
+      pred_vs_obs(mb, precomputed_preds = rep(0.5, 32L)),
+      "single"
+    )
+  })
+
   it("errors informatively when chosen set is NULL", {
     mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
-      pred_vs_obs(mb_no_data),
+      pred_vs_obs(mb_no_data, set = "train"),
       "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
+  })
+
+  it("errors informatively when no set has data", {
+    mb_no_data <- modelblueprint(
+      model = stats::lm(mpg ~ wt, data = mtcars),
+      y_name = "mpg"
+    )
+    expect_error(pred_vs_obs(mb_no_data), "has no data")
   })
 
   it("errors when y_name is not set", {
@@ -431,13 +457,13 @@ describe("pred_vs_obs.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("bins argument is respected", {
-    d5 <- pred_vs_obs(mb, bins = 5L, ret = "data")
-    d10 <- pred_vs_obs(mb, bins = 10L, ret = "data")
+    d5 <- pred_vs_obs(mb, set = "train", bins = 5L, ret = "data")
+    d10 <- pred_vs_obs(mb, set = "train", bins = 10L, ret = "data")
     expect_lte(nrow(d5), nrow(d10))
   })
 
   it("type_agg = 'equal_range' returns a plot", {
-    expect_true(is_plotly(pred_vs_obs(mb, type_agg = "equal_range")))
+    expect_true(is_plotly(pred_vs_obs(mb, set = "train", type_agg = "equal_range")))
   })
 
   it("custom title does not error", {
@@ -512,5 +538,33 @@ describe("make_interval_labels", {
     breaks <- c(0, 0.5, 1)
     labels <- modelblueprint:::make_interval_labels(breaks)
     expect_true(all(grepl("^\\(.*\\]$", labels)))
+  })
+})
+
+
+# =============================================================================
+# Regression tests — exposure fallback and column validation (1.6.1)
+# =============================================================================
+
+describe("pred_vs_obs — missing columns", {
+  it("falls back to unit weights when the exposure column is absent", {
+    set.seed(21L)
+    df <- data.frame(
+      observed = rnorm(100L, 10),
+      predict  = rnorm(100L, 10)
+    )
+    result <- pred_vs_obs(df, ret = "data")
+    expect_true(data.table::is.data.table(result))
+    expect_equal(sum(result$exposure), nrow(df))
+  })
+
+  it("errors informatively when the obs column is missing", {
+    df <- data.frame(predict = 1:5, exposure = 1)
+    expect_error(pred_vs_obs(df, ret = "data"), "observed")
+  })
+
+  it("errors informatively when the pred column is missing", {
+    df <- data.frame(observed = 1:5, exposure = 1)
+    expect_error(pred_vs_obs(df, ret = "data"), "predict")
   })
 })

@@ -45,7 +45,9 @@ predictions (one per row of the requested \code{set}). Only used when
 \code{predict.modelblueprint()} call is skipped.}
 }
 \value{
-A plotly object or data.table depending on \code{ret}.
+A plotly object or data.table depending on \code{ret}. With multiple
+variables (e.g. \code{var = NA}), a named list with one entry per variable;
+variables that are skipped with a warning are omitted from the list.
 }
 \description{
 Calls \code{\link[=one_way]{one_way()}} using the modelblueprint's target, exposure, and data

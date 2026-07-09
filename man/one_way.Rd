@@ -17,6 +17,7 @@ one_way(data, ...)
   time_unit = NA_character_,
   type_agg = c("equal_exposure", "equal_range"),
   ret = c("plot", "data"),
+  verbose = FALSE,
   ...
 )
 }
@@ -53,6 +54,9 @@ binning — dates are shown as individual values).}
 
 \item{ret}{\verb{[character(1)]} \code{"plot"} (default) returns a plotly
 object; \code{"data"} returns the aggregated data.table.}
+
+\item{verbose}{\verb{[logical(1)]} Report how many NA values of \code{var} were
+moved to the trailing \code{"NA"} category? Default \code{FALSE}.}
 }
 \value{
 A plotly object, or a data.table when \code{ret = "data"}, or \code{NULL}

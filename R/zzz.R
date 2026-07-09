@@ -31,7 +31,9 @@ utils::globalVariables(c(
   ".var",        # one_way.R, pdp.R          — variable being analysed
   ".w",          # one_way.R, pdp.R          — weight column
   ".wobs",       # pdp.R                     — weighted observation scratch
+  ".wobs_den",   # pdp.R                     — obs denominator (non-NA exposure)
   ".wpred",      # pdp.R                     — weighted prediction scratch
+  ".wpred_den",  # pdp.R                     — pred denominator (non-NA exposure)
   ".x_bin",      # one_way.R, pdp.R          — binned feature value
 
   # ── Aggregation output column names ───────────────────────────────────────

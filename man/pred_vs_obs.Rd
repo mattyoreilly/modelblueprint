@@ -40,7 +40,8 @@ pred_vs_obs(data, ...)
 
 \item{obs}{\verb{[character(1)]} Name of the observed target column.}
 
-\item{exposure}{\verb{[character(1)]} Name of the exposure column.
+\item{exposure}{\verb{[character(1)]} Name of the exposure column. If the column
+is absent, every row is given weight 1.
 Default \code{"exposure"}.}
 
 \item{bins}{\verb{[integer(1)]} Number of bins. Default \code{10L}.}
@@ -48,12 +49,15 @@ Default \code{"exposure"}.}
 \item{type_agg}{\verb{[character(1)]} \code{"equal_exposure"} or \code{"equal_range"}.}
 
 \item{title}{\verb{[character(1)]} Chart title. Defaults to
-\code{model_display_name}.}
+\code{model_display_name} (with the set name appended when
+plotting multiple sets).}
 
 \item{ret}{\verb{[character(1)]} \code{"plot"} or \code{"data"}. Default \code{"plot"}.}
 
-\item{set}{\verb{[character(1)]} Which dataset to use: \code{"train"},
-\code{"test"}, or \code{"holdout"}. Default \code{"train"}.}
+\item{set}{\verb{[character]} Dataset splits to use: any of \code{"train"},
+\code{"test"}, \code{"holdout"}. Defaults to all available (non-NULL)
+sets. When more than one set is used, a named list with
+one result per set is returned.}
 
 \item{precomputed_preds}{\verb{[numeric | NULL]} Optional vector of pre-computed
 predictions (one per row of the requested \code{set}). When supplied, the

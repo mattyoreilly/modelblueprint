@@ -851,6 +851,24 @@ describe("one_way.modelblueprint — return type", {
     d <- one_way(mb, var = "wt", ret = "data")
     expect_true("wt" %in% names(d))
   })
+
+  it("omits skipped variables from a multi-var list instead of holding NULLs", {
+    n <- 2100L
+    df <- data.frame(
+      y   = rnorm(n),
+      num = rnorm(n),
+      id  = as.character(seq_len(n)) # >2000 unique non-numeric -> skipped
+    )
+    mb_hc <- modelblueprint(
+      model = stats::lm(y ~ num, data = df),
+      train = df,
+      y_name = "y",
+      model_display_name = "hc"
+    )
+    expect_warning(result <- one_way(mb_hc, var = c("num", "id")), "Skipping")
+    expect_named(result, "num")
+    expect_false(any(vapply(result, is.null, logical(1L))))
+  })
 })
 
 
@@ -1499,5 +1517,25 @@ describe("savemb / loadmb — randomForest (bundle round-trip)", {
     savemb(mb, path = tmp, filename = "test_mb")
     loaded <- loadmb(file.path(tmp, "test_mb.tar.gz"))
     expect_true(inherits(loaded@model, "randomForest"))
+  })
+})
+
+
+# =============================================================================
+# Regression tests — xgboost interface (1.6.1)
+# =============================================================================
+
+describe("mb_xgb examples — current xgboost interface", {
+  it("mb_xgb_regression builds without deprecation warnings", {
+    skip_if_not_installed("xgboost")
+    expect_no_warning(mb <- mb_xgb_regression())
+    expect_true(is.numeric(predict(mb, mb@test)))
+  })
+
+  it("mb_xgb_classification builds without deprecation warnings", {
+    skip_if_not_installed("xgboost")
+    expect_no_warning(mb <- mb_xgb_classification())
+    p <- predict(mb, mb@test)
+    expect_true(all(p >= 0 & p <= 1))
   })
 })

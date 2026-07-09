@@ -336,17 +336,23 @@ describe("gain.default — returned data structure", {
 describe("gain.modelblueprint — return type", {
   mb <- make_mb()
 
-  it("returns a plotly object by default", {
-    expect_true(is_plotly(gain(mb)))
+  it("returns a named list of plots for all available sets by default", {
+    result <- gain(mb)
+    expect_named(result, c("train", "test"))
+    expect_true(all(vapply(result, is_plotly, logical(1L))))
+  })
+
+  it("returns a plotly object for a single set", {
+    expect_true(is_plotly(gain(mb, set = "train")))
   })
 
   it("ret = 'data' returns a list", {
-    result <- gain(mb, ret = "data")
+    result <- gain(mb, set = "train", ret = "data")
     expect_true(is.list(result))
   })
 
   it("ret = 'gini' returns a list of numerics", {
-    result <- gain(mb, ret = "gini")
+    result <- gain(mb, set = "train", ret = "gini")
     expect_true(is.list(result))
     expect_true(all(vapply(result, is.numeric, logical(1L))))
   })
@@ -383,16 +389,36 @@ describe("gain.modelblueprint — set argument", {
     expect_no_error(gain(mb, set = "test"))
   })
 
+  it("skips NULL sets when multiple sets are requested", {
+    result <- gain(mb, set = c("train", "test", "holdout"))
+    expect_named(result, c("train", "test"))
+  })
+
+  it("precomputed_preds requires a single set", {
+    expect_error(
+      gain(mb, precomputed_preds = rep(0.5, 32L)),
+      "single"
+    )
+  })
+
   it("errors informatively when chosen set is NULL", {
     mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
-      gain(mb_no_data),
+      gain(mb_no_data, set = "train"),
       "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
+  })
+
+  it("errors informatively when no set has data", {
+    mb_no_data <- modelblueprint(
+      model = stats::lm(mpg ~ wt, data = mtcars),
+      y_name = "mpg"
+    )
+    expect_error(gain(mb_no_data), "has no data")
   })
 
   it("errors when y_name is not set", {
@@ -597,5 +623,107 @@ describe("gain — public API", {
     expect_true(is.finite(score_gini))
     # A real logistic fit should beat a coin flip on its training data.
     expect_gt(score_gini, 0)
+  })
+})
+
+
+# =============================================================================
+# Regression tests — NA handling, collisions, end-to-end Gini (1.6.1)
+# =============================================================================
+
+describe("gain — NA handling", {
+  it("drops NA rows with a warning instead of truncating the curve", {
+    df <- data.frame(
+      obs      = c(1, NA, 0, 1, 0),
+      pred     = c(0.9, 0.8, 0.2, 0.7, 0.1),
+      exposure = rep(1, 5L)
+    )
+    expect_warning(
+      result <- gain(df, pred = "pred", obs = "obs", ret = "data"),
+      "Dropped 1 row"
+    )
+    # Both curves must be complete: no NA anywhere, ending at 1.
+    for (curve in result) {
+      expect_false(anyNA(curve))
+      expect_equal(as.numeric(curve[nrow(curve), 1L][[1L]]), 1)
+      expect_equal(as.numeric(curve[nrow(curve), 2L][[1L]]), 1)
+    }
+  })
+
+  it("errors when every row has a missing value", {
+    df <- data.frame(obs = c(NA, NA), pred = c(0.1, NA), exposure = 1)
+    expect_error(
+      gain(df, pred = "pred", obs = "obs", ret = "data"),
+      "missing"
+    )
+  })
+})
+
+describe("gain — perfect_model column collision", {
+  it("does not clobber a user score named 'perfect_model'", {
+    set.seed(7L)
+    df <- data.frame(
+      obs           = rbinom(200L, 1L, 0.4),
+      perfect_model = runif(200L),
+      exposure      = 1
+    )
+    ginis <- gain(df, pred = "perfect_model", obs = "obs", ret = "gini")
+    # ginis[[1]] is the true perfect baseline; ginis[[2]] the user's random
+    # score. If the baseline overwrote the user column they would be equal.
+    expect_lt(abs(ginis[[2L]]), ginis[[1L]] / 2)
+  })
+})
+
+describe("gain — end-to-end Gini", {
+  it("a score identical to the target reproduces the perfect-model Gini", {
+    set.seed(11L)
+    df <- data.frame(
+      obs      = rbinom(500L, 1L, 0.3),
+      exposure = rep(1, 500L)
+    )
+    df$pred <- df$obs
+    ginis <- gain(df, pred = "pred", obs = "obs", ret = "gini")
+    expect_equal(ginis[[2L]], ginis[[1L]])
+  })
+
+  it("cumulative curves are monotone non-decreasing", {
+    set.seed(12L)
+    df <- data.frame(
+      obs      = rbinom(500L, 1L, 0.3),
+      pred     = runif(500L),
+      exposure = rep(1, 500L)
+    )
+    result <- gain(df, pred = "pred", obs = "obs", ret = "data")
+    for (curve in result) {
+      expect_true(all(diff(curve[[1L]]) >= 0))
+      expect_true(all(diff(curve[[2L]]) >= -1e-12))
+    }
+  })
+})
+
+describe("gain.modelblueprint — zero exposure", {
+  it("replaces zero-exposure rows with @expo_0_rep and warns", {
+    train <- transform(mtcars, exposure = c(0, rep(1, 31L)))
+    mb <- modelblueprint(
+      model = lm(mpg ~ wt, mtcars),
+      train = train,
+      y_name = "mpg",
+      expo_name = "exposure",
+      expo_0_rep = 0.5,
+      model_display_name = "m"
+    )
+    expect_warning(g <- gain(mb, ret = "gini"), "expo_0_rep")
+    expect_true(is.finite(g[[2L]]))
+  })
+})
+
+describe("plot_gain — palette beyond 12 scores", {
+  it("draws more than 12 competing scores without a brewer.pal warning", {
+    set.seed(13L)
+    df <- data.frame(obs = rbinom(100L, 1L, 0.4), exposure = 1)
+    score_cols <- paste0("s", 1:13)
+    for (s in score_cols) df[[s]] <- runif(100L)
+    expect_no_warning(p <- gain(df, pred = score_cols, obs = "obs"))
+    expect_s3_class(p, "plotly")
   })
 })

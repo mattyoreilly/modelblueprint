@@ -11,16 +11,17 @@ A model-agnostic toolkit for exploring, diagnosing, and deploying machine learni
 Useful links:
 \itemize{
   \item \url{https://mattyoreilly.github.io/modelblueprint/}
+  \item Report bugs at \url{https://github.com/mattyoreilly/modelblueprint/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Matt \email{fermoymatt@gmail.com}
+\strong{Maintainer}: Matt O'Reilly \email{fermoymatt@gmail.com} [copyright holder]
 
 Authors:
 \itemize{
-  \item Matt \email{fermoymatt@gmail.com}
-  \item Hubert Ratajczyk \email{jane@example.com}
+  \item Matt O'Reilly \email{fermoymatt@gmail.com} [copyright holder]
+  \item Hubert Ratajczyk
 }
 
 }
