@@ -336,17 +336,23 @@ describe("gain.default — returned data structure", {
 describe("gain.modelblueprint — return type", {
   mb <- make_mb()
 
-  it("returns a plotly object by default", {
-    expect_true(is_plotly(gain(mb)))
+  it("returns a named list of plots for all available sets by default", {
+    result <- gain(mb)
+    expect_named(result, c("train", "test"))
+    expect_true(all(vapply(result, is_plotly, logical(1L))))
+  })
+
+  it("returns a plotly object for a single set", {
+    expect_true(is_plotly(gain(mb, set = "train")))
   })
 
   it("ret = 'data' returns a list", {
-    result <- gain(mb, ret = "data")
+    result <- gain(mb, set = "train", ret = "data")
     expect_true(is.list(result))
   })
 
   it("ret = 'gini' returns a list of numerics", {
-    result <- gain(mb, ret = "gini")
+    result <- gain(mb, set = "train", ret = "gini")
     expect_true(is.list(result))
     expect_true(all(vapply(result, is.numeric, logical(1L))))
   })
@@ -383,16 +389,36 @@ describe("gain.modelblueprint — set argument", {
     expect_no_error(gain(mb, set = "test"))
   })
 
+  it("skips NULL sets when multiple sets are requested", {
+    result <- gain(mb, set = c("train", "test", "holdout"))
+    expect_named(result, c("train", "test"))
+  })
+
+  it("precomputed_preds requires a single set", {
+    expect_error(
+      gain(mb, precomputed_preds = rep(0.5, 32L)),
+      "single"
+    )
+  })
+
   it("errors informatively when chosen set is NULL", {
     mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
-      gain(mb_no_data),
+      gain(mb_no_data, set = "train"),
       "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
+  })
+
+  it("errors informatively when no set has data", {
+    mb_no_data <- modelblueprint(
+      model = stats::lm(mpg ~ wt, data = mtcars),
+      y_name = "mpg"
+    )
+    expect_error(gain(mb_no_data), "has no data")
   })
 
   it("errors when y_name is not set", {

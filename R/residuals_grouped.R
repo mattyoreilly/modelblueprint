@@ -164,14 +164,18 @@ residuals_grouped.default <- function(
 #' @method residuals_grouped modelblueprint
 #'
 #' @param data             A `modelblueprint` object.
-#' @param set              `[character(1)]` Dataset to use: `"train"`,
-#'                         `"test"`, or `"holdout"`. Default `"train"`.
+#' @param set              `[character]` Dataset splits to use: any of
+#'                         `"train"`, `"test"`, `"holdout"`. Defaults to all
+#'                         available (non-NULL) sets. When more than one set
+#'                         is used, a named list with one result per set is
+#'                         returned.
 #' @param exposure_per_bin `[numeric(1)]` Target exposure per bin.
 #'                         Default `2500`. Automatically reduced if the
 #'                         dataset is too small for meaningful grouping.
 #' @param residual_type    `[character(1)]` `"raw"` or `"pearson"`.
 #' @param title            `[character(1)]` Chart title. Defaults to
-#'                         `model_display_name`.
+#'                         `model_display_name` (with the set name appended
+#'                         when plotting multiple sets).
 #' @param ret              `[character(1)]` `"plot"` or `"data"`.
 #' @param ...              Passed to [residuals_grouped.default()].
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -201,9 +205,24 @@ residuals_grouped.modelblueprint <- function(
   ...,
   precomputed_preds = NULL
 ) {
-  set <- match.arg(set)
+  set <- resolve_sets(data, set)
   residual_type <- match.arg(residual_type)
   ret <- match.arg(ret)
+
+  # Multiple sets: one result per set, returned as a named list
+  if (length(set) > 1L) {
+    if (!is.null(precomputed_preds)) {
+      cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
+    }
+    base_title <- title %||% (data@model_display_name %|NA|% "Grouped Residuals")
+    return(lapply(stats::setNames(set, set), function(s) {
+      residuals_grouped(
+        data, set = s, exposure_per_bin = exposure_per_bin,
+        residual_type = residual_type,
+        title = paste(base_title, s, sep = " - "), ret = ret, ...
+      )
+    }))
+  }
 
   df <- prop(data, set)
   if (is.null(df)) {

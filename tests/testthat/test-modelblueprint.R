@@ -851,6 +851,24 @@ describe("one_way.modelblueprint — return type", {
     d <- one_way(mb, var = "wt", ret = "data")
     expect_true("wt" %in% names(d))
   })
+
+  it("omits skipped variables from a multi-var list instead of holding NULLs", {
+    n <- 2100L
+    df <- data.frame(
+      y   = rnorm(n),
+      num = rnorm(n),
+      id  = as.character(seq_len(n)) # >2000 unique non-numeric -> skipped
+    )
+    mb_hc <- modelblueprint(
+      model = stats::lm(y ~ num, data = df),
+      train = df,
+      y_name = "y",
+      model_display_name = "hc"
+    )
+    expect_warning(result <- one_way(mb_hc, var = c("num", "id")), "Skipping")
+    expect_named(result, "num")
+    expect_false(any(vapply(result, is.null, logical(1L))))
+  })
 })
 
 

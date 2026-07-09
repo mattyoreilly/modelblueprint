@@ -129,9 +129,9 @@ test_that("diagnostic S3 generics dispatch on the modelblueprint method", {
 
   expect_s3_class(suppressMessages(one_way(mb, var = "wt")), "plotly")
   expect_s3_class(suppressMessages(pdp(mb, var = "wt")), "plotly")
-  expect_s3_class(suppressMessages(gain(mb)), "plotly")
-  expect_s3_class(suppressMessages(pred_vs_obs(mb)), "plotly")
-  expect_s3_class(suppressMessages(residuals_grouped(mb)), "plotly")
+  expect_s3_class(suppressMessages(gain(mb, set = "train")), "plotly")
+  expect_s3_class(suppressMessages(pred_vs_obs(mb, set = "train")), "plotly")
+  expect_s3_class(suppressMessages(residuals_grouped(mb, set = "train")), "plotly")
   expect_s3_class(
     suppressMessages(
       shap(mb, vars = c("wt", "hp"), nsim = 3L, sample_size = 20L)

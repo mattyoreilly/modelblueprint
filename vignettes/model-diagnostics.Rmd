@@ -47,8 +47,9 @@ follows the diagonal. The **Gini coefficient** summarises rank-ordering ability
 as a single number between -1 and 1 — higher is better.
 
 ```{r gain}
-# Gains chart — Gini shown in legend
-gain(mb)
+# Gains chart — Gini shown in legend. Called without set =, one chart per
+# available set (train/test/holdout) is returned as a named list.
+gain(mb, set = "train")
 ```
 
 **When to use it:** The gains chart is the primary performance metric in
@@ -65,7 +66,7 @@ close to the diagonal — predicted and observed are equal on average.
 
 ```{r pred-vs-obs}
 # Calibration chart
-pred_vs_obs(mb)
+pred_vs_obs(mb, set = "train")
 ```
 
 ```{r pred-vs-obs-opts, eval = FALSE}
@@ -102,7 +103,7 @@ A well-specified model has residuals scattered randomly around zero. A
 systematic pattern indicates model misspecification.
 
 ```{r residuals}
-residuals_grouped(mb)
+residuals_grouped(mb, set = "train")
 ```
 
 ```{r residuals-opts, eval = FALSE}

@@ -759,7 +759,9 @@ check_package <- function(pkg, context) {
 #'   predictions (one per row of the requested `set`). Only used when
 #'   `predictions = TRUE`. When supplied, the internal
 #'   `predict.modelblueprint()` call is skipped.
-#' @return A plotly object or data.table depending on `ret`.
+#' @return A plotly object or data.table depending on `ret`. With multiple
+#'   variables (e.g. `var = NA`), a named list with one entry per variable;
+#'   variables that are skipped with a warning are omitted from the list.
 #' @method one_way modelblueprint
 #' @export
 one_way.modelblueprint <- function(
@@ -907,7 +909,12 @@ one_way.modelblueprint <- function(
   if (length(vars) == 1L) {
     run_one_way(vars)
   } else {
-    stats::setNames(lapply(vars, run_one_way), vars)
+    # Drop skipped variables (one_way() returns NULL with a warning) so the
+    # result is directly usable by save_plots() and friends.
+    Filter(
+      Negate(is.null),
+      stats::setNames(lapply(vars, run_one_way), vars)
+    )
   }
 }
 
@@ -1151,6 +1158,30 @@ shap.modelblueprint <- function(
 #' @noRd
 .pred_col_name <- function(object) {
   paste0(".pred_", object@model_display_name %|NA|% "model")
+}
+
+#' Resolve which dataset splits a diagnostic should run on
+#'
+#' Multi-set aware `match.arg()` used by `gain()`, `pred_vs_obs()` and
+#' `residuals_grouped()`. A single explicit set is returned as-is (the
+#' caller's own NULL-slot check then gives the precise error); a multi-set
+#' request — including the default of all three — is filtered down to the
+#' splits that actually hold data, so `gain(mb)` covers every available set.
+#'
+#' @keywords internal
+#' @noRd
+resolve_sets <- function(object, set) {
+  set <- match.arg(set, c("train", "test", "holdout"), several.ok = TRUE)
+  if (length(set) == 1L) {
+    return(set)
+  }
+  available <- set[!vapply(set, function(s) is.null(prop(object, s)), logical(1))]
+  if (length(available) == 0L) {
+    cli::cli_abort(
+      "modelblueprint has no data for set{?s} {.val {set}}. Supply data when constructing."
+    )
+  }
+  available
 }
 
 #' @keywords internal

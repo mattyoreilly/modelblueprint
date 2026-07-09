@@ -339,12 +339,18 @@ describe("residuals_grouped.default — immutability", {
 describe("residuals_grouped.modelblueprint — return type", {
   mb <- make_mb()
 
-  it("returns a plotly object by default", {
-    expect_true(is_plotly(residuals_grouped(mb)))
+  it("returns a named list of plots for all available sets by default", {
+    result <- residuals_grouped(mb)
+    expect_named(result, c("train", "test"))
+    expect_true(all(vapply(result, is_plotly, logical(1L))))
+  })
+
+  it("returns a plotly object for a single set", {
+    expect_true(is_plotly(residuals_grouped(mb, set = "train")))
   })
 
   it("ret = 'data' returns a data.table", {
-    result <- residuals_grouped(mb, ret = "data")
+    result <- residuals_grouped(mb, set = "train", ret = "data")
     expect_true(data.table::is.data.table(result))
   })
 })
@@ -362,13 +368,13 @@ describe("residuals_grouped.modelblueprint — slot usage", {
 
   it("uses model to generate predictions — no NAs in res", {
     mb <- make_mb()
-    result <- residuals_grouped(mb, ret = "data")
+    result <- residuals_grouped(mb, set = "train", ret = "data")
     expect_false(any(is.na(result$res)))
   })
 
   it("falls back to unit weights when expo_name not in data", {
     mb <- make_mb()
-    result <- residuals_grouped(mb, ret = "data")
+    result <- residuals_grouped(mb, set = "train", ret = "data")
     expect_equal(sum(result$exposure), nrow(mb@train), tolerance = 1e-6)
   })
 
@@ -404,16 +410,36 @@ describe("residuals_grouped.modelblueprint — set argument", {
     expect_no_error(residuals_grouped(mb, set = "test"))
   })
 
+  it("uses all available sets by default", {
+    result <- residuals_grouped(mb)
+    expect_named(result, c("train", "test"))
+  })
+
+  it("precomputed_preds requires a single set", {
+    expect_error(
+      residuals_grouped(mb, precomputed_preds = rep(0.5, 32L)),
+      "single"
+    )
+  })
+
   it("errors informatively when chosen set is NULL", {
     mb_no_data <- modelblueprint(
       model = stats::lm(mpg ~ wt, data = mtcars),
       y_name = "mpg"
     )
     expect_error(
-      residuals_grouped(mb_no_data),
+      residuals_grouped(mb_no_data, set = "train"),
       "modelblueprint `@train` is NULL.",
       fixed = TRUE
     )
+  })
+
+  it("errors informatively when no set has data", {
+    mb_no_data <- modelblueprint(
+      model = stats::lm(mpg ~ wt, data = mtcars),
+      y_name = "mpg"
+    )
+    expect_error(residuals_grouped(mb_no_data), "has no data")
   })
 
   it("errors when y_name is not set", {
@@ -437,7 +463,7 @@ describe("residuals_grouped.modelblueprint — passthrough arguments", {
   mb <- make_mb()
 
   it("residual_type = 'pearson' returns a plot", {
-    expect_true(is_plotly(residuals_grouped(mb, residual_type = "pearson")))
+    expect_true(is_plotly(residuals_grouped(mb, set = "train", residual_type = "pearson")))
   })
 
   it("custom title does not error", {
@@ -445,8 +471,8 @@ describe("residuals_grouped.modelblueprint — passthrough arguments", {
   })
 
   it("smaller exposure_per_bin gives more bins", {
-    small <- residuals_grouped(mb, exposure_per_bin = 1, ret = "data")
-    large <- residuals_grouped(mb, exposure_per_bin = 10, ret = "data")
+    small <- residuals_grouped(mb, set = "train", exposure_per_bin = 1, ret = "data")
+    large <- residuals_grouped(mb, set = "train", exposure_per_bin = 10, ret = "data")
     expect_gte(nrow(small), nrow(large))
   })
 })

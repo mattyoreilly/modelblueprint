@@ -111,12 +111,15 @@ pred_vs_obs.default <- function(
 #' @method pred_vs_obs modelblueprint
 #'
 #' @param data     A `modelblueprint` object.
-#' @param set      `[character(1)]` Which dataset to use: `"train"`,
-#'                 `"test"`, or `"holdout"`. Default `"train"`.
+#' @param set      `[character]` Dataset splits to use: any of `"train"`,
+#'                 `"test"`, `"holdout"`. Defaults to all available (non-NULL)
+#'                 sets. When more than one set is used, a named list with
+#'                 one result per set is returned.
 #' @param bins     `[integer(1)]` Number of bins. Default `10L`.
 #' @param type_agg `[character(1)]` `"equal_exposure"` or `"equal_range"`.
 #' @param title    `[character(1)]` Chart title. Defaults to
-#'                 `model_display_name`.
+#'                 `model_display_name` (with the set name appended when
+#'                 plotting multiple sets).
 #' @param ret      `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...      Passed to [pred_vs_obs.default()].
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -146,9 +149,23 @@ pred_vs_obs.modelblueprint <- function(
   ...,
   precomputed_preds = NULL
 ) {
-  set <- match.arg(set)
+  set <- resolve_sets(data, set)
   type_agg <- match.arg(type_agg)
   ret <- match.arg(ret)
+
+  # Multiple sets: one result per set, returned as a named list
+  if (length(set) > 1L) {
+    if (!is.null(precomputed_preds)) {
+      cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
+    }
+    base_title <- title %||% (data@model_display_name %|NA|% "Predicted vs Observed")
+    return(lapply(stats::setNames(set, set), function(s) {
+      pred_vs_obs(
+        data, set = s, bins = bins, type_agg = type_agg,
+        title = paste(base_title, s, sep = " - "), ret = ret, ...
+      )
+    }))
+  }
 
   df <- prop(data, set)
   if (is.null(df)) {

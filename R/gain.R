@@ -131,8 +131,12 @@ gain.default <- function(
 #' @method gain modelblueprint
 #'
 #' @param data  A `modelblueprint` object.
-#' @param set   Which dataset to use: `"train"`, `"test"`, or `"holdout"`.
-#' @param title Chart title. Defaults to `model_display_name`.
+#' @param set   `[character]` Dataset splits to use: any of `"train"`,
+#'   `"test"`, `"holdout"`. Defaults to all available (non-NULL) sets. When
+#'   more than one set is used, a named list with one result per set is
+#'   returned.
+#' @param title Chart title. Defaults to `model_display_name` (with the set
+#'   name appended when plotting multiple sets).
 #' @param ret   `"plot"`, `"data"`, or `"gini"`. Default `"plot"`.
 #' @param ...   Passed to the default method.
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -162,8 +166,19 @@ gain.modelblueprint <- function(
   ...,
   precomputed_preds = NULL
 ) {
-  set <- match.arg(set)
+  set <- resolve_sets(data, set)
   ret <- match.arg(ret)
+
+  # Multiple sets: one result per set, returned as a named list
+  if (length(set) > 1L) {
+    if (!is.null(precomputed_preds)) {
+      cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
+    }
+    base_title <- title %||% (data@model_display_name %|NA|% "model")
+    return(lapply(stats::setNames(set, set), function(s) {
+      gain(data, set = s, title = paste(base_title, s, sep = " - "), ret = ret, ...)
+    }))
+  }
 
   df <- prop(data, set)
   if (is.null(df)) {
