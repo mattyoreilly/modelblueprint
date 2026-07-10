@@ -1,3 +1,25 @@
+# modelblueprint 1.7.0
+
+## New features
+
+* `gain()`, `pred_vs_obs()` and `residuals_grouped()` on a `modelblueprint`
+  now default to **all available sets** (train/test/holdout) instead of
+  silently using only train. With more than one set they return a named list
+  with one result per set; a single `set` returns the bare plot as before.
+
+## Bug fixes
+
+* `save_plots()` with `selfcontained = FALSE` now writes dependency links that
+  resolve correctly. Previously the dependency folder was created nested
+  inside the output directory a second time, and plots rendered blank once
+  the output tree was moved or cleaned.
+* `save_plots()` gains a shareable `libdir`: `model_validation()` uses it so
+  all HTML files in each output subdirectory share a single `lib/` dependency
+  folder instead of one folder per file.
+* `one_way()` on a `modelblueprint` with multiple variables omits skipped
+  variables (e.g. >2,000 unique non-numeric levels) from the returned list
+  instead of including `NULL` entries that broke `save_plots()`.
+
 # modelblueprint 1.6.1
 
 ## Bug fixes
