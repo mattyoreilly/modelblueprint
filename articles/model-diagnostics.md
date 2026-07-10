@@ -159,6 +159,35 @@ decision.
 
 ------------------------------------------------------------------------
 
+## Running everything at once (`model_validation`)
+
+Rather than calling each diagnostic individually,
+[`model_validation()`](https://mattyoreilly.github.io/modelblueprint/reference/model_validation.md)
+runs the full suite for every available set (train/test/holdout) and
+saves the results as structured HTML files — one file per plot type per
+set — inside a directory named after `@model_display_name`:
+
+``` r
+
+model_validation(mb, filepath = "~/model_reviews")
+```
+
+    ~/model_reviews/
+      glm_poisson_freq/
+        glm_poisson_freq.tar.gz          # the serialised blueprint (savemb)
+        validation/              # gain + calibration + residuals per set
+        oneway/                  # one-way and stability plots per set
+        pdp/                     # partial dependence plots per set
+        shap/                    # SHAP importance per set
+
+Use `plots` to run a subset (e.g. `plots = c("validation", "oneway")`)
+and `sets` to restrict the splits. During development,
+`selfcontained = FALSE` saves much faster: the HTML files in each
+subdirectory then share a single `lib/` dependency folder instead of
+embedding everything in every file.
+
+------------------------------------------------------------------------
+
 ## Choosing the right diagnostic
 
 | Question | Diagnostic | Key metric |

@@ -102,6 +102,11 @@
 <span><span class="co"># Grouped residuals with loess trend</span></span>
 <span><span class="fu"><a href="reference/residuals_grouped.html">residuals_grouped</a></span><span class="op">(</span><span class="va">mb</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Or run the whole diagnostic suite in one call: writes gain, calibration,</span></span>
+<span><span class="co"># residual, one-way, stability, PDP and SHAP plots as structured HTML files</span></span>
+<span><span class="co"># under &lt;getwd()&gt;/&lt;model_display_name&gt;/</span></span>
+<span><span class="fu"><a href="reference/model_validation.html">model_validation</a></span><span class="op">(</span><span class="va">mb</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Save and restore</span></span>
 <span><span class="fu"><a href="reference/saveMB.html">savemb</a></span><span class="op">(</span><span class="va">mb</span>, path <span class="op">=</span> <span class="st">"models/"</span>, filename <span class="op">=</span> <span class="st">"logistic_vs"</span><span class="op">)</span></span>
 <span><span class="va">mb2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/loadMB.html">loadmb</a></span><span class="op">(</span><span class="st">"models/logistic_vs.tar.gz"</span><span class="op">)</span></span></code></pre></div>

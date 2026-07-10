@@ -134,6 +134,21 @@ pred_vs_obs(mb, set = "train")
 residuals_grouped(mb, set = "train", exposure_per_bin = 5)
 ```
 
+Instead of calling each diagnostic individually,
+[`model_validation()`](https://mattyoreilly.github.io/modelblueprint/reference/model_validation.md)
+runs the full suite — validation, one-way, stability, PDP and SHAP plots
+for every available set — and writes the results as structured HTML
+files:
+
+``` r
+
+model_validation(mb, filepath = tempdir())
+```
+
+See
+[`vignette("model-diagnostics")`](https://mattyoreilly.github.io/modelblueprint/articles/model-diagnostics.md)
+for details on the individual charts and the output layout.
+
 ## Feature engineering pipeline
 
 Use `feat_eng_fun` to apply transformations before prediction — the same
@@ -171,7 +186,7 @@ restores it exactly.
 
 savemb(mb, path = tempdir(), filename = "glm_poisson_freq")
 #> ✔ modelblueprint saved:
-#> /tmp/Rtmp8KM2IF/glm_poisson_freq.tar.gz
+#> /tmp/RtmpL1LGjC/glm_poisson_freq.tar.gz
 mb2 <- loadmb(file.path(tempdir(), "glm_poisson_freq.tar.gz"))
 
 # Predictions are identical
