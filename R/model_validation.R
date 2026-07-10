@@ -52,6 +52,9 @@
 #'       <name>_<set>_shap_plots.html
 #' ```
 #'
+#' With `selfcontained = FALSE`, the HTML files in each subdirectory share a
+#' single `lib/` dependency folder instead of one folder per file.
+#'
 #' **Validation** plots include a gain chart, predicted-vs-observed calibration
 #' chart, and grouped residuals — one HTML file per split.
 #'
@@ -179,7 +182,7 @@ model_validation <- function(
 
       if (length(val_plots) > 0L) {
         save_plots(val_plots, .html_path("validation", "validation_plots"),
-                   selfcontained = selfcontained)
+                   selfcontained = selfcontained, libdir = "lib")
       }
     }
 
@@ -200,7 +203,7 @@ model_validation <- function(
 
       if (length(ow_plots) > 0L) {
         save_plots(ow_plots, .html_path("oneway", "oneway_plots"),
-                   selfcontained = selfcontained)
+                   selfcontained = selfcontained, libdir = "lib")
       }
     }
 
@@ -234,7 +237,7 @@ model_validation <- function(
 
       if (length(stab_plots) > 0L) {
         save_plots(stab_plots, .html_path("oneway", "stability_plots"),
-                   selfcontained = selfcontained)
+                   selfcontained = selfcontained, libdir = "lib")
       }
     }
 
@@ -252,7 +255,7 @@ model_validation <- function(
 
       if (length(pdp_plots) > 0L) {
         save_plots(pdp_plots, .html_path("pdp", "pdp_plots"),
-                   selfcontained = selfcontained)
+                   selfcontained = selfcontained, libdir = "lib")
       }
     }
 
@@ -270,7 +273,7 @@ model_validation <- function(
           list(shap = shap_result)
         }
         save_plots(shap_plots, .html_path("shap", "shap_plots"),
-                   selfcontained = selfcontained)
+                   selfcontained = selfcontained, libdir = "lib")
       }
     }
   }

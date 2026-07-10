@@ -340,6 +340,38 @@ describe("save_plots — dependency files", {
     save_plots(make_widget(), file, selfcontained = FALSE)
     expect_true(dir.exists(file.path(dir, "deps_files")))
   })
+
+  it("resolves dependency links from a relative file path (no nested libdir)", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    withr::local_dir(dir)
+    dir.create("out")
+    save_plots(make_widget(), "out/rel.html", selfcontained = FALSE)
+    # Regression: the libdir must not be re-created inside `out/` a second time
+    expect_false(dir.exists(file.path("out", "out")))
+    expect_true(dir.exists(file.path("out", "rel_files")))
+    # Every src/href in the HTML must resolve relative to the HTML file
+    html <- readLines(file.path("out", "rel.html"), warn = FALSE)
+    refs <- unlist(regmatches(html, gregexpr('(src|href)="[^"]+"', html)))
+    paths <- sub('^(src|href)="([^"]+)"$', "\\2", refs)
+    paths <- paths[!grepl("^(https?:|data:|#)", paths)]
+    expect_gt(length(paths), 0L)
+    expect_true(all(file.exists(file.path("out", paths))))
+  })
+
+  it("a shared libdir is reused across files in the same directory", {
+    skip_if_not_installed("plotly")
+    skip_if_not_installed("htmltools")
+    dir <- withr::local_tempdir()
+    save_plots(make_widget(), file.path(dir, "a.html"),
+               selfcontained = FALSE, libdir = "lib")
+    save_plots(make_widget(), file.path(dir, "b.html"),
+               selfcontained = FALSE, libdir = "lib")
+    expect_true(dir.exists(file.path(dir, "lib")))
+    expect_false(dir.exists(file.path(dir, "a_files")))
+    expect_false(dir.exists(file.path(dir, "b_files")))
+  })
 })
 
 describe("save_plots — self-contained", {

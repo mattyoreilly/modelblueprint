@@ -23,9 +23,11 @@ already a \code{shiny.tag.list} is coerced via \code{\link[htmltools:tagList]{ht
 self-contained file? Requires Pandoc. Default \code{TRUE}.}
 
 \item{libdir}{\verb{[character(1) | NULL]} Directory for the HTML dependency
-files. When \code{NULL}, it is derived from \code{file} by appending \code{"_files"}
-(keeping \code{file}'s directory). Removed after embedding when
-\code{selfcontained = TRUE}.}
+files, resolved relative to \code{file}'s directory (or absolute). When
+\code{NULL}, defaults to \code{"<file basename>_files"} next to \code{file}. Pass the
+same value (e.g. \code{"lib"}) for several files saved into one directory to
+share a single dependency folder between them. Removed after embedding
+when \code{selfcontained = TRUE}.}
 }
 \value{
 The path to the generated HTML file, invisibly.
