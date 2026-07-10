@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Model Diagnostics and Explainability for Machine Learning Workflows">
 <meta name="description" content="A model-agnostic toolkit for exploring, diagnosing, and deploying machine learning models. Wraps any fitted model (lm, glm, XGBoost, H2O, random forests, and more) in a structured S7 object that carries training data, feature engineering pipelines, and deployment metadata. Provides one-way analysis plots, partial dependence plots (PDPs), SHAP feature importance, cumulative gains charts, calibration plots, and grouped residual diagnostics, all rendered as interactive Plotly charts. Supports sequential model pipelines via mb_seq() and saves complete model bundles (including H2O and XGBoost models) as portable archives. Aggregation is handled by data.table and scales comfortably to datasets of several million rows.">
 <meta property="og:description" content="A model-agnostic toolkit for exploring, diagnosing, and deploying machine learning models. Wraps any fitted model (lm, glm, XGBoost, H2O, random forests, and more) in a structured S7 object that carries training data, feature engineering pipelines, and deployment metadata. Provides one-way analysis plots, partial dependence plots (PDPs), SHAP feature importance, cumulative gains charts, calibration plots, and grouped residual diagnostics, all rendered as interactive Plotly charts. Supports sequential model pipelines via mb_seq() and saves complete model bundles (including H2O and XGBoost models) as portable archives. Aggregation is handled by data.table and scales comfortably to datasets of several million rows.">
+<meta property="og:image" content="https://mattyoreilly.github.io/modelblueprint/logo.svg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -57,8 +58,10 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="modelblueprint">modelblueprint<a class="anchor" aria-label="anchor" href="#modelblueprint"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="modelblueprint-">modelblueprint <a class="anchor" aria-label="anchor" href="#modelblueprint-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p><strong>modelblueprint</strong> is a model-agnostic container for managing machine learning model lifecycles in R. Wrap any <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>-compatible model - <code>lm</code>, <code>glm</code>, XGBoost, H2O, and more - with its training data, pipeline functions, and metadata, then run diagnostics with a single function call.</p>
