@@ -1,4 +1,4 @@
-# modelblueprint
+# modelblueprint <img src="man/figures/logo.svg" align="right" height="139" alt="modelblueprint hex logo" />
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/mattyoreilly/modelblueprint/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mattyoreilly/modelblueprint/actions/workflows/R-CMD-check.yaml)

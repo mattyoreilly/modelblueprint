@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="174" height="200" viewBox="0 0 174 200" role="img" aria-label="modelblueprint hex logo">
+  <path d="M87 2 L171.9 51 L171.9 149 L87 198 L2.1 149 L2.1 51 Z" fill="#f4efe4"/>
+  <path d="M87 7 L167.6 53.5 L167.6 146.5 L87 193 L6.4 146.5 L6.4 53.5 Z" fill="none" stroke="#1d4f8f" stroke-width="4"/>
+
+  <rect x="34" y="50" width="106" height="13" rx="6.5" fill="#16407a"/>
+  <rect x="40" y="62" width="94" height="60" fill="#1d4f8f"/>
+  <g stroke="#ffffff" stroke-width="0.7" opacity="0.14">
+    <path d="M54 62V122M68 62V122M82 62V122M96 62V122M110 62V122M124 62V122"/>
+    <path d="M40 76H134M40 90H134M40 104H134M40 118H134"/>
+  </g>
+
+  <g stroke="#ffffff" stroke-width="1.2" opacity="0.85">
+    <path d="M58 76 L87 84 M58 76 L87 100 M58 92 L87 84 M58 92 L87 100 M58 108 L87 84 M58 108 L87 100"/>
+    <path d="M87 84 L116 92 M87 100 L116 92"/>
+  </g>
+  <g fill="#1d4f8f" stroke="#ffffff" stroke-width="1.5">
+    <circle cx="58" cy="76" r="3.6"/>
+    <circle cx="58" cy="92" r="3.6"/>
+    <circle cx="58" cy="108" r="3.6"/>
+    <circle cx="87" cy="84" r="3.6"/>
+    <circle cx="87" cy="100" r="3.6"/>
+    <circle cx="116" cy="92" r="4.6"/>
+  </g>
+
+  <text x="87" y="142" text-anchor="middle" fill="#1d4f8f" font-family="ui-monospace, 'Courier New', monospace" font-size="14.5" font-weight="500" letter-spacing="0.5">modelblueprint</text>
+  <path d="M50 150 H124" stroke="#1d4f8f" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+</svg>
