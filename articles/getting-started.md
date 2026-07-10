@@ -171,7 +171,7 @@ restores it exactly.
 
 savemb(mb, path = tempdir(), filename = "glm_poisson_freq")
 #> ✔ modelblueprint saved:
-#> /tmp/RtmpENar87/glm_poisson_freq.tar.gz
+#> /tmp/Rtmp8KM2IF/glm_poisson_freq.tar.gz
 mb2 <- loadmb(file.path(tempdir(), "glm_poisson_freq.tar.gz"))
 
 # Predictions are identical

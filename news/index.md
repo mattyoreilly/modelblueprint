@@ -1,6 +1,6 @@
 # Changelog
 
-## modelblueprint 1.7.0
+## modelblueprint 1.6.2
 
 ### New features
 
