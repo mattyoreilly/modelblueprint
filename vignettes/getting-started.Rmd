@@ -114,6 +114,17 @@ pred_vs_obs(mb, set = "train")
 residuals_grouped(mb, set = "train", exposure_per_bin = 5)
 ```
 
+Instead of calling each diagnostic individually, `model_validation()` runs
+the full suite — validation, one-way, stability, PDP and SHAP plots for every
+available set — and writes the results as structured HTML files:
+
+```{r model-validation, eval = FALSE}
+model_validation(mb, filepath = tempdir())
+```
+
+See `vignette("model-diagnostics")` for details on the individual charts and
+the output layout.
+
 ## Feature engineering pipeline
 
 Use `feat_eng_fun` to apply transformations before prediction — the same

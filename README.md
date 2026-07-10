@@ -45,6 +45,11 @@ pred_vs_obs(mb)
 # Grouped residuals with loess trend
 residuals_grouped(mb)
 
+# Or run the whole diagnostic suite in one call: writes gain, calibration,
+# residual, one-way, stability, PDP and SHAP plots as structured HTML files
+# under <getwd()>/<model_display_name>/
+model_validation(mb)
+
 # Save and restore
 savemb(mb, path = "models/", filename = "logistic_vs")
 mb2 <- loadmb("models/logistic_vs.tar.gz")
