@@ -409,6 +409,20 @@ describe("pred_vs_obs.modelblueprint — set argument", {
     expect_named(result, c("train", "test"))
   })
 
+  it("returns three plots when train, test and holdout are all set", {
+    mb3 <- modelblueprint(
+      model = stats::glm(vs ~ wt + hp, data = mtcars, family = binomial),
+      train = mtcars,
+      test = mtcars[1:16, ],
+      holdout = mtcars[17:32, ],
+      y_name = "vs",
+      model_display_name = "logistic_vs"
+    )
+    result <- pred_vs_obs(mb3, set = c("train", "test", "holdout"))
+    expect_named(result, c("train", "test", "holdout"))
+    expect_true(all(vapply(result, is_plotly, logical(1L))))
+  })
+
   it("precomputed_preds requires a single set", {
     expect_error(
       pred_vs_obs(mb, precomputed_preds = rep(0.5, 32L)),

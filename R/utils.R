@@ -71,9 +71,11 @@ unitise <- function(data, var, min_val, max_val) {
 #' @param selfcontained `[logical(1)]` Embed all dependencies into a single
 #'   self-contained file? Requires Pandoc. Default `TRUE`.
 #' @param libdir `[character(1) | NULL]` Directory for the HTML dependency
-#'   files. When `NULL`, it is derived from `file` by appending `"_files"`
-#'   (keeping `file`'s directory). Removed after embedding when
-#'   `selfcontained = TRUE`.
+#'   files, resolved relative to `file`'s directory (or absolute). When
+#'   `NULL`, defaults to `"<file basename>_files"` next to `file`. Pass the
+#'   same value (e.g. `"lib"`) for several files saved into one directory to
+#'   share a single dependency folder between them. Removed after embedding
+#'   when `selfcontained = TRUE`.
 #'
 #' @return The path to the generated HTML file, invisibly.
 #'
@@ -119,10 +121,13 @@ save_plots <- function(plots, file, selfcontained = TRUE, libdir = NULL) {
     plots <- htmltools::tagList(plots)
   }
 
-  # Keep dependency files next to `file` (basename() alone would drop the
-  # directory and write them to the working directory instead).
+  # htmltools::save_html() resolves a relative libdir against `file`'s
+  # directory (it setwd()s there before copying), so pass a bare folder name.
+  # A libdir that repeats the file's directory prefix gets created *inside*
+  # that directory a second time, and the resulting hrefs break as soon as
+  # the output is moved — rendering every plot blank.
   if (is.null(libdir)) {
-    libdir <- paste0(tools::file_path_sans_ext(file), "_files")
+    libdir <- paste0(tools::file_path_sans_ext(basename(file)), "_files")
   }
 
   htmltools::save_html(plots, file = file, libdir = libdir)
@@ -137,7 +142,12 @@ save_plots <- function(plots, file, selfcontained = TRUE, libdir = NULL) {
       ))
     }
     pandoc_self_contained(file)
-    unlink(libdir, recursive = TRUE)
+    lib_path <- if (grepl("^(/|~|[A-Za-z]:)", libdir)) {
+      libdir
+    } else {
+      file.path(dirname(file), libdir)
+    }
+    unlink(lib_path, recursive = TRUE)
   }
 
   invisible(file)

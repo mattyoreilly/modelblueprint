@@ -74,6 +74,9 @@ inside a directory named after \verb{@model_display_name}.
       <name>_<set>_shap_plots.html
 }\if{html}{\out{</div>}}
 
+With \code{selfcontained = FALSE}, the HTML files in each subdirectory share a
+single \verb{lib/} dependency folder instead of one folder per file.
+
 \strong{Validation} plots include a gain chart, predicted-vs-observed calibration
 chart, and grouped residuals — one HTML file per split.
 
