@@ -37,10 +37,12 @@ save_plots(plots, file, selfcontained = TRUE, libdir = NULL)
 
 - libdir:
 
-  `[character(1) | NULL]` Directory for the HTML dependency files. When
-  `NULL`, it is derived from `file` by appending `"_files"` (keeping
-  `file`'s directory). Removed after embedding when
-  `selfcontained = TRUE`.
+  `[character(1) | NULL]` Directory for the HTML dependency files,
+  resolved relative to `file`'s directory (or absolute). When `NULL`,
+  defaults to `"<file basename>_files"` next to `file`. Pass the same
+  value (e.g. `"lib"`) for several files saved into one directory to
+  share a single dependency folder between them. Removed after embedding
+  when `selfcontained = TRUE`.
 
 ## Value
 

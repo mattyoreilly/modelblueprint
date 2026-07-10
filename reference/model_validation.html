@@ -11,7 +11,7 @@ inside a directory named after @model_display_name."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -141,6 +141,8 @@ is reproducible without disturbing the global RNG stream. Default <code>1L</code
 <span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>      <span class="er">&lt;</span>name<span class="sc">&gt;</span>_<span class="sc">&lt;</span>set<span class="sc">&gt;</span>_pdp_plots.html</span>
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    shap<span class="sc">/</span></span>
 <span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>      <span class="er">&lt;</span>name<span class="sc">&gt;</span>_<span class="sc">&lt;</span>set<span class="sc">&gt;</span>_shap_plots.html</span></code></pre><p></p></div>
+<p>With <code>selfcontained = FALSE</code>, the HTML files in each subdirectory share a
+single <code>lib/</code> dependency folder instead of one folder per file.</p>
 <p><strong>Validation</strong> plots include a gain chart, predicted-vs-observed calibration
 chart, and grouped residuals — one HTML file per split.</p>
 <p><strong>One-way</strong> plots cover every feature in <code>@x_original_inputs</code>. If <code>split</code>

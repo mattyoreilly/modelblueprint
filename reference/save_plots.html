@@ -11,7 +11,7 @@ dependencies inline with Pandoc."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,9 +79,11 @@ self-contained file? Requires Pandoc. Default <code>TRUE</code>.</p></dd>
 
 <dt id="arg-libdir">libdir<a class="anchor" aria-label="anchor" href="#arg-libdir"></a></dt>
 <dd><p><code>[character(1) | NULL]</code> Directory for the HTML dependency
-files. When <code>NULL</code>, it is derived from <code>file</code> by appending <code>"_files"</code>
-(keeping <code>file</code>'s directory). Removed after embedding when
-<code>selfcontained = TRUE</code>.</p></dd>
+files, resolved relative to <code>file</code>'s directory (or absolute). When
+<code>NULL</code>, defaults to <code>"&lt;file basename&gt;_files"</code> next to <code>file</code>. Pass the
+same value (e.g. <code>"lib"</code>) for several files saved into one directory to
+share a single dependency folder between them. Removed after embedding
+when <code>selfcontained = TRUE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

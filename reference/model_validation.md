@@ -97,6 +97,9 @@ The root output directory path, invisibly.
         shap/
           <name>_<set>_shap_plots.html
 
+With `selfcontained = FALSE`, the HTML files in each subdirectory share
+a single `lib/` dependency folder instead of one folder per file.
+
 **Validation** plots include a gain chart, predicted-vs-observed
 calibration chart, and grouped residuals — one HTML file per split.
 
