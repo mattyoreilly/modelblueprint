@@ -25,13 +25,14 @@ jobs:
           - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
-          # Last release before 4.3, where base @ gained native S7 support.
-          # Exercises the conditional importFrom("S7", "@") path so pre-4.3
-          # property access can't silently regress. ubuntu-22.04: PPM has no
-          # R 4.2 binaries for 24.04. Hard deps only: xgboost 3.x (Suggests)
-          # needs R >= 4.3, and every test already skips missing suggests.
-          # Vignettes are skipped for the same reason.
-          - {os: ubuntu-22.04,   r: '4.2.3', minimal: true}
+          # Pre-4.3 R, matching the Azure ML compute this package deploys to.
+          # Base @ only gained native S7 support in 4.3, so this job exercises
+          # the conditional importFrom("S7", "@") path so pre-4.3 property
+          # access can't silently regress. ubuntu-22.04: PPM has no R 4.2
+          # binaries for 24.04. Hard deps only: xgboost 3.x (Suggests) needs
+          # R >= 4.3, and every test already skips missing suggests. Vignettes
+          # are skipped for the same reason.
+          - {os: ubuntu-22.04,   r: '4.2.2', minimal: true}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
