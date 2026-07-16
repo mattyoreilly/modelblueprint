@@ -25,6 +25,11 @@ jobs:
           - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
+          # Last release before 4.3, where base @ gained native S7 support.
+          # Exercises the conditional importFrom("S7", "@") path so pre-4.3
+          # property access can't silently regress. ubuntu-22.04: PPM has no
+          # R 4.2 binaries for 24.04.
+          - {os: ubuntu-22.04,   r: '4.2.3'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
