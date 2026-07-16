@@ -28,15 +28,18 @@ jobs:
           # Last release before 4.3, where base @ gained native S7 support.
           # Exercises the conditional importFrom("S7", "@") path so pre-4.3
           # property access can't silently regress. ubuntu-22.04: PPM has no
-          # R 4.2 binaries for 24.04.
-          - {os: ubuntu-22.04,   r: '4.2.3'}
+          # R 4.2 binaries for 24.04. Hard deps only: xgboost 3.x (Suggests)
+          # needs R >= 4.3, and every test already skips missing suggests.
+          # Vignettes are skipped for the same reason.
+          - {os: ubuntu-22.04,   r: '4.2.3', minimal: true}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: false
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -48,10 +51,12 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck any::testthat
           needs: check
+          dependencies: ${{ matrix.config.minimal && '"hard"' || '"all"' }}
 
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          args: ${{ matrix.config.minimal && 'c("--no-manual","--ignore-vignettes")' || 'c("--no-manual","--as-cran")' }}
+          build_args: ${{ matrix.config.minimal && 'c("--no-manual","--no-build-vignettes")' || 'c("--no-manual","--compact-vignettes=gs+qpdf")' }}
