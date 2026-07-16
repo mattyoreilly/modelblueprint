@@ -19,6 +19,11 @@
 #' @importFrom S7 class_list class_data.frame
 #' @importFrom S7 prop prop<- props method method<-
 #' @importFrom S7 S7_dispatch S7_inherits
+# S7 only exports `@` on R < 4.3 (base R handles S7 `@` natively from 4.3).
+# Without this conditional import, `@` inside package code resolves to base's
+# S4 slot operator on older R and every property access errors with
+# "trying to get slot from an object that is not an S4 object".
+#' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
 #' @importFrom data.table := .SD .N
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom rlang %||%
