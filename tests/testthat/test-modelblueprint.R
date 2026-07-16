@@ -415,6 +415,7 @@ describe("modelblueprint — validator: multiple errors reported together", {
 describe("savemb / loadmb — native R model (lm)", {
   it("saves without error", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     expect_no_error(savemb(mb, path = tmp, filename = "test_mb"))
@@ -422,6 +423,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("produces a .tar.gz file", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -430,6 +432,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("loads without error", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -438,6 +441,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("loaded object is a modelblueprint", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -447,6 +451,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("loaded object predicts without error", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -456,6 +461,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("predictions from loaded object match original", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     orig_pred <- predict(mb, iris)
@@ -467,6 +473,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("key metadata slots round-trip correctly", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -480,6 +487,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("data slot dimensions are preserved", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp, filename = "test_mb")
@@ -491,6 +499,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("factor columns are preserved with correct levels", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     df <- iris # Species is a factor
     mb <- make_lm_mb(train = df)
     tmp <- withr::local_tempdir()
@@ -522,6 +531,7 @@ describe("savemb / loadmb — native R model (lm)", {
 
   it("uses model_display_name as filename when filename is NULL", {
     skip_on_cran()
+    skip_if_not_installed("arrow")
     tmp <- withr::local_tempdir()
     mb <- make_lm_mb()
     savemb(mb, path = tmp)

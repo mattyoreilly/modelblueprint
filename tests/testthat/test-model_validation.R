@@ -11,8 +11,17 @@ library(modelblueprint)
 # Fixtures
 # =============================================================================
 
+# Every test that builds a blueprint here runs model_validation() end-to-end,
+# which always serialises via savemb() (needs arrow) and writes HTML reports
+# (needs htmltools). Skip in the fixtures so all tests inherit the guard.
+skip_if_missing_mv_deps <- function() {
+  skip_if_not_installed("arrow")
+  skip_if_not_installed("htmltools")
+}
+
 # Minimal lm — 40 rows, 2 features, train + test only (no holdout).
 make_mb <- function() {
+  skip_if_missing_mv_deps()
   set.seed(1L)
   n  <- 40L
   df <- data.frame(x1 = rnorm(n), x2 = rnorm(n), y = rnorm(n))
@@ -28,6 +37,7 @@ make_mb <- function() {
 
 # Same but with a holdout split.
 make_mb_with_holdout <- function() {
+  skip_if_missing_mv_deps()
   set.seed(2L)
   n  <- 60L
   df <- data.frame(x1 = rnorm(n), y = rnorm(n))

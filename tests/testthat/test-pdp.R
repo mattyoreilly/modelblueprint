@@ -1043,7 +1043,9 @@ describe("pdp — H2O model compatibility", {
   # is unavailable. This keeps the test suite green in environments without H2O.
   h2o_available <- tryCatch(
     {
-      requireNamespace("h2o", quietly = TRUE) &&
+      # See helper-h2o.R: the H2O JVM is unstable on shared CI runners.
+      !isTRUE(as.logical(Sys.getenv("CI"))) &&
+        requireNamespace("h2o", quietly = TRUE) &&
         !inherits(
           tryCatch(
             h2o::h2o.init(
