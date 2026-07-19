@@ -35,7 +35,7 @@ jobs:
         run: |
           pkgload::load_all()
           testthat::test_local(
-            filter = "pdp|dashboard|modelblueprint",
+            filter = "pdp|dashboard|modelblueprint|savemb-fresh",
             stop_on_failure = TRUE
           )
         shell: Rscript {0}
