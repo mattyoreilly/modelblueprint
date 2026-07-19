@@ -55,5 +55,18 @@ utils::globalVariables(c(
 
   # ── Other NSE names ────────────────────────────────────────────────────────
   "perfect_model",  # gain.R     — perfect-model baseline column
-  "ratio_col"       # sami.R     — ratio column produced inside sami.default()
+  "ratio_col",      # sami.R     — ratio column produced inside sami.default()
+
+  # ── S7 property names ─────────────────────────────────────────────────────
+  # On R < 4.3, `x@name` parses as a call to S7's imported `@` function, so
+  # the 4.2 checker reads each property name as an undefined global and emits
+  # ~20 "no visible binding" NOTEs. Modern R parses `@` as syntax and never
+  # flags these. Names mirror the modelblueprint / mb_seq property lists.
+  "model", "train", "test", "holdout",
+  "pre_process_fun", "feat_eng_fun", "post_process_fun",
+  "x_original_inputs", "x_names", "y_name", "yhat_name",
+  "expo_name", "expo_val", "expo_0_rep",
+  "offset_name", "offset_value",
+  "model_display_name", "deploy_notes",
+  "blueprints", "layers", "aggregate_fn"
 ))

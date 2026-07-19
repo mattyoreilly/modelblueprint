@@ -1,0 +1,41 @@
+# Weekly H2O regression run. H2O tests are skipped in the main R-CMD-check
+# matrix because the H2O JVM is unstable on shared runners (the cluster dies
+# mid-suite often enough to flake PR checks). This scheduled job opts back in
+# via MB_RUN_H2O_TESTS so real H2O regressions still get caught, without
+# blocking PRs. Trigger manually from the Actions tab via workflow_dispatch.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+name: h2o-tests.yaml
+
+permissions: read-all
+
+jobs:
+  h2o-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      MB_RUN_H2O_TESTS: 1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::testthat any::pkgload
+
+      - name: Run test files that exercise H2O
+        run: |
+          pkgload::load_all()
+          testthat::test_local(
+            filter = "pdp|dashboard|modelblueprint",
+            stop_on_failure = TRUE
+          )
+        shell: Rscript {0}

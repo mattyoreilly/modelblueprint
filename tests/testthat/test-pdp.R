@@ -1044,7 +1044,8 @@ describe("pdp — H2O model compatibility", {
   h2o_available <- tryCatch(
     {
       # See helper-h2o.R: the H2O JVM is unstable on shared CI runners.
-      !isTRUE(as.logical(Sys.getenv("CI"))) &&
+      (nzchar(Sys.getenv("MB_RUN_H2O_TESTS")) ||
+        !isTRUE(as.logical(Sys.getenv("CI")))) &&
         requireNamespace("h2o", quietly = TRUE) &&
         !inherits(
           tryCatch(
