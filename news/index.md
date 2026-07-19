@@ -1,5 +1,25 @@
 # Changelog
 
+## modelblueprint 1.6.3
+
+### Bug fixes
+
+- Constructing or validating a `modelblueprint` no longer fails on R \<
+  4.3 with `trying to get slot ... that is not an S4 object`. S7 only
+  exports its `@` operator on R \< 4.3 (base R handles S7 `@` natively
+  from 4.3), and the package did not import it, so every property access
+  inside package code fell through to base’s S4 slot operator on older
+  R.
+
+### Infrastructure
+
+- Declared minimum R version raised from 4.1.0 to 4.2.0 to match what CI
+  actually verifies (an R 4.2.2 job mirroring the Azure ML deployment
+  target).
+- H2O tests are skipped on CI runners, where the H2O JVM is unstable,
+  and run in a weekly scheduled workflow instead (set
+  `MB_RUN_H2O_TESTS=1` to force them on).
+
 ## modelblueprint 1.6.2
 
 ### New features
