@@ -1,6 +1,6 @@
 Package: modelblueprint
 Title: Model Diagnostics and Explainability for Machine Learning Workflows
-Version: 1.6.2
+Version: 1.6.3
 Authors@R: c(
     person("Matt", "O'Reilly", role = c("aut", "cre", "cph"),
            email = "fermoymatt@gmail.com"),
@@ -21,7 +21,7 @@ License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends:
-    R (>= 4.1.0)
+    R (>= 4.2.0)
 Imports:
     S7 (>= 0.1.1),
     cli (>= 3.4.0),
@@ -38,6 +38,8 @@ Imports:
     utils
 Suggests:
     arrow (>= 12.0.0),
+    callr (>= 3.7.0),
+    pkgload (>= 1.3.0),
     h2o (>= 3.40.0),
     randomForest (>= 4.7.0),
     rpart (>= 4.1.0),
