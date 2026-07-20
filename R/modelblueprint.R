@@ -920,6 +920,73 @@ one_way.modelblueprint <- function(
 
 
 # =============================================================================
+# distribution.modelblueprint
+# =============================================================================
+
+#' Target distribution for a modelblueprint
+#'
+#' Calls [distribution()] using the modelblueprint's target and exposure slots,
+#' showing the exposure-weighted distribution of the target variable.
+#'
+#' @param data  A `modelblueprint`.
+#' @param set   `[character(1)]` Which dataset to use: `"train"`, `"test"`,
+#'              or `"holdout"`. Default `"train"`.
+#' @param split `[character(1) | NA]` Optional split variable.
+#' @param bins  `[integer(1)]` Number of bins. Default `35L`.
+#' @param ...   Further arguments passed to [distribution()].
+#' @return A plotly object or data.table depending on `ret`.
+#' @method distribution modelblueprint
+#' @export
+distribution.modelblueprint <- function(
+  data,
+  set = c("train", "test", "holdout"),
+  split = NA_character_,
+  bins = 35L,
+  ...
+) {
+  set <- match.arg(set)
+
+  df <- prop(data, set)
+  if (is.null(df)) {
+    cli::cli_abort(
+      "modelblueprint {.arg @{set}} is NULL. Supply data when constructing."
+    )
+  }
+  if (is.na(data@y_name)) {
+    cli::cli_abort(
+      "{.arg @y_name} is not set. Specify the target variable name."
+    )
+  }
+
+  # Same target-scale alignment as one_way.modelblueprint: if feat_eng_fun
+  # transforms (or creates) the response, plot the engineered target.
+  df_pp <- call_pipeline_fun(
+    data@pre_process_fun,
+    "pre_process_fun",
+    as.data.frame(df)
+  )
+  df_eng <- as.data.frame(call_pipeline_fun(
+    data@feat_eng_fun,
+    "feat_eng_fun",
+    df_pp
+  ))
+  df <- as.data.frame(df)
+  if (data@y_name %in% names(df_eng)) {
+    df[[data@y_name]] <- df_eng[[data@y_name]]
+  }
+
+  distribution(
+    df,
+    var = data@y_name,
+    exposure = resolve_exposure(data, df),
+    split = split,
+    bins = bins,
+    ...
+  )
+}
+
+
+# =============================================================================
 # pdp.modelblueprint
 # =============================================================================
 
@@ -1310,6 +1377,12 @@ resolve_exposure_values <- function(object, df) {
     "one_way",
     "modelblueprint::modelblueprint",
     one_way.modelblueprint,
+    envir = ns
+  )
+  registerS3method(
+    "distribution",
+    "modelblueprint::modelblueprint",
+    distribution.modelblueprint,
     envir = ns
   )
   registerS3method(
