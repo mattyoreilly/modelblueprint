@@ -1,5 +1,19 @@
 # Changelog
 
+## modelblueprint 1.6.4
+
+### New features
+
+- New
+  [`distribution()`](https://mattyoreilly.github.io/modelblueprint/reference/distribution.md)
+  plots the exposure-weighted distribution of the target variable as a
+  plotly bar chart. It mirrors
+  [`one_way()`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.md)’s
+  interface (bare or quoted column names, `split`, `bins`, `time_unit`,
+  `type_agg`, `ret`) and reuses its binning and NA handling; a
+  `modelblueprint` method pulls the target and exposure from the
+  blueprint’s slots.
+
 ## modelblueprint 1.6.3
 
 ### Bug fixes

@@ -23,6 +23,8 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_pdp.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/compute_shap.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/distribution.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/distribution.modelblueprint.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_features.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_fit.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/extract_metadata.html</loc></url>
@@ -55,6 +57,7 @@
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/reexports.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/remap_sorted_bins.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.html</loc></url>
+<url><loc>https://mattyoreilly.github.io/modelblueprint/reference/resolve_bare_name.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/sami.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/saveMB.html</loc></url>
 <url><loc>https://mattyoreilly.github.io/modelblueprint/reference/save_plots.html</loc></url>

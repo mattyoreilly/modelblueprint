@@ -123,6 +123,10 @@ predictions.
   : Create a one-way analysis plot
 - [`one_way(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/one_way.ModelBlueprint.md)
   : One-way analysis for a modelblueprint
+- [`distribution()`](https://mattyoreilly.github.io/modelblueprint/reference/distribution.md)
+  : Plot the distribution of the target variable
+- [`distribution(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/distribution.modelblueprint.md)
+  : Target distribution for a modelblueprint
 - [`pdp()`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.md)
   : Partial dependence plot for any predict()-compatible model
 - [`pdp(`*`<modelblueprint>`*`)`](https://mattyoreilly.github.io/modelblueprint/reference/pdp.ModelBlueprint.md)
