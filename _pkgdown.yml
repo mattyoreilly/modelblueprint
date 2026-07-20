@@ -70,6 +70,8 @@ reference:
     contents:
       - one_way
       - one_way.modelblueprint
+      - distribution
+      - distribution.modelblueprint
       - pdp
       - pdp.modelblueprint
       - shap
