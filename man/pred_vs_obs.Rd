@@ -49,8 +49,7 @@ Default \code{"exposure"}.}
 \item{type_agg}{\verb{[character(1)]} \code{"equal_exposure"} or \code{"equal_range"}.}
 
 \item{title}{\verb{[character(1)]} Chart title. Defaults to
-\code{model_display_name} (with the set name appended when
-plotting multiple sets).}
+\code{"<model_display_name> - <set>"}, e.g. \code{"my_model - train"}.}
 
 \item{ret}{\verb{[character(1)]} \code{"plot"} or \code{"data"}. Default \code{"plot"}.}
 

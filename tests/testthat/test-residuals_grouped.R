@@ -488,6 +488,20 @@ describe("residuals_grouped.modelblueprint — passthrough arguments", {
     expect_no_error(residuals_grouped(mb, title = "My residual chart"))
   })
 
+  it("default title is '<display name> - <set>' for gain, pred_vs_obs and residuals_grouped", {
+    title_of <- function(p) {
+      t <- plotly::plotly_build(p)$x$layout$title
+      if (is.list(t)) t$text else t
+    }
+    for (f in list(gain, pred_vs_obs, residuals_grouped)) {
+      expect_equal(title_of(f(mb, set = "test")), "logistic_vs - test")
+      all_sets <- f(mb)
+      for (s in names(all_sets)) {
+        expect_equal(title_of(all_sets[[s]]), paste("logistic_vs -", s))
+      }
+    }
+  })
+
   it("smaller exposure_per_bin gives more bins", {
     small <- residuals_grouped(mb, set = "train", exposure_per_bin = 1, ret = "data")
     large <- residuals_grouped(mb, set = "train", exposure_per_bin = 10, ret = "data")

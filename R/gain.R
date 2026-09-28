@@ -135,8 +135,8 @@ gain.default <- function(
 #'   `"test"`, `"holdout"`. Defaults to all available (non-NULL) sets. When
 #'   more than one set is used, a named list with one result per set is
 #'   returned.
-#' @param title Chart title. Defaults to `model_display_name` (with the set
-#'   name appended when plotting multiple sets).
+#' @param title Chart title. Defaults to `"<model_display_name> - <set>"`,
+#'   e.g. `"my_model - train"`.
 #' @param ret   `"plot"`, `"data"`, or `"gini"`. Default `"plot"`.
 #' @param ...   Passed to the default method.
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -208,7 +208,8 @@ gain.modelblueprint <- function(
     df[[pred_col]] <- predict.modelblueprint(data, df)
   }
 
-  chart_title <- title %||% (data@model_display_name %|NA|% "model")
+  chart_title <- title %||%
+    paste(data@model_display_name %|NA|% "model", set, sep = " - ")
 
   gain.default(
     df,

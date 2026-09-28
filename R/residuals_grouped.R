@@ -175,8 +175,8 @@ residuals_grouped.default <- function(
 #'                         dataset is too small for meaningful grouping.
 #' @param residual_type    `[character(1)]` `"raw"` or `"pearson"`.
 #' @param title            `[character(1)]` Chart title. Defaults to
-#'                         `model_display_name` (with the set name appended
-#'                         when plotting multiple sets).
+#'                         `"<model_display_name> - <set>"`, e.g.
+#'                         `"my_model - train"`.
 #' @param ret              `[character(1)]` `"plot"` or `"data"`.
 #' @param ...              Passed to [residuals_grouped.default()].
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -272,7 +272,8 @@ residuals_grouped.modelblueprint <- function(
   total_expo <- sum(df[[exposure]], na.rm = TRUE)
   exposure_per_bin <- min(exposure_per_bin, total_expo / 3)
 
-  chart_title <- title %||% (data@model_display_name %|NA|% "Grouped Residuals")
+  chart_title <- title %||%
+    paste(data@model_display_name %|NA|% "Grouped Residuals", set, sep = " - ")
 
   residuals_grouped.default(
     df,

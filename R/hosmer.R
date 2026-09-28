@@ -118,8 +118,7 @@ pred_vs_obs.default <- function(
 #' @param bins     `[integer(1)]` Number of bins. Default `10L`.
 #' @param type_agg `[character(1)]` `"equal_exposure"` or `"equal_range"`.
 #' @param title    `[character(1)]` Chart title. Defaults to
-#'                 `model_display_name` (with the set name appended when
-#'                 plotting multiple sets).
+#'                 `"<model_display_name> - <set>"`, e.g. `"my_model - train"`.
 #' @param ret      `[character(1)]` `"plot"` or `"data"`. Default `"plot"`.
 #' @param ...      Passed to [pred_vs_obs.default()].
 #' @param precomputed_preds `[numeric | NULL]` Optional vector of pre-computed
@@ -211,7 +210,8 @@ pred_vs_obs.modelblueprint <- function(
     )
   }
 
-  chart_title <- title %||% (data@model_display_name %|NA|% "Predicted vs Observed")
+  chart_title <- title %||%
+    paste(data@model_display_name %|NA|% "Predicted vs Observed", set, sep = " - ")
 
   pred_vs_obs.default(
     df,

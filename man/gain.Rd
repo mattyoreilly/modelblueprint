@@ -26,8 +26,8 @@ gain(data, ...)
 more than one set is used, a named list with one result per set is
 returned.}
 
-\item{title}{Chart title. Defaults to \code{model_display_name} (with the set
-name appended when plotting multiple sets).}
+\item{title}{Chart title. Defaults to \code{"<model_display_name> - <set>"},
+e.g. \code{"my_model - train"}.}
 
 \item{ret}{\code{"plot"}, \code{"data"}, or \code{"gini"}. Default \code{"plot"}.}
 

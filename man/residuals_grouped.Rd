@@ -51,8 +51,8 @@ dataset is too small for meaningful grouping.}
 \item{residual_type}{\verb{[character(1)]} \code{"raw"} or \code{"pearson"}.}
 
 \item{title}{\verb{[character(1)]} Chart title. Defaults to
-\code{model_display_name} (with the set name appended
-when plotting multiple sets).}
+\code{"<model_display_name> - <set>"}, e.g.
+\code{"my_model - train"}.}
 
 \item{ret}{\verb{[character(1)]} \code{"plot"} or \code{"data"}.}
 

@@ -8,6 +8,10 @@
   RStudio Viewer (and nothing at the console), so it looked as if only one set
   had been plotted. The result is still a named list, so `result$test` and
   `save_plots(result, ...)` work as before.
+* The default chart title for `gain()`, `pred_vs_obs()` and
+  `residuals_grouped()` on a `modelblueprint` is now always
+  `"<model_display_name> - <set>"` (e.g. `"my_model - train"`), including for a
+  single set, so plots from `model_validation()` say which set they show.
 
 * `residuals_grouped()` now always returns a plot when `ret = "plot"`. A set
   with fewer than 3 prediction groups (common for tree models on small data)
