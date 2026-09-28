@@ -159,12 +159,12 @@ pred_vs_obs.modelblueprint <- function(
       cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
     }
     base_title <- title %||% (data@model_display_name %|NA|% "Predicted vs Observed")
-    return(lapply(stats::setNames(set, set), function(s) {
+    return(.set_results(ret, lapply(stats::setNames(set, set), function(s) {
       pred_vs_obs(
         data, set = s, bins = bins, type_agg = type_agg,
         title = paste(base_title, s, sep = " - "), ret = ret, ...
       )
-    }))
+    })))
   }
 
   df <- prop(data, set)

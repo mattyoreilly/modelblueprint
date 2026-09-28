@@ -408,6 +408,32 @@ describe("gain.modelblueprint — set argument", {
     expect_true(all(vapply(result, is_plotly, logical(1L))))
   })
 
+  it("prints every set's plot on one page, not just one", {
+    mb3 <- modelblueprint(
+      model = stats::glm(vs ~ wt + hp, data = mtcars, family = binomial),
+      train = mtcars,
+      test = mtcars[1:16, ],
+      holdout = mtcars[17:32, ],
+      y_name = "vs",
+      model_display_name = "logistic_vs"
+    )
+    viewed <- NULL
+    withr::local_options(viewer = function(url, ...) viewed <<- url)
+    # Print from the global env so dispatch goes through R's S3 registry, as
+    # at the console, rather than finding the method via the test's namespace.
+    eval(quote(print(res)), list(res = gain(mb3)), globalenv())
+    html <- paste(readLines(viewed, warn = FALSE), collapse = "\n")
+    n_widgets <- lengths(regmatches(html, gregexpr('class="plotly html-widget', html, fixed = TRUE)))
+    expect_equal(n_widgets, 3L)
+    for (s in c("train", "test", "holdout")) {
+      expect_match(html, paste("logistic_vs -", s), fixed = TRUE)
+    }
+  })
+
+  it("keeps ret = 'data' as a plain list across sets", {
+    expect_false(inherits(gain(mb, ret = "data"), "mb_set_plots"))
+  })
+
   it("precomputed_preds requires a single set", {
     expect_error(
       gain(mb, precomputed_preds = rep(0.5, 32L)),

@@ -148,12 +148,13 @@ residuals_grouped.default <- function(
     return(agg)
   }
 
+  # Still return a plot so multi-set lists, save_plots() and the dashboard get
+  # a widget for every set; only the loess trend needs >= 3 bins.
   if (nrow(agg) < 3L) {
     cli::cli_warn(c(
-      "{.fn residuals_grouped}: fewer than 3 bins -- cannot fit loess.",
+      "{.fn residuals_grouped}: fewer than 3 bins -- plotting without the loess trend.",
       i = "Increase data size or reduce {.arg exposure_per_bin}."
     ))
-    return(agg)
   }
 
   plot_residuals_grouped(agg, title, exposure_per_bin)
@@ -215,13 +216,13 @@ residuals_grouped.modelblueprint <- function(
       cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
     }
     base_title <- title %||% (data@model_display_name %|NA|% "Grouped Residuals")
-    return(lapply(stats::setNames(set, set), function(s) {
+    return(.set_results(ret, lapply(stats::setNames(set, set), function(s) {
       residuals_grouped(
         data, set = s, exposure_per_bin = exposure_per_bin,
         residual_type = residual_type,
         title = paste(base_title, s, sep = " - "), ret = ret, ...
       )
-    }))
+    })))
   }
 
   df <- prop(data, set)
@@ -297,37 +298,40 @@ residuals_grouped.modelblueprint <- function(
 #' @keywords internal
 #' @noRd
 plot_residuals_grouped <- function(agg, title, exposure_per_bin) {
-  # Fit loess with 95% CI -- suppress near-singularity warnings that fire
-  # on small datasets; the plot is still useful even with imprecise CIs
-  lo <- suppressWarnings(stats::loess(agg$res ~ agg$midpoint))
-  pred <- suppressWarnings(stats::predict(lo, se = TRUE))
-  t_crit <- stats::qt(0.975, df = max(pred$df, 1L))
-
-  agg[, loe_pred := pred$fit]
-  agg[, loe_low := pred$fit - t_crit * pred$se.fit]
-  agg[, loe_upp := pred$fit + t_crit * pred$se.fit]
-
   p <- plotly::plot_ly()
 
-  # 95% loess confidence ribbon
-  p <- plotly::add_ribbons(
-    p,
-    x = agg$midpoint,
-    ymin = agg$loe_low,
-    ymax = agg$loe_upp,
-    name = "95% loess CI",
-    line = list(width = 0),
-    fillcolor = "rgba(54,96,146,0.2)"
-  )
+  # Fit loess with 95% CI -- suppress near-singularity warnings that fire
+  # on small datasets; the plot is still useful even with imprecise CIs.
+  # loess needs >= 3 points, so tiny sets get residual points only.
+  if (nrow(agg) >= 3L) {
+    lo <- suppressWarnings(stats::loess(agg$res ~ agg$midpoint))
+    pred <- suppressWarnings(stats::predict(lo, se = TRUE))
+    t_crit <- stats::qt(0.975, df = max(pred$df, 1L))
 
-  # Loess trend line
-  p <- plotly::add_lines(
-    p,
-    x = agg$midpoint,
-    y = agg$loe_pred,
-    name = "Loess",
-    line = list(color = "rgb(0,94,128)", width = 2)
-  )
+    agg[, loe_pred := pred$fit]
+    agg[, loe_low := pred$fit - t_crit * pred$se.fit]
+    agg[, loe_upp := pred$fit + t_crit * pred$se.fit]
+
+    # 95% loess confidence ribbon
+    p <- plotly::add_ribbons(
+      p,
+      x = agg$midpoint,
+      ymin = agg$loe_low,
+      ymax = agg$loe_upp,
+      name = "95% loess CI",
+      line = list(width = 0),
+      fillcolor = "rgba(54,96,146,0.2)"
+    )
+
+    # Loess trend line
+    p <- plotly::add_lines(
+      p,
+      x = agg$midpoint,
+      y = agg$loe_pred,
+      name = "Loess",
+      line = list(color = "rgb(0,94,128)", width = 2)
+    )
+  }
 
   # Residual points
   p <- plotly::add_markers(
