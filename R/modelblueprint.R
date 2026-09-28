@@ -1251,6 +1251,27 @@ resolve_sets <- function(object, set) {
   available
 }
 
+#' Tag a multi-set list of plots so it prints all sets together
+#'
+#' A bare list of plotly widgets only shows one plot in the RStudio Viewer (and
+#' nothing at the console), so `gain(mb)` looked as if only one set had been
+#' plotted. The result is still a plain named list for `[[`, `lapply()` and
+#' [save_plots()]; only printing changes.
+#'
+#' @keywords internal
+#' @noRd
+.set_results <- function(ret, x) {
+  if (ret == "plot") class(x) <- "mb_set_plots"
+  x
+}
+
+#' @export
+print.mb_set_plots <- function(x, ...) {
+  check_package("htmltools", "printing plots for several sets")
+  print(htmltools::browsable(htmltools::tagList(unclass(x))))
+  invisible(x)
+}
+
 #' @keywords internal
 #' @noRd
 resolve_obs <- function(object, df, predictions, precomputed_preds = NULL) {
@@ -1429,6 +1450,9 @@ resolve_exposure_values <- function(object, df) {
     print.mb_layer,
     envir = ns
   )
+  # Plain S3 class (not S7), but the NAMESPACE S3method() entry alone does not
+  # reach the dispatch table here, so register it like the rest.
+  registerS3method("print", "mb_set_plots", print.mb_set_plots, envir = ns)
 
   # extract_* and set_* verbs (R/extract.R)
   for (.generic in c(

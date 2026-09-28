@@ -175,9 +175,9 @@ gain.modelblueprint <- function(
       cli::cli_abort("{.arg precomputed_preds} requires a single {.arg set}.")
     }
     base_title <- title %||% (data@model_display_name %|NA|% "model")
-    return(lapply(stats::setNames(set, set), function(s) {
+    return(.set_results(ret, lapply(stats::setNames(set, set), function(s) {
       gain(data, set = s, title = paste(base_title, s, sep = " - "), ret = ret, ...)
-    }))
+    })))
   }
 
   df <- prop(data, set)

@@ -285,7 +285,7 @@ describe("residuals_grouped.default — exposure_per_bin", {
     expect_gte(nrow(small), nrow(large))
   })
 
-  it("returns a warning and data when fewer than 3 bins result", {
+  it("returns a warning and a plot without loess when fewer than 3 bins result", {
     # Only 2 rows — n_bins = max(3L, round(2 / (epb / avg_expo))) but with
     # exposure_per_bin larger than total exposure, the guard in .default
     # still produces >= 3 bins via max(3L,...). Test instead that a
@@ -306,7 +306,11 @@ describe("residuals_grouped.default — exposure_per_bin", {
       "fewer than 3 bins",
       fixed = TRUE
     )
-    expect_true(data.table::is.data.table(result))
+    expect_s3_class(result, "plotly")
+    trace_names <- vapply(
+      plotly::plotly_build(result)$x$data, function(tr) tr$name %||% "", ""
+    )
+    expect_false("Loess" %in% trace_names)
   })
 })
 
