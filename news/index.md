@@ -1,5 +1,28 @@
 # Changelog
 
+## modelblueprint 1.6.5
+
+### Bug fixes
+
+- `gain(mb)`, `pred_vs_obs(mb)` and `residuals_grouped(mb)` now print
+  every set’s plot (train/test/holdout) together on one page. They
+  already returned one plot per set, but as a bare list, which showed
+  only one plot in the RStudio Viewer (and nothing at the console), so
+  it looked as if only one set had been plotted. The result is still a
+  named list, so `result$test` and `save_plots(result, ...)` work as
+  before.
+
+- [`residuals_grouped()`](https://mattyoreilly.github.io/modelblueprint/reference/residuals_grouped.md)
+  now always returns a plot when `ret = "plot"`. A set with fewer than 3
+  prediction groups (common for tree models on small data) used to
+  return a data.table instead, so the default all-sets
+  `residuals_grouped(mb)` gave a mixed list and
+  [`model_validation()`](https://mattyoreilly.github.io/modelblueprint/reference/model_validation.md)
+  /
+  [`save_plots()`](https://mattyoreilly.github.io/modelblueprint/reference/save_plots.md)
+  aborted. Such sets now get the residual points without the loess
+  trend, with a warning.
+
 ## modelblueprint 1.6.4
 
 ### New features

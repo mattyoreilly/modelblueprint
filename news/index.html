@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">modelblueprint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,14 @@
       <small>Source: <a href="https://github.com/mattyoreilly/modelblueprint/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.6.5" id="modelblueprint-165">modelblueprint 1.6.5<a class="anchor" aria-label="anchor" href="#modelblueprint-165"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-6-5">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-6-5"></a></h3>
+<ul><li><p><code>gain(mb)</code>, <code>pred_vs_obs(mb)</code> and <code>residuals_grouped(mb)</code> now print every set’s plot (train/test/holdout) together on one page. They already returned one plot per set, but as a bare list, which showed only one plot in the RStudio Viewer (and nothing at the console), so it looked as if only one set had been plotted. The result is still a named list, so <code>result$test</code> and <code>save_plots(result, ...)</code> work as before.</p></li>
+<li><p><code><a href="../reference/residuals_grouped.html">residuals_grouped()</a></code> now always returns a plot when <code>ret = "plot"</code>. A set with fewer than 3 prediction groups (common for tree models on small data) used to return a data.table instead, so the default all-sets <code>residuals_grouped(mb)</code> gave a mixed list and <code><a href="../reference/model_validation.html">model_validation()</a></code> / <code><a href="../reference/save_plots.html">save_plots()</a></code> aborted. Such sets now get the residual points without the loess trend, with a warning.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.6.4" id="modelblueprint-164">modelblueprint 1.6.4<a class="anchor" aria-label="anchor" href="#modelblueprint-164"></a></h2>
 <div class="section level3">
